@@ -54,12 +54,32 @@ async function loadWebPModule(): Promise<WebPModule> {
   }
 
   try {
+    // Mock 'self' for Emscripten-generated code when running in Bun
+    if (typeof self === 'undefined') {
+      (global as any).self = global;
+    }
+    if (typeof self !== 'undefined' && !self.location) {
+      (self as any).location = { href: import.meta.url };
+    }
+
     // Dynamically import the WebP encoder module
-    const modulePath = new URL('../../../../wasm/webp/webp_enc.js', import.meta.url).href;
-    const initWebPModule = await import(modulePath);
+    // Path is relative to this file (src/features/webp/)
+    const modulePath = new URL('../../../wasm/webp/webp_enc.js', import.meta.url).href;
+    const moduleFactory = await import(modulePath);
     
-    // Initialize the WebP module (it will load the WASM file automatically)
-    const module = await initWebPModule.default();
+    // Initialize the WebP module with locateFile to properly resolve the WASM
+    // The glue file expects to load webp_enc.wasm from the same directory
+    const wasmPath = new URL('../../../wasm/webp/', import.meta.url).href;
+    const module = await moduleFactory.default({
+      locateFile: (path: string) => {
+        // Return the full URL to the WASM file
+        if (path.endsWith('.wasm')) {
+          return new URL(path, wasmPath).href;
+        }
+        return path;
+      }
+    });
+    
     cachedModule = module;
     return module;
   } catch (error) {
