@@ -8,8 +8,8 @@
 export function isWorker(): boolean {
   return (
     typeof self !== 'undefined' &&
-    typeof DedicatedWorkerGlobalScope !== 'undefined' &&
-    self instanceof DedicatedWorkerGlobalScope
+    typeof (globalThis as any).DedicatedWorkerGlobalScope !== 'undefined' &&
+    self instanceof (globalThis as any).DedicatedWorkerGlobalScope
   );
 }
 

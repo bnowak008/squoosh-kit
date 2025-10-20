@@ -6,11 +6,11 @@
     "strict": true,
     "lib": ["ES2022", "DOM"],
     "declaration": true,
+    "emitDeclarationOnly": true,
     "declarationDir": "dist",
-    "outDir": "dist",
+    "rootDir": "src",
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": false
+    "allowImportingTsExtensions": true
   },
-  "include": ["src", "scripts"]
+  "include": ["src"]
 }

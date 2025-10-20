@@ -6,19 +6,31 @@ import { isWorker, hasImageData } from '../../runtime/env.ts';
 import type { WorkerRequest, WorkerResponse } from '../../runtime/worker-call.ts';
 import type { ImageInput, ResizeOptions } from '../../runtime/worker-bridge.ts';
 
-// Import the resize module
-import initResize, { resize as resizeWasm } from '../../../../wasm/resize/squoosh_resize.js';
-
 let initialized = false;
+let resizeWasm: ((
+  input_image: Uint8Array,
+  input_width: number,
+  input_height: number,
+  output_width: number,
+  output_height: number,
+  typ_idx: number,
+  premultiply: boolean,
+  color_space_conversion: boolean
+) => Uint8ClampedArray) | null = null;
 
 async function ensureResizeInitialized(): Promise<void> {
-  if (initialized) {
+  if (initialized && resizeWasm) {
     return;
   }
 
   try {
+    // Dynamically import the resize module
+    const modulePath = new URL('../../../../wasm/resize/squoosh_resize.js', import.meta.url).href;
+    const module = await import(modulePath);
+    
     // Initialize the resize module (it will load the WASM file automatically)
-    await initResize();
+    await module.default();
+    resizeWasm = module.resize;
     initialized = true;
   } catch (error) {
     throw new Error(`Failed to load Resize module: ${error instanceof Error ? error.message : String(error)}`);
@@ -73,6 +85,10 @@ export async function resizeClient(
 
   await ensureResizeInitialized();
 
+  if (!resizeWasm) {
+    throw new Error('Resize module not properly initialized');
+  }
+
   // Check abort after async operation
   if (signal.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -100,7 +116,9 @@ export async function resizeClient(
 
   // Return in appropriate format
   if (hasImageData() && typeof ImageData !== 'undefined') {
-    return new ImageData(result, outputWidth, outputHeight);
+    // Cast to proper ArrayBuffer type for ImageData constructor
+    const clampedArray = new Uint8ClampedArray(result.buffer as ArrayBuffer);
+    return new ImageData(clampedArray, outputWidth, outputHeight);
   }
   
   return { data: new Uint8Array(result), width: outputWidth, height: outputHeight };
@@ -134,7 +152,8 @@ if (isWorker()) {
         response.data = result;
 
         // Transfer the result buffer back
-        self.postMessage(response, [result.data.buffer]);
+        const buffer = (result.data instanceof Uint8Array ? result.data.buffer : (result.data as Uint8ClampedArray).buffer) as ArrayBuffer;
+        self.postMessage(response, [buffer]);
       } else {
         response.error = `Unknown message type: ${request.type}`;
         self.postMessage(response);

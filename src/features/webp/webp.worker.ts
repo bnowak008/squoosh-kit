@@ -6,8 +6,45 @@ import { isWorker } from '../../runtime/env.ts';
 import type { WorkerRequest, WorkerResponse } from '../../runtime/worker-call.ts';
 import type { ImageInput, WebpOptions } from '../../runtime/worker-bridge.ts';
 
-// Import the WebP encoder module
-import initWebPModule, { type WebPModule, type EncodeOptions } from '../../../../wasm/webp/webp_enc.js';
+// Types from webp_enc.d.ts
+interface EncodeOptions {
+  quality: number;
+  target_size: number;
+  target_PSNR: number;
+  method: number;
+  sns_strength: number;
+  filter_strength: number;
+  filter_sharpness: number;
+  filter_type: number;
+  partitions: number;
+  segments: number;
+  pass: number;
+  show_compressed: number;
+  preprocessing: number;
+  autofilter: number;
+  partition_limit: number;
+  alpha_compression: number;
+  alpha_filtering: number;
+  alpha_quality: number;
+  lossless: number;
+  exact: number;
+  image_hint: number;
+  emulate_jpeg_size: number;
+  thread_level: number;
+  low_memory: number;
+  near_lossless: number;
+  use_delta_palette: number;
+  use_sharp_yuv: number;
+}
+
+interface WebPModule {
+  encode(
+    data: BufferSource,
+    width: number,
+    height: number,
+    options: EncodeOptions,
+  ): Uint8Array | null;
+}
 
 let cachedModule: WebPModule | null = null;
 
@@ -17,9 +54,14 @@ async function loadWebPModule(): Promise<WebPModule> {
   }
 
   try {
+    // Dynamically import the WebP encoder module
+    const modulePath = new URL('../../../../wasm/webp/webp_enc.js', import.meta.url).href;
+    const initWebPModule = await import(modulePath);
+    
     // Initialize the WebP module (it will load the WASM file automatically)
-    cachedModule = await initWebPModule();
-    return cachedModule;
+    const module = await initWebPModule.default();
+    cachedModule = module;
+    return module;
   } catch (error) {
     throw new Error(`Failed to load WebP module: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -96,8 +138,8 @@ export async function webpEncodeClient(
 
   const encodeOptions = createEncodeOptions(options);
 
-  // Call the encode function
-  const result = module.encode(data, width, height, encodeOptions);
+  // Call the encode function (cast to ArrayBuffer for type compatibility)
+  const result = module.encode(data as any, width, height, encodeOptions);
 
   if (signal.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -137,8 +179,9 @@ if (isWorker()) {
         response.ok = true;
         response.data = result;
 
-        // Transfer the result buffer back
-        self.postMessage(response, [result.buffer]);
+        // Transfer the result buffer back  
+        const resultBuffer: ArrayBuffer = result.buffer as ArrayBuffer;
+        self.postMessage(response, [resultBuffer]);
       } else {
         response.error = `Unknown message type: ${request.type}`;
         self.postMessage(response);
