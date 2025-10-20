@@ -1,0 +1,2 @@
+[build]
+external = ["**/*.wasm", "**/wasm/**/*.js"]  # ensure wasm and glue files stay as file assets
