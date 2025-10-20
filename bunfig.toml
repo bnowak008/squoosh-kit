@@ -1,0 +1,2 @@
+[build]
+external = ["**/*.wasm"]  # ensure wasm stays as file assets

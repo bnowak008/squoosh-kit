@@ -1,12 +1,36 @@
 {
-  "name": "squoosh-lite",
-  "module": "src/index.ts",
+  "name": "@squoosh-lite/core",
+  "version": "0.1.0",
   "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
+  "description": "Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./webp": {
+      "types": "./dist/features/webp/index.d.ts",
+      "import": "./dist/features/webp/index.js"
+    },
+    "./resize": {
+      "types": "./dist/features/resize/index.d.ts",
+      "import": "./dist/features/resize/index.js"
+    }
   },
-  "peerDependencies": {
-    "typescript": "^5"
+  "files": [
+    "dist/**",
+    "wasm/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "prepare": "bun run scripts/copy-codecs.ts",
+    "build": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/features/webp/index.ts src/features/webp/webp.worker.ts src/features/resize/index.ts src/features/resize/resize.worker.ts",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.3"
   }
 }
