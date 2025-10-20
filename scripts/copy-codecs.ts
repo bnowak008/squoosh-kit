@@ -20,20 +20,6 @@ const SQUOOSH_BRANCH = 'dev';
 const TEMP_DIR = join(import.meta.dir, '..', '.squoosh-temp');
 const WASM_DIR = join(import.meta.dir, '..', 'wasm');
 
-// Codec files to copy (patterns)
-const CODEC_PATTERNS = [
-  '*.wasm',
-  'encoder.js',
-  'encoder.mjs',
-  'encoder.ts',
-  'decoder.js',
-  'decoder.mjs',
-  'decoder.ts',
-  'resize.js',
-  'resize.mjs',
-  'resize.ts',
-];
-
 async function main() {
   const squooshDir = process.env.SQUOOSH_DIR;
 
@@ -90,45 +76,69 @@ async function main() {
 
   console.log('Copying codec artifacts...');
 
-  // Read codecs directory
-  const codecs = Bun.file(codecsSourceDir).exists()
-    ? await Array.fromAsync(
-        new Bun.Glob('*').scan({ cwd: codecsSourceDir, onlyFiles: false })
-      )
-    : [];
-
   let copiedCount = 0;
 
-  for (const codec of codecs) {
-    const codecSourcePath = join(codecsSourceDir, codec);
-    const codecDestPath = join(WASM_DIR, codec);
+  // Helper function to copy files from a source directory to destination
+  async function copyCodecFiles(
+    srcDir: string,
+    destDir: string,
+    patterns: string[]
+  ): Promise<number> {
+    let count = 0;
+    mkdirSync(destDir, { recursive: true });
 
-    // Check if it's a directory
-    const stat = await Bun.file(codecSourcePath).stat();
-    if (!stat.isDirectory()) continue;
-
-    // Create destination directory
-    mkdirSync(codecDestPath, { recursive: true });
-
-    // Copy matching files
-    for (const pattern of CODEC_PATTERNS) {
+    for (const pattern of patterns) {
       const glob = new Bun.Glob(pattern);
-      const matches = await Array.fromAsync(glob.scan({ cwd: codecSourcePath }));
+      const matches = await Array.fromAsync(glob.scan({ cwd: srcDir }));
 
       for (const file of matches) {
-        const srcFile = join(codecSourcePath, file);
-        const destFile = join(codecDestPath, file);
+        const srcFile = join(srcDir, file);
+        const destFile = join(destDir, file);
 
         try {
           cpSync(srcFile, destFile);
           const relPath = relative(join(import.meta.dir, '..'), destFile);
           console.log(`  ✓ ${relPath}`);
-          copiedCount++;
+          count++;
         } catch (error) {
           console.warn(`  ✗ Failed to copy ${file}:`, error);
         }
       }
     }
+    return count;
+  }
+
+  // WebP encoder: codecs/webp/enc/* → wasm/webp/*
+  const webpEncSrc = join(codecsSourceDir, 'webp', 'enc');
+  if (existsSync(webpEncSrc)) {
+    console.log('Copying WebP encoder...');
+    copiedCount += await copyCodecFiles(
+      webpEncSrc,
+      join(WASM_DIR, 'webp'),
+      ['webp_enc.wasm', 'webp_enc.js', 'webp_enc.d.ts']
+    );
+  }
+
+  // WebP decoder: codecs/webp/dec/* → wasm/webp-dec/*
+  const webpDecSrc = join(codecsSourceDir, 'webp', 'dec');
+  if (existsSync(webpDecSrc)) {
+    console.log('Copying WebP decoder...');
+    copiedCount += await copyCodecFiles(
+      webpDecSrc,
+      join(WASM_DIR, 'webp-dec'),
+      ['webp_dec.wasm', 'webp_dec.js', 'webp_dec.d.ts']
+    );
+  }
+
+  // Resize: codecs/resize/pkg/* → wasm/resize/*
+  const resizeSrc = join(codecsSourceDir, 'resize', 'pkg');
+  if (existsSync(resizeSrc)) {
+    console.log('Copying resize codec...');
+    copiedCount += await copyCodecFiles(
+      resizeSrc,
+      join(WASM_DIR, 'resize'),
+      ['squoosh_resize_bg.wasm', 'squoosh_resize.js', 'squoosh_resize.d.ts', 'squoosh_resize_bg.wasm.d.ts']
+    );
   }
 
   console.log(`\nCopied ${copiedCount} codec files successfully.`);

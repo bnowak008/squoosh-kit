@@ -6,73 +6,32 @@ import { isWorker, hasImageData } from '../../runtime/env.ts';
 import type { WorkerRequest, WorkerResponse } from '../../runtime/worker-call.ts';
 import type { ImageInput, ResizeOptions } from '../../runtime/worker-bridge.ts';
 
-const RESIZE_WASM_URL = new URL('../../../../wasm/resize/resize.wasm', import.meta.url);
+// Import the resize module
+import initResize, { resize as resizeWasm } from '../../../../wasm/resize/squoosh_resize.js';
 
-interface ResizeModule {
-  memory: WebAssembly.Memory;
-  malloc(size: number): number;
-  free(ptr: number): number;
-  resize(
-    inputPtr: number,
-    inputWidth: number,
-    inputHeight: number,
-    outputWidth: number,
-    outputHeight: number,
-    outputPtr: number,
-    premultiply: number,
-    linearRGB: number
-  ): number;
-}
+let initialized = false;
 
-let cachedModule: ResizeModule | null = null;
-
-async function loadResizeModule(): Promise<ResizeModule> {
-  if (cachedModule) {
-    return cachedModule;
+async function ensureResizeInitialized(): Promise<void> {
+  if (initialized) {
+    return;
   }
 
   try {
-    // Try to load the resize.js glue if it exists
-    try {
-      const glueUrl = new URL('../../../../wasm/resize/resize.js', import.meta.url);
-      const glueModule = await import(glueUrl.href);
-      if (typeof glueModule.resize === 'function') {
-        console.log('Using resize glue from resize.js');
-        // Wrap the glue in our expected interface
-        cachedModule = glueModule as unknown as ResizeModule;
-        return cachedModule;
-      }
-    } catch {
-      // Glue not found or doesn't export resize, fall through to raw WASM
-    }
-
-    // Load raw WASM
-    const response = await fetch(RESIZE_WASM_URL.href);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch Resize WASM from ${RESIZE_WASM_URL.href}: ${response.statusText}`);
-    }
-
-    const wasmBytes = await response.arrayBuffer();
-    const wasmModule = await WebAssembly.instantiate(wasmBytes, {});
-    const instance = wasmModule.instance;
-
-    // Validate exports
-    const exports = instance.exports as any;
-    const requiredExports = ['memory', 'malloc', 'free'];
-    const missing = requiredExports.filter(name => !(name in exports));
-    
-    if (missing.length > 0) {
-      const available = Object.keys(exports).join(', ');
-      throw new Error(
-        `Resize WASM missing required exports: ${missing.join(', ')}. Available: ${available}`
-      );
-    }
-
-    cachedModule = exports as ResizeModule;
-    return cachedModule;
+    // Initialize the resize module (it will load the WASM file automatically)
+    await initResize();
+    initialized = true;
   } catch (error) {
     throw new Error(`Failed to load Resize module: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
+
+/**
+ * Map ResizeOptions to the typ_idx parameter for the resize function
+ * 0: Triangular, 1: Catrom, 2: Mitchell, 3: Lanczos3
+ */
+function getResizeMethod(): number {
+  // Default to Lanczos3 (highest quality)
+  return 3;
 }
 
 /**
@@ -112,90 +71,39 @@ export async function resizeClient(
     throw new Error('Image data must be Uint8Array');
   }
 
-  const module = await loadResizeModule();
+  await ensureResizeInitialized();
 
   // Check abort after async operation
   if (signal.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
 
-  // If we have a glue module with resize function, use it
-  if ('resize' in module && typeof (module as any).resize === 'function' && !('memory' in module)) {
-    // This is likely the glue module
-    const result = await (module as any).resize(data, inputWidth, inputHeight, outputWidth, outputHeight, {
-      premultiply: options.premultiply ?? false,
-      linearRGB: options.linearRGB ?? false,
-    });
-    
-    if (signal.aborted) {
-      throw new DOMException('Aborted', 'AbortError');
-    }
+  const typIdx = getResizeMethod();
+  const premultiply = options.premultiply ?? false;
+  const colorSpaceConversion = options.linearRGB ?? false;
 
-    // Return in appropriate format
-    if (hasImageData() && typeof ImageData !== 'undefined') {
-      return new ImageData(new Uint8ClampedArray(result), outputWidth, outputHeight);
-    }
-    return { data: new Uint8Array(result), width: outputWidth, height: outputHeight };
+  // Call the resize function
+  const result = resizeWasm(
+    data,
+    inputWidth,
+    inputHeight,
+    outputWidth,
+    outputHeight,
+    typIdx,
+    premultiply,
+    colorSpaceConversion
+  );
+
+  if (signal.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
   }
 
-  // Otherwise use raw WASM interface
-  const inputSize = inputWidth * inputHeight * 4;
-  const outputSize = outputWidth * outputHeight * 4;
-
-  // Allocate input buffer in WASM memory
-  const inputPtr = module.malloc(inputSize);
-  if (!inputPtr) {
-    throw new Error('Failed to allocate WASM memory for input data');
+  // Return in appropriate format
+  if (hasImageData() && typeof ImageData !== 'undefined') {
+    return new ImageData(result, outputWidth, outputHeight);
   }
-
-  try {
-    // Copy input data to WASM memory
-    const memoryView = new Uint8Array(module.memory.buffer);
-    memoryView.set(data, inputPtr);
-
-    // Allocate output buffer
-    const outputPtr = module.malloc(outputSize);
-    if (!outputPtr) {
-      throw new Error('Failed to allocate WASM memory for output data');
-    }
-
-    try {
-      // Call resize
-      const result = module.resize(
-        inputPtr,
-        inputWidth,
-        inputHeight,
-        outputWidth,
-        outputHeight,
-        outputPtr,
-        options.premultiply ? 1 : 0,
-        options.linearRGB ? 1 : 0
-      );
-
-      if (signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
-      }
-
-      if (result === 0) {
-        throw new Error('Resize operation failed');
-      }
-
-      // Copy output data
-      const outputData = new Uint8Array(module.memory.buffer, outputPtr, outputSize);
-      const outputCopy = new Uint8Array(outputData);
-
-      // Return in appropriate format
-      if (hasImageData() && typeof ImageData !== 'undefined') {
-        return new ImageData(new Uint8ClampedArray(outputCopy), outputWidth, outputHeight);
-      }
-      
-      return { data: outputCopy, width: outputWidth, height: outputHeight };
-    } finally {
-      module.free(outputPtr);
-    }
-  } finally {
-    module.free(inputPtr);
-  }
+  
+  return { data: new Uint8Array(result), width: outputWidth, height: outputHeight };
 }
 
 /**
