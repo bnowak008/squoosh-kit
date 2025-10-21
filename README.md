@@ -8,7 +8,9 @@ Lightweight, modular packages that expose **per-feature** [Squoosh](https://gith
 
 - **[@squoosh-lite/webp](packages/webp)** - WebP encoding
 - **[@squoosh-lite/resize](packages/resize)** - Image resizing
-- **[@squoosh-lite/core](packages/core)** - Core functionality (if you need subpath imports)
+- **[@squoosh-lite/core](packages/core)** - Core functionality (supports subpath imports for backward compatibility)
+
+> **Note:** If you're upgrading from an older version that used `@squoosh-lite/core/webp` and `@squoosh-lite/core/resize`, see the [Migration Guide](MIGRATION.md).
 
 ## Features
 

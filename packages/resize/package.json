@@ -37,7 +37,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build:declarations": "tsc --emitDeclarationOnly --outDir dist",
-    "build:code": "bun build --sourcemap --minify --format=esm --target=bun --outdir=dist src/index.ts",
+    "build:code": "bun build --sourcemap --minify --format=esm --target=bun --external @squoosh-lite/core --outdir=dist src/index.ts",
     "build": "bun run clean && bun run build:declarations && bun run build:code",
     "test": "bun test"
   },
