@@ -50,8 +50,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build:declarations": "tsc --emitDeclarationOnly --outDir dist",
-    "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/features/webp/index.ts src/features/webp/webp.worker.ts src/features/resize/index.ts src/features/resize/resize.worker.ts",
-    "build": "bun run clean && bun run scripts/copy-codecs.ts && bun run build:declarations && bun run build:code",
+    "build:code": "bun build ./src/index.ts --sourcemap --minify --format=esm --splitting --target=browser -- --outdir=./dist",
+    "build": "bun run clean && bun run scripts/copy-codecs.ts && bun run build:declarations && bun run build:code && cp -r dist/* ../../apps/example/public/",
     "prepublishOnly": "bun run test && bun run lint && bun run format && bun run build",
     "example": "bun run examples/browser.ts",
     "test": "bun test",

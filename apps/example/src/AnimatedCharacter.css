@@ -1,0 +1,108 @@
+.character-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.character-svg {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.character-body,
+.character-head {
+  transition: all 0.3s ease;
+}
+
+.character-eye {
+  transition: all 0.2s ease;
+}
+
+.character-eye.blink {
+  transform: scaleY(0.1);
+}
+
+.character-mouth {
+  transition: all 0.3s ease;
+}
+
+.character-arm {
+  transition: all 0.4s ease;
+}
+
+.character-hand {
+  transition: all 0.3s ease;
+}
+
+/* Animations */
+.character-svg.thinking .character-head {
+  animation: thinking-bounce 2s ease-in-out infinite;
+}
+
+.character-svg.thinking .character-arm {
+  animation: thinking-wave 1.5s ease-in-out infinite;
+}
+
+.character-svg.working .character-body {
+  animation: working-bounce 0.8s ease-in-out infinite;
+}
+
+.character-svg.working .character-arm {
+  animation: working-move 1s ease-in-out infinite;
+}
+
+.character-svg.success .character-head {
+  animation: success-spin 0.6s ease-out;
+}
+
+.character-svg.success .character-body {
+  animation: success-bounce 0.8s ease-out;
+}
+
+.character-svg.error .character-head {
+  animation: error-shake 0.5s ease-in-out;
+}
+
+.character-svg.idle .character-body {
+  animation: idle-breathe 3s ease-in-out infinite;
+}
+
+@keyframes thinking-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes thinking-wave {
+  0%, 100% { transform: rotate(-20deg); }
+  50% { transform: rotate(-10deg); }
+}
+
+@keyframes working-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+@keyframes working-move {
+  0%, 100% { transform: rotate(-20deg); }
+  50% { transform: rotate(-15deg); }
+}
+
+@keyframes success-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes success-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes idle-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}

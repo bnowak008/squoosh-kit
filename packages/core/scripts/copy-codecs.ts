@@ -17,8 +17,8 @@ import { execSync } from 'child_process';
 
 const SQUOOSH_REPO = 'https://github.com/bnowak008/squoosh';
 const SQUOOSH_BRANCH = 'dev';
-const TEMP_DIR = join(import.meta.dir, '..', '.squoosh-temp');
-const WASM_DIR = join(import.meta.dir, '..', 'wasm');
+const TEMP_DIR = join(import.meta.dir, '../dist', '.squoosh-temp');
+const WASM_DIR = join(import.meta.dir, '../dist', 'wasm');
 
 async function main() {
   const squooshDir = process.env.SQUOOSH_DIR;
@@ -99,7 +99,7 @@ async function main() {
 
         try {
           cpSync(srcFile, destFile);
-          const relPath = relative(join(import.meta.dir, '..'), destFile);
+          const relPath = relative(join(import.meta.dir, '../dist'), destFile);
           console.log(`  ✓ ${relPath}`);
           count++;
         } catch (error) {

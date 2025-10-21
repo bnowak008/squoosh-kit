@@ -32,7 +32,7 @@ async function ensureResizeInitialized(): Promise<void> {
     // Dynamically import the resize module
     // Path is relative to this file (src/features/resize/)
     const modulePath = new URL(
-      '../../../wasm/resize/squoosh_resize.js',
+      '../../../../dist/wasm/resize/squoosh_resize.js',
       import.meta.url
     ).href;
     const module = await import(modulePath);
@@ -40,7 +40,7 @@ async function ensureResizeInitialized(): Promise<void> {
     // Initialize the resize module (it will load the WASM file automatically)
     // For Rust/wasm-bindgen modules, we can pass the WASM path directly
     const wasmPath = new URL(
-      '../../../wasm/resize/squoosh_resize_bg.wasm',
+      '../../../../dist/wasm/resize/squoosh_resize_bg.wasm',
       import.meta.url
     ).href;
     await module.default(wasmPath);

@@ -5,6 +5,7 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "lib": ["ES2022", "DOM"],
+    "composite": true,
     "declaration": true,
     "emitDeclarationOnly": true,
     "declarationDir": "dist",

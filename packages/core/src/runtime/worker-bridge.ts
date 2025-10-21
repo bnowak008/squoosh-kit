@@ -49,24 +49,20 @@ class WorkerThreadBridge implements WorkerBridge {
 
   private getWebpWorker(): Worker {
     if (!this.webpWorker) {
-      // Create worker from the webp.worker.js module
-      const workerUrl = new URL(
-        '../features/webp/webp.worker.js',
-        import.meta.url
+      this.webpWorker = new Worker(
+        '/webp.worker-3jpj2j43.js',
+        { type: 'module' }
       );
-      this.webpWorker = new Worker(workerUrl.href, { type: 'module' });
     }
     return this.webpWorker;
   }
 
   private getResizeWorker(): Worker {
     if (!this.resizeWorker) {
-      // Create worker from the resize.worker.js module
-      const workerUrl = new URL(
-        '../features/resize/resize.worker.js',
-        import.meta.url
+      this.resizeWorker = new Worker(
+        '/resize.worker-bc4vvb31.js',
+        { type: 'module' }
       );
-      this.resizeWorker = new Worker(workerUrl.href, { type: 'module' });
     }
     return this.resizeWorker;
   }

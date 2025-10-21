@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun --filter '@squoosh-lite/core' build"
+    "build": "bun --filter '@squoosh-lite/core' build",
+    "example": "cd apps/example && bun run dev"
   },
   "devDependencies": {
     "@types/bun": "latest"
