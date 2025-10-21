@@ -26,6 +26,16 @@
         "@types/react-dom": "^19",
       },
     },
+    "apps/examples": {
+      "name": "@squoosh-lite/examples",
+      "dependencies": {
+        "@squoosh-lite/core": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5",
+      },
+    },
     "packages/core": {
       "name": "@squoosh-lite/core",
       "version": "0.1.0",
@@ -85,6 +95,8 @@
     "@squoosh-lite/core": ["@squoosh-lite/core@workspace:packages/core"],
 
     "@squoosh-lite/example": ["@squoosh-lite/example@workspace:apps/example"],
+
+    "@squoosh-lite/examples": ["@squoosh-lite/examples@workspace:apps/examples"],
 
     "@types/bun": ["@types/bun@1.3.0", "", { "dependencies": { "bun-types": "1.3.0" } }, "sha512-+lAGCYjXjip2qY375xX/scJeVRmZ5cY0wyHYyCYxNcdEXrQ4AOe3gACgd4iQ8ksOslJtW4VNxBJ8llUwc3a6AA=="],
 

@@ -15,24 +15,29 @@ const server = Bun.serve({
 
     // Default to browser demo for root path
     if (filePath === '/') {
-      filePath = 'examples/browser-demo.html';
+      filePath = 'index.html';
     }
 
     // Map paths to serve dist/ directory as root
     if (filePath.startsWith('/dist/')) {
-      filePath = filePath.replace('/dist/', 'dist/'); // Replace '/dist/' with 'dist/'
+      console.log(`/dist/: ${filePath}`);
+      filePath = filePath.replace('/dist/', './dist/'); // Replace '/dist/' with 'dist/'
     } else if (filePath.startsWith('/wasm/')) {
-      filePath = filePath.slice(1); // Remove leading '/' to get actual file path
+      console.log(`/wasm/: ${filePath}`);
+      filePath = 'dist' + filePath; // Remove leading '/' to get actual file path
     } else if (filePath.startsWith('/features/')) {
+      console.log(`/features/: ${filePath}`);
       filePath = 'dist' + filePath; // Add 'dist/' prefix for features
     } else if (filePath.startsWith('/examples/')) {
+      console.log(`/examples/: ${filePath}` );
       // Keep examples as-is for the HTML demo
-    } else if (filePath !== 'examples/browser-demo.html') {
+    } else if (filePath !== 'index.html') {
       // For any other paths, assume they're in dist/
       filePath = 'dist' + filePath;
     }
 
     try {
+      console.log(`Serving: ${filePath}`);
       // Read the file
       const file = Bun.file(filePath);
       const buffer = await file.arrayBuffer();

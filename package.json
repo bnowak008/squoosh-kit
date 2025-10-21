@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "example": "bun --filter '@squoosh-lite/example' dev",
-    "build": "bun run clean && bun --filter '@squoosh-lite/core' build",
+    "examples": "bun --filter '@squoosh-lite/examples' dev",
+    "build": "bun run clean & bun --filter '@squoosh-lite/core' build",
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'bundle' -type d -prune -exec rm -rf '{}' + && find . -name 'tsconfig.tsbuildinfo' -type f -delete && find . -name 'bun.lockb' -type f -delete"
   },
   "devDependencies": {

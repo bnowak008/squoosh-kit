@@ -1,0 +1,16 @@
+{
+  "name": "@squoosh-lite/examples",
+  "private": true,
+  "entry": "server.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run server.ts --watch"
+  },
+  "dependencies": {
+    "@squoosh-lite/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}
