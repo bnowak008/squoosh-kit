@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@squoosh-lite/core": "workspace:*",
+    "@squoosh-lite/webp": "workspace:*",
+    "@squoosh-lite/resize": "workspace:*",
     "bun-plugin-tailwind": "^0.1.2",
     "react": "^19",
     "react-dom": "^19",

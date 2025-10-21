@@ -1,0 +1,53 @@
+{
+  "name": "@squoosh-lite/webp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "WebP encoding for Squoosh Lite",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-lite.git"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-lite#readme",
+  "bugs": {
+    "url": "https://github.com/bnowak008/squoosh-lite/issues"
+  },
+  "keywords": [
+    "squoosh",
+    "webp",
+    "image",
+    "wasm",
+    "bun",
+    "typescript",
+    "worker",
+    "codec",
+    "compression"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build:declarations": "tsc --emitDeclarationOnly --outDir dist",
+    "build:code": "bun build --sourcemap --minify --format=esm --target=bun --outdir=dist src/index.ts",
+    "build": "bun run clean && bun run build:declarations && bun run build:code",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@squoosh-lite/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.3"
+  }
+}
