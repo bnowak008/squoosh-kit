@@ -82,8 +82,8 @@ export async function resizeClient(
   }
 
   const data = image.data;
-  if (!(data instanceof Uint8Array)) {
-    throw new Error('Image data must be Uint8Array');
+  if (!(data instanceof Uint8Array) && !(data instanceof Uint8ClampedArray)) {
+    throw new Error('Image data must be Uint8Array or Uint8ClampedArray');
   }
 
   await ensureResizeInitialized();

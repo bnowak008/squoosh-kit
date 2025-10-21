@@ -145,8 +145,8 @@ export async function webpEncodeClient(
   const height = image.height;
   const data = image.data;
 
-  if (!(data instanceof Uint8Array)) {
-    throw new Error('Image data must be Uint8Array');
+  if (!(data instanceof Uint8Array) && !(data instanceof Uint8ClampedArray)) {
+    throw new Error('Image data must be Uint8Array or Uint8ClampedArray');
   }
 
   const module = await loadWebPModule();
