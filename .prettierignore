@@ -1,0 +1,6 @@
+dist/
+node_modules/
+wasm/
+*.js
+*.d.ts
+bun.lock

@@ -1,0 +1,4 @@
+[test]
+# Test configuration
+preload = ["./test/setup.ts"]
+timeout = 10000

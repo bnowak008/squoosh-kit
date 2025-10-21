@@ -1,0 +1,98 @@
+/**
+ * WASM functionality tests - run manually when needed
+ * These tests require actual WASM modules and may take longer to run
+ */
+
+import { describe, it, expect, beforeAll } from 'bun:test';
+import { encode, createWebpEncoder } from '../dist/features/webp/index.js';
+import { resize, createResizer } from '../dist/features/resize/index.js';
+import type { ImageInput, WebpOptions, ResizeOptions } from '../dist/index.js';
+import { existsSync } from 'fs';
+import { join } from 'path';
+
+// Test image data: 2x2 red square
+const createTestImage = (): ImageInput => {
+  const data = new Uint8Array([
+    255, 0, 0, 255, // Red pixel
+    255, 0, 0, 255, // Red pixel
+    255, 0, 0, 255, // Red pixel
+    255, 0, 0, 255, // Red pixel
+  ]);
+  return { data, width: 2, height: 2 };
+};
+
+beforeAll(async () => {
+  const wasmDir = join(import.meta.dir, '..', 'wasm');
+  if (!existsSync(wasmDir)) {
+    console.log('WASM files not found, running build...');
+    const { execSync } = await import('child_process');
+    execSync('bun run scripts/copy-codecs.ts', {
+      cwd: join(import.meta.dir, '..'),
+      stdio: 'inherit',
+    });
+  }
+});
+
+describe('WASM Functionality Tests', () => {
+  it('should encode image data to WebP format', async () => {
+    const image = createTestImage();
+    const signal = new AbortController().signal;
+
+    const result = await encode(signal, null, image);
+
+    expect(result).toBeInstanceOf(Uint8Array);
+    expect(result.length).toBeGreaterThan(0);
+
+    // WebP files start with "RIFF" and contain "WEBP"
+    const header = new TextDecoder().decode(result.slice(0, 12));
+    expect(header).toContain('RIFF');
+    expect(header).toContain('WEBP');
+  }, 30000); // 30 second timeout
+
+  it('should encode with custom options', async () => {
+    const image = createTestImage();
+    const signal = new AbortController().signal;
+    const options: WebpOptions = {
+      quality: 90,
+      lossless: false,
+    };
+
+    const result = await encode(signal, null, image, options);
+
+    expect(result).toBeInstanceOf(Uint8Array);
+    expect(result.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('should resize image to specified dimensions', async () => {
+    const image = createTestImage();
+    const signal = new AbortController().signal;
+    const options: ResizeOptions = {
+      width: 1,
+      height: 1,
+    };
+
+    const result = await resize(signal, null, image, options);
+
+    expect(result).toBeDefined();
+    expect(result.width).toBe(1);
+    expect(result.height).toBe(1);
+    expect(result.data).toBeInstanceOf(Uint8ClampedArray);
+    expect(result.data.length).toBe(4); // 1x1x4 = 4 bytes
+  }, 30000);
+
+  it('should work with factory functions', async () => {
+    const image = createTestImage();
+    const signal = new AbortController().signal;
+
+    // Test WebP encoder factory
+    const webpEncoder = createWebpEncoder('client');
+    const webpResult = await webpEncoder(signal, image);
+    expect(webpResult).toBeInstanceOf(Uint8Array);
+
+    // Test resize factory
+    const resizer = createResizer('client');
+    const resizeResult = await resizer(signal, image, { width: 1, height: 1 });
+    expect(resizeResult.width).toBe(1);
+    expect(resizeResult.height).toBe(1);
+  }, 30000);
+});

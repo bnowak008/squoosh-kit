@@ -58,12 +58,10 @@ const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
 // Encode using default worker mode (null = use internal worker)
 const controller = new AbortController();
-const webpData = await webpEncode(
-  controller.signal,
-  null,
-  imageData,
-  { quality: 82, lossless: false }
-);
+const webpData = await webpEncode(controller.signal, null, imageData, {
+  quality: 82,
+  lossless: false,
+});
 
 // Create a downloadable blob
 const blob = new Blob([webpData], { type: 'image/webp' });
@@ -113,18 +111,12 @@ const encoder = createWebpEncoder('client');
 const controller = new AbortController();
 
 // Load and resize
-const resized = await resizer(
-  controller.signal,
-  originalImage,
-  { width: 1200 }
-);
+const resized = await resizer(controller.signal, originalImage, {
+  width: 1200,
+});
 
 // Encode to WebP
-const webpData = await encoder(
-  controller.signal,
-  resized,
-  { quality: 85 }
-);
+const webpData = await encoder(controller.signal, resized, { quality: 85 });
 
 await Bun.write('resized-output.webp', webpData);
 ```
@@ -138,6 +130,7 @@ await Bun.write('resized-output.webp', webpData);
 Primary WebP encoding function.
 
 **Parameters:**
+
 - `signal: AbortSignal` - Signal to abort the operation
 - `workerBridge: WorkerBridge | null` - Worker bridge or null for default worker mode
 - `imageData: ImageInput` - Image data (ImageData or `{ data, width, height }`)
@@ -150,6 +143,7 @@ Primary WebP encoding function.
 Factory function to create a bound encoder.
 
 **Parameters:**
+
 - `mode?: 'worker' | 'client'` - Execution mode (default: 'worker')
 
 **Returns:** Encoder function with signature `(signal, imageData, options?) => Promise<Uint8Array>`
@@ -158,8 +152,8 @@ Factory function to create a bound encoder.
 
 ```typescript
 type WebpOptions = {
-  quality?: number;       // 0-100, default: 82
-  lossless?: boolean;     // default: false
+  quality?: number; // 0-100, default: 82
+  lossless?: boolean; // default: false
   nearLossless?: boolean; // reserved for future use
 };
 ```
@@ -171,6 +165,7 @@ type WebpOptions = {
 Primary resize function.
 
 **Parameters:**
+
 - `signal: AbortSignal` - Signal to abort the operation
 - `workerBridge: WorkerBridge | null` - Worker bridge or null for default worker mode
 - `imageData: ImageInput` - Image data to resize
@@ -183,6 +178,7 @@ Primary resize function.
 Factory function to create a bound resizer.
 
 **Parameters:**
+
 - `mode?: 'worker' | 'client'` - Execution mode (default: 'worker')
 
 **Returns:** Resizer function with signature `(signal, imageData, options) => Promise<ImageInput>`
@@ -191,10 +187,10 @@ Factory function to create a bound resizer.
 
 ```typescript
 type ResizeOptions = {
-  width?: number;        // Target width (if omitted, calculated from height)
-  height?: number;       // Target height (if omitted, calculated from width)
+  width?: number; // Target width (if omitted, calculated from height)
+  height?: number; // Target height (if omitted, calculated from width)
   premultiply?: boolean; // Premultiply alpha (default: false)
-  linearRGB?: boolean;   // Use linear RGB color space (default: false)
+  linearRGB?: boolean; // Use linear RGB color space (default: false)
 };
 ```
 
@@ -203,11 +199,13 @@ type ResizeOptions = {
 #### `ImageInput`
 
 ```typescript
-type ImageInput = ImageData | {
-  data: Uint8Array;  // RGBA8888 pixel data
-  width: number;
-  height: number;
-};
+type ImageInput =
+  | ImageData
+  | {
+      data: Uint8Array; // RGBA8888 pixel data
+      width: number;
+      height: number;
+    };
 ```
 
 **Note:** Bun and Node.js environments may not have `ImageData`, so the object form `{ data, width, height }` is always supported.
@@ -265,6 +263,7 @@ try {
 - Safari 15+
 
 Requires support for:
+
 - WebAssembly
 - ES Modules
 - Web Workers (for worker mode)
@@ -272,10 +271,12 @@ Requires support for:
 ## Node.js Compatibility
 
 Requires Node.js 18+ with:
+
 - `--experimental-wasm-modules` flag (for WASM support)
 - Worker thread support
 
 Example:
+
 ```bash
 node --experimental-wasm-modules your-script.js
 ```
@@ -347,4 +348,3 @@ Contributions are welcome! Please ensure:
 - [ ] OxiPNG optimization
 - [ ] Image decoding capabilities
 - [ ] Additional codec options
-

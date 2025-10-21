@@ -1,0 +1,73 @@
+{
+  "name": "@squoosh-lite/core",
+  "version": "0.1.0",
+  "type": "module",
+  "entry": "src/index.ts",
+  "description": "Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-lite.git"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-lite#readme",
+  "bugs": {
+    "url": "https://github.com/bnowak008/squoosh-lite/issues"
+  },
+  "keywords": [
+    "squoosh",
+    "webp",
+    "image",
+    "resize",
+    "wasm",
+    "bun",
+    "typescript",
+    "worker",
+    "codec",
+    "compression"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./webp": {
+      "types": "./dist/features/webp/index.d.ts",
+      "import": "./dist/features/webp/index.js"
+    },
+    "./resize": {
+      "types": "./dist/features/resize/index.d.ts",
+      "import": "./dist/features/resize/index.js"
+    }
+  },
+  "files": [
+    "dist/**",
+    "wasm/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build:declarations": "tsc --emitDeclarationOnly --outDir dist",
+    "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/features/webp/index.ts src/features/webp/webp.worker.ts src/features/resize/index.ts src/features/resize/resize.worker.ts",
+    "build": "bun run clean && bun run scripts/copy-codecs.ts && bun run build:declarations && bun run build:code",
+    "prepublishOnly": "bun run test && bun run lint && bun run format && bun run build",
+    "example": "bun run examples/browser.ts",
+    "test": "bun test",
+    "test:wasm": "bun test test/wasm/wasm.test.ts.skip",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.3",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "prettier": "^3.2.5"
+  }
+}

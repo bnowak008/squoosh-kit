@@ -1,0 +1,116 @@
+---
+alwaysApply: true
+---
+
+# Squoosh Lite - Development Guidelines
+
+## Project Overview
+The goal of this project is to use the built files directly from the Google Squoosh repository and provide a small, lightweight bridge to allow users to use specific parts of the Squoosh functionality in their projects. It is designed to be Bun-first and works in both worker and client runtimes.
+
+Users can import specific functionalities like WebP encoding or image resizing. For example: `import { encode } from '@squoosh-lite/core/webp'`.
+
+## Architecture Overview
+
+### Repository Structure
+The project is currently structured as a single package (`@squoosh-lite/core`) that uses subpath exports to provide access to different features. The goal is to evolve this into a monorepo where each feature is a separate package (e.g., `@squoosh-lite/webp`).
+
+The current structure is as follows:
+```
+squoosh-lite/
+├── dist/              # Built output files
+├── examples/          # Example usage of the library
+├── scripts/           # Build-related scripts
+├── src/               # TypeScript source code
+│   ├── features/      # Individual codec features (webp, resize)
+│   └── runtime/       # Worker bridge and environment logic
+├── wasm/              # Pre-built WASM codecs from Squoosh
+├── package.json
+└── tsconfig.json
+```
+
+### Technology Stack
+- **Runtime**: Bun
+- **Language**: TypeScript
+- **Core Technology**: WebAssembly (via Squoosh codecs)
+
+## Core Development Principles
+
+### Task Execution Rules
+- ALWAYS execute explicitly requested tasks without asking for confirmation.
+- NEVER ask if the user wants to do what they've just explicitly requested.
+- NEVER list options that were already specified in the user's request.
+- Only ask for clarification when:
+  - Critical information is missing
+  - Multiple valid approaches exist and no preference was specified
+  - Potential conflicts or risks need to be addressed
+  - Technical limitations require alternative solutions
+- If a task is clear and complete:
+  - Execute it directly
+  - Provide progress updates
+  - Report completion status
+  - Highlight any relevant outcomes or next steps
+
+### Code Standards
+- **ALWAYS use functions over classes** (if applicable to the language/paradigm)
+- **ALWAYS use types/schemas over interfaces** (if applicable)
+- **NEVER use 'any' type - use strict typing**
+- **NEVER add comments unless explicitly requested**
+- Use clear, descriptive variable and function names
+- Follow clean code principles for self-documenting code
+- Casting a type to "any" is NOT A VALID SOLUTION!
+
+### Package Management
+- Use `bun` for all package management.
+- Use `bun install` for dependencies.
+- Use `bun run <script>` for scripts.
+- There are no tests set up yet.
+
+## Key Features & Domains
+- **WebP Codec**: Functions for encoding images to WebP format.
+- **Resize**: Functions for resizing images.
+- **Worker Bridge**: A runtime that offloads the heavy processing of codecs to a separate worker thread to avoid blocking the main thread.
+
+## Development Workflow
+
+### Build Commands
+- `bun run build` - Copies codecs and builds the TypeScript source code.
+- `bun run example` - Runs the browser example.
+
+## Security & Best Practices
+
+### Data Protection
+- Validate all inputs. The Squoosh codecs are robust, but the bridge code should still be secure.
+- Sanitize user inputs to prevent XSS if this library is used in a context that renders HTML.
+
+## Performance Guidelines
+
+### Frontend Optimization
+- The library uses Web Workers by default to offload heavy image processing from the main thread.
+- Be mindful of the bundle sizes of the codecs.
+
+### Backend Optimization
+- This library can be used in a Node.js/Bun environment. The same principles of using workers apply.
+
+## Error Handling
+- The library should gracefully handle errors from the WebAssembly modules and worker communication.
+- Use `AbortSignal` to allow cancellation of long-running operations.
+
+## Testing Strategy
+- Currently, there is no formal testing strategy. This should be added in the future.
+- Manual testing can be done via the `examples/` directory.
+
+## Deployment & Infrastructure
+- The package is intended to be published to a package manager like npm.
+- The `prepublishOnly` script in `package.json` ensures that the project is built before publishing.
+
+## Module Integration
+- The `src/runtime` directory contains shared logic for communication between the main thread and worker threads.
+- Each feature in `src/features` is self-contained and exposes a public API.
+- WASM files are treated as assets and copied into the `wasm` directory during the build process.
+
+## Future Considerations
+- Evolve to a monorepo structure with per-feature packages.
+- Add more codecs from Squoosh.
+- Add a comprehensive test suite.
+- Improve error handling and reporting.
+- Add support for more environments (e.g., Deno).
