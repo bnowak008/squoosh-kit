@@ -3,11 +3,11 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { createResizer } from '../dist/features/resize/index.js';
+import { createResizer } from '../dist/index.js';
 import type {
   ImageInput,
   ResizeOptions,
-} from '../dist/features/resize/index.js';
+} from '../dist/index.js';
 
 // Test image data: 4x4 red square
 const createTestImage = (): ImageInput => {

@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "composite": true,
     "declaration": true,
     "emitDeclarationOnly": true,

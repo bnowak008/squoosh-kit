@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "entry": "src/index.ts",
-  "description": "Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.",
+  "description": "Shared runtime utilities for Squoosh Lite packages (Bun-first).",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
   "license": "MIT",
   "repository": {
@@ -16,28 +16,17 @@
   },
   "keywords": [
     "squoosh",
-    "webp",
-    "image",
-    "resize",
+    "runtime",
+    "utilities",
     "wasm",
     "bun",
     "typescript",
-    "worker",
-    "codec",
-    "compression"
+    "worker"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./webp": {
-      "types": "./dist/features/webp/index.d.ts",
-      "import": "./dist/features/webp/index.js"
-    },
-    "./resize": {
-      "types": "./dist/features/resize/index.d.ts",
-      "import": "./dist/features/resize/index.js"
     }
   },
   "files": [
@@ -50,7 +39,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build:declarations": "tsc --emitDeclarationOnly --outDir dist",
-    "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/features/webp/index.ts src/features/webp/webp.worker.ts src/features/resize/index.ts src/features/resize/resize.worker.ts",
+    "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts",
     "build": "bun run clean && bun run scripts/copy-codecs.ts && bun run build:declarations && bun run build:code",
     "prepublishOnly": "bun run test && bun run lint && bun run format && bun run build",
     "example": "bun run examples/browser.ts",

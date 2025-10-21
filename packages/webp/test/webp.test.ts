@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { createWebpEncoder } from '../dist/features/webp/index.js';
-import type { ImageInput, WebpOptions } from '../dist/features/webp/index.js';
+import { createWebpEncoder } from '../dist/index.js';
+import type { ImageInput, WebpOptions } from '../dist/index.js';
 
 // Test image data: 2x2 red square
 const createTestImage = (): ImageInput => {
