@@ -77,16 +77,16 @@ export function ImageProcessor() {
     e.preventDefault();
     setIsDragOver(false);
     
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleFile(files[0]);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleFile(file);
     }
   }, [handleFile]);
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      handleFile(files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
     }
   }, [handleFile]);
 
@@ -344,7 +344,7 @@ export function ImageProcessor() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .image-processor {
           max-width: 1400px;
           margin: 0 auto;

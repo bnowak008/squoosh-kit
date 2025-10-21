@@ -216,7 +216,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
         />
       </svg>
       
-      <style jsx>{`
+      <style>{`
         .character-container {
           display: flex;
           justify-content: center;
