@@ -1,7 +1,7 @@
 /* Import a warm, humanist font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   :root {
@@ -18,15 +18,17 @@
     --color-deep-blue: #0984e3;
     --color-sunset-orange: #fd79a8;
     --color-warm-pink: #fdcb6e;
-    
+
     /* Typography */
-    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-primary:
+      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+      sans-serif;
     --font-weight-light: 300;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
-    
+
     /* Spacing */
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
@@ -34,20 +36,23 @@
     --space-lg: 1.5rem;
     --space-xl: 2rem;
     --space-2xl: 3rem;
-    
+
     /* Border radius */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
     --radius-2xl: 1.5rem;
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
+    --shadow-md:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
     /* Transitions */
     --transition-fast: 0.15s ease;
     --transition-normal: 0.3s ease;
@@ -69,7 +74,11 @@
     font-family: var(--font-primary);
     font-weight: var(--font-weight-normal);
     color: var(--color-deep-brown);
-    background: linear-gradient(135deg, var(--color-cream) 0%, var(--color-soft-gray) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--color-cream) 0%,
+      var(--color-soft-gray) 100%
+    );
     min-height: 100vh;
     margin: 0;
     padding: 0;
@@ -87,22 +96,39 @@
 
   /* Subtle background pattern */
   .app-container::before {
-    content: "";
+    content: '';
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: -1;
-    background-image: 
-      radial-gradient(circle at 20% 80%, rgba(139, 115, 85, 0.03) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(116, 185, 255, 0.03) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, rgba(135, 169, 107, 0.02) 0%, transparent 50%);
+    background-image:
+      radial-gradient(
+        circle at 20% 80%,
+        rgba(139, 115, 85, 0.03) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 20%,
+        rgba(116, 185, 255, 0.03) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 40% 40%,
+        rgba(135, 169, 107, 0.02) 0%,
+        transparent 50%
+      );
     pointer-events: none;
   }
 
   /* Typography styles */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-weight: var(--font-weight-semibold);
     line-height: 1.2;
     color: var(--color-deep-brown);
@@ -143,7 +169,9 @@
   }
 
   /* Input base styles */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     font-family: inherit;
     font-size: 1rem;
     outline: none;

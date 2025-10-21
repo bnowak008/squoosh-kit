@@ -29,7 +29,7 @@ const server = Bun.serve({
       console.log(`/features/: ${filePath}`);
       filePath = 'dist' + filePath; // Add 'dist/' prefix for features
     } else if (filePath.startsWith('/examples/')) {
-      console.log(`/examples/: ${filePath}` );
+      console.log(`/examples/: ${filePath}`);
       // Keep examples as-is for the HTML demo
     } else if (filePath !== 'index.html') {
       // For any other paths, assume they're in dist/

@@ -21,6 +21,7 @@ npm token create --access=public
 ```
 
 Add the token to your GitHub repository secrets:
+
 - Go to Settings → Secrets and variables → Actions
 - Add `NPM_TOKEN` with your npm token value
 

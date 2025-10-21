@@ -31,9 +31,12 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
   },
-
   "references": [
-    { "path": "../../packages/core" }
+    { "path": "../../packages/core" },
+    { "path": "../../packages/webp" },
+    { "path": "../../packages/resize" },
+    { "path": "../../packages/runtime" }
   ],
+  "include": ["src", "build.ts"],
   "exclude": ["dist", "node_modules"]
 }

@@ -1,5 +1,5 @@
-import { ImageProcessor } from "./ImageProcessor";
-import "./index.css";
+import { ImageProcessor } from './ImageProcessor';
+import './index.css';
 
 export function App() {
   return (

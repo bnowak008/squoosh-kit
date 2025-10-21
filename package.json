@@ -2,7 +2,7 @@
   "name": "squoosh-kit",
   "version": "0.0.1",
   "type": "module",
-  "private": false,
+  "private": true,
   "description": "Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
   "license": "MIT",
@@ -34,61 +34,27 @@
     "bun": ">=1.0.0",
     "node": ">=18.0.0"
   },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "exports": {
-    ".": {
-      "types": "./packages/core/dist/index.d.ts",
-      "import": "./packages/core/dist/index.js"
-    },
-    "./webp": {
-      "types": "./packages/core/dist/features/webp/index.d.ts",
-      "import": "./packages/core/dist/features/webp/index.js"
-    },
-    "./resize": {
-      "types": "./packages/core/dist/features/resize/index.d.ts",
-      "import": "./packages/core/dist/features/resize/index.js"
-    }
-  },
-  "files": [
-    "packages/core/dist/**",
-    "packages/core/README.md",
-    "packages/core/LICENSE",
-    "README.md",
-    "LICENSE"
-  ],
   "sideEffects": false,
   "scripts": {
-    "example": "bun --filter '@squoosh-kit/example' dev",
-    "examples": "bun --filter '@squoosh-kit/examples' dev",
-    "build": "bun --filter '@squoosh-kit/core' build:production",
-    "build:core": "bun --filter '@squoosh-kit/core' build:production",
-    "test": "bun --filter '@squoosh-kit/core' test",
-    "test:coverage": "bun --filter '@squoosh-kit/core' test:coverage",
-    "lint": "bun --filter '@squoosh-kit/core' lint",
-    "lint:fix": "bun --filter '@squoosh-kit/core' lint:fix",
-    "format": "bun --filter '@squoosh-kit/core' format",
-    "format:check": "bun --filter '@squoosh-kit/core' format:check",
-    "check-types": "bun --filter '@squoosh-kit/core' check-types",
-    "validate": "bun --filter '@squoosh-kit/core' validate",
-    "clean": "bun run clean:workspaces",
-    "clean:core": "bun --filter '@squoosh-kit/core' clean:local",
-    "clean:workspaces": "bun --filter '*' clean:local && bun run clean:root",
-    "clean:root": "rm -rf node_modules dist bundle *.tsbuildinfo bun.lock && echo 'Cleaned root workspace artifacts'",
-    "version:patch": "cd packages/core && npm version patch",
-    "version:minor": "cd packages/core && npm version minor",
-    "version:major": "cd packages/core && npm version major",
-    "prepublishOnly": "cd packages/core && bun run build && bun run test && bun run lint && bun run format",
-    "publish:package": "bun run build && npm publish",
-    "release": "bun run build && bun run test && bun run publish:package"
+    "sync-codecs": "bun run scripts/sync-squoosh-codecs.ts",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
+    "test": "bun test",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-types": "tsc --noEmit",
+    "clean": "bun run --filter \"@squoosh-kit/*\" clean:local && rm -rf node_modules .bun/install/cache bun.lockb",
+    "validate": "bun run check-types && bun run lint && bun run format:check && bun run test"
   },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.7.3"
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "multi-semantic-release": "^3.0.2",
+    "prettier": "^3.2.5",
+    "typescript": "^5.6.3"
   },
   "workspaces": [
     "apps/*",

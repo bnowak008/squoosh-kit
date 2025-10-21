@@ -3,11 +3,8 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { createResizer } from '../dist/features/resize/index.js';
-import type {
-  ImageInput,
-  ResizeOptions,
-} from '../dist/features/resize/index.js';
+import { createResizer } from '../src/index.ts';
+import type { ImageInput, ResizeOptions } from '../src/index.ts';
 
 // Test image data: 4x4 red square
 const createTestImage = (): ImageInput => {
@@ -21,13 +18,13 @@ const createTestImage = (): ImageInput => {
   return { data, width: 4, height: 4 };
 };
 
-describe('Image Resize', () => {
-  it('should create resizer factory function', () => {
+describe('Resize Factory', () => {
+  it('should create a factory function for client mode', () => {
     const resizer = createResizer('client');
     expect(typeof resizer).toBe('function');
   });
 
-  it('should create resizer factory function for worker mode', () => {
+  it('should create a factory function for worker mode', () => {
     const resizer = createResizer('worker');
     expect(typeof resizer).toBe('function');
   });

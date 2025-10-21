@@ -4,3 +4,5 @@ wasm/
 *.js
 *.d.ts
 bun.lock
+.git
+.github

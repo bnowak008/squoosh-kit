@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from "react";
-import { AnimatedCharacter } from "./AnimatedCharacter";
+import { useState, useRef, useCallback } from 'react';
+import { AnimatedCharacter } from './AnimatedCharacter';
 
 interface ProcessingState {
   status: 'idle' | 'thinking' | 'working' | 'success' | 'error';
@@ -17,16 +17,18 @@ interface ImageData {
 export function ImageProcessor() {
   const [processingState, setProcessingState] = useState<ProcessingState>({
     status: 'idle',
-    message: 'Drop an image here to get started'
+    message: 'Drop an image here to get started',
   });
-  
+
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [processingMode, setProcessingMode] = useState<'worker' | 'client'>('worker');
+  const [processingMode, setProcessingMode] = useState<'worker' | 'client'>(
+    'worker'
+  );
   const [webpQuality, setWebpQuality] = useState(85);
   const [resizeWidth, setResizeWidth] = useState<number | null>(null);
   const [resizeHeight, setResizeHeight] = useState<number | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +36,7 @@ export function ImageProcessor() {
     if (!file.type.startsWith('image/')) {
       setProcessingState({
         status: 'error',
-        message: 'Please select a valid image file'
+        message: 'Please select a valid image file',
       });
       return;
     }
@@ -47,15 +49,15 @@ export function ImageProcessor() {
           file,
           preview: e.target?.result as string,
           dimensions: { width: img.naturalWidth, height: img.naturalHeight },
-          size: file.size
+          size: file.size,
         });
-        
+
         setResizeWidth(img.naturalWidth);
         setResizeHeight(img.naturalHeight);
-        
+
         setProcessingState({
           status: 'idle',
-          message: 'Image loaded! Ready to process'
+          message: 'Image loaded! Ready to process',
         });
       };
       img.src = e.target?.result as string;
@@ -73,29 +75,35 @@ export function ImageProcessor() {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      handleFile(file);
-    }
-  }, [handleFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFile(file);
-    }
-  }, [handleFile]);
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        handleFile(file);
+      }
+    },
+    [handleFile]
+  );
+
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        handleFile(file);
+      }
+    },
+    [handleFile]
+  );
 
   const processImage = async () => {
     if (!imageData) return;
 
     setProcessingState({
       status: 'thinking',
-      message: 'Analyzing your image...'
+      message: 'Analyzing your image...',
     });
 
     // Simulate processing steps
@@ -103,7 +111,7 @@ export function ImageProcessor() {
       setProcessingState({
         status: 'working',
         message: 'Resizing image...',
-        progress: 30
+        progress: 30,
       });
     }, 800);
 
@@ -111,7 +119,7 @@ export function ImageProcessor() {
       setProcessingState({
         status: 'working',
         message: 'Encoding to WebP...',
-        progress: 60
+        progress: 60,
       });
     }, 1600);
 
@@ -119,7 +127,7 @@ export function ImageProcessor() {
       setProcessingState({
         status: 'success',
         message: 'Processing complete!',
-        progress: 100
+        progress: 100,
       });
     }, 2400);
   };
@@ -128,7 +136,7 @@ export function ImageProcessor() {
     setImageData(null);
     setProcessingState({
       status: 'idle',
-      message: 'Drop an image here to get started'
+      message: 'Drop an image here to get started',
     });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -154,8 +162,8 @@ export function ImageProcessor() {
               <p className="status-text">{processingState.message}</p>
               {processingState.progress && (
                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
+                  <div
+                    className="progress-fill"
                     style={{ width: `${processingState.progress}%` }}
                   />
                 </div>
@@ -187,33 +195,44 @@ export function ImageProcessor() {
                 onChange={handleFileInput}
                 className="hidden-input"
               />
-              
+
               {imageData ? (
                 <div className="image-preview">
-                  <img 
-                    src={imageData.preview} 
-                    alt="Preview" 
+                  <img
+                    src={imageData.preview}
+                    alt="Preview"
                     className="preview-image"
                   />
                   <div className="image-info">
                     <p className="image-name">{imageData.file.name}</p>
                     <p className="image-details">
-                      {imageData.dimensions.width} × {imageData.dimensions.height} • {formatFileSize(imageData.size)}
+                      {imageData.dimensions.width} ×{' '}
+                      {imageData.dimensions.height} •{' '}
+                      {formatFileSize(imageData.size)}
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="drop-content">
                   <div className="drop-icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14,2 14,8 20,8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                      <polyline points="10,9 9,9 8,9"/>
+                    <svg
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14,2 14,8 20,8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10,9 9,9 8,9" />
                     </svg>
                   </div>
-                  <p className="drop-text">Drop an image here or click to browse</p>
+                  <p className="drop-text">
+                    Drop an image here or click to browse
+                  </p>
                   <p className="drop-hint">Supports JPG, PNG, WebP, and more</p>
                 </div>
               )}
@@ -231,14 +250,19 @@ export function ImageProcessor() {
                   <div className="card-header">
                     <h4 className="card-title">Original</h4>
                     <div className="card-stats">
-                      <span className="stat">{imageData.dimensions.width} × {imageData.dimensions.height}</span>
-                      <span className="stat">{formatFileSize(imageData.size)}</span>
+                      <span className="stat">
+                        {imageData.dimensions.width} ×{' '}
+                        {imageData.dimensions.height}
+                      </span>
+                      <span className="stat">
+                        {formatFileSize(imageData.size)}
+                      </span>
                     </div>
                   </div>
                   <div className="image-container">
-                    <img 
-                      src={imageData.preview} 
-                      alt="Original" 
+                    <img
+                      src={imageData.preview}
+                      alt="Original"
                       className="comparison-image"
                     />
                   </div>
@@ -255,9 +279,16 @@ export function ImageProcessor() {
                   <div className="image-container">
                     <div className="processing-placeholder">
                       <div className="placeholder-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"/>
-                          <polyline points="12,6 12,12 16,14"/>
+                        <svg
+                          width="32"
+                          height="32"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12,6 12,12 16,14" />
                         </svg>
                       </div>
                       <p className="placeholder-text">Process to see result</p>
@@ -268,79 +299,85 @@ export function ImageProcessor() {
             </div>
           )}
 
-        {imageData && (
-          <div className="processing-controls">
-            <div className="control-group">
-              <label className="control-label">Processing Mode</label>
-              <div className="mode-toggle">
+          {imageData && (
+            <div className="processing-controls">
+              <div className="control-group">
+                <label className="control-label">Processing Mode</label>
+                <div className="mode-toggle">
+                  <button
+                    className={`mode-btn ${processingMode === 'worker' ? 'active' : ''}`}
+                    onClick={() => setProcessingMode('worker')}
+                  >
+                    Web Worker
+                  </button>
+                  <button
+                    className={`mode-btn ${processingMode === 'client' ? 'active' : ''}`}
+                    onClick={() => setProcessingMode('client')}
+                  >
+                    Main Thread
+                  </button>
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label className="control-label">WebP Quality</label>
+                <div className="quality-control">
+                  <input
+                    type="range"
+                    min="1"
+                    max="100"
+                    value={webpQuality}
+                    onChange={(e) => setWebpQuality(Number(e.target.value))}
+                    className="quality-slider"
+                  />
+                  <span className="quality-value">{webpQuality}</span>
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label className="control-label">Resize Dimensions</label>
+                <div className="resize-controls">
+                  <input
+                    type="number"
+                    value={resizeWidth || ''}
+                    onChange={(e) =>
+                      setResizeWidth(Number(e.target.value) || null)
+                    }
+                    placeholder="Width"
+                    className="resize-input"
+                  />
+                  <span className="resize-separator">×</span>
+                  <input
+                    type="number"
+                    value={resizeHeight || ''}
+                    onChange={(e) =>
+                      setResizeHeight(Number(e.target.value) || null)
+                    }
+                    placeholder="Height"
+                    className="resize-input"
+                  />
+                </div>
+              </div>
+
+              <div className="action-buttons">
                 <button
-                  className={`mode-btn ${processingMode === 'worker' ? 'active' : ''}`}
-                  onClick={() => setProcessingMode('worker')}
+                  onClick={processImage}
+                  disabled={
+                    processingState.status === 'working' ||
+                    processingState.status === 'thinking'
+                  }
+                  className="process-btn"
                 >
-                  Web Worker
+                  {processingState.status === 'working'
+                    ? 'Processing...'
+                    : 'Process Image'}
                 </button>
-                <button
-                  className={`mode-btn ${processingMode === 'client' ? 'active' : ''}`}
-                  onClick={() => setProcessingMode('client')}
-                >
-                  Main Thread
+                <button onClick={resetProcessor} className="reset-btn">
+                  Start Over
                 </button>
               </div>
             </div>
-
-            <div className="control-group">
-              <label className="control-label">WebP Quality</label>
-              <div className="quality-control">
-                <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  value={webpQuality}
-                  onChange={(e) => setWebpQuality(Number(e.target.value))}
-                  className="quality-slider"
-                />
-                <span className="quality-value">{webpQuality}</span>
-              </div>
-            </div>
-
-            <div className="control-group">
-              <label className="control-label">Resize Dimensions</label>
-              <div className="resize-controls">
-                <input
-                  type="number"
-                  value={resizeWidth || ''}
-                  onChange={(e) => setResizeWidth(Number(e.target.value) || null)}
-                  placeholder="Width"
-                  className="resize-input"
-                />
-                <span className="resize-separator">×</span>
-                <input
-                  type="number"
-                  value={resizeHeight || ''}
-                  onChange={(e) => setResizeHeight(Number(e.target.value) || null)}
-                  placeholder="Height"
-                  className="resize-input"
-                />
-              </div>
-            </div>
-
-            <div className="action-buttons">
-              <button
-                onClick={processImage}
-                disabled={processingState.status === 'working' || processingState.status === 'thinking'}
-                className="process-btn"
-              >
-                {processingState.status === 'working' ? 'Processing...' : 'Process Image'}
-              </button>
-              <button
-                onClick={resetProcessor}
-                className="reset-btn"
-              >
-                Start Over
-              </button>
-            </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
 

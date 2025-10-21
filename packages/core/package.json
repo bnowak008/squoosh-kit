@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/core",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "type": "module",
   "entry": "src/index.ts",
   "description": "Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.",
@@ -59,32 +59,18 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build:declarations": "tsc --emitDeclarationOnly --outDir dist",
-    "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/features/webp/index.ts src/features/webp/webp.worker.ts src/features/resize/index.ts src/features/resize/resize.worker.ts",
-    "build": "bun run scripts/copy-codecs.ts && bun run build:declarations && bun run build:code",
-    "build:production": "bun run scripts/build-production.ts",
-    "prepublishOnly": "bun run build && bun run test && bun run lint && bun run format",
-    "example": "bun run examples/browser.ts",
+    "copy:assets": "bun run scripts/copy-assets.ts",
+    "build:declarations": "tsc",
+    "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts",
+    "build": "bun run copy:assets && bun run build:declarations && bun run build:code",
+    "build:production": "bun run build",
+    "prepublishOnly": "bun run build && bun test",
     "test": "bun test",
-    "test:wasm": "bun test test/wasm/wasm.test.ts.skip",
-    "test:coverage": "bun test --coverage",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "clean:local": "rm -rf dist *.tsbuildinfo && echo 'Cleaned core package artifacts'",
-    "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
-    "validate-build": "bun run scripts/validate-build.ts",
-    "prepack": "bun run build",
-    "postpack": "bun run clean:local"
+    "clean:local": "rm -rf dist *.tsbuildinfo",
+    "prepack": "bun run build"
   },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.6.3",
-    "eslint": "^8.57.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "prettier": "^3.2.5"
+  "dependencies": {
+    "@squoosh-kit/webp": "workspace:*",
+    "@squoosh-kit/resize": "workspace:*"
   }
 }

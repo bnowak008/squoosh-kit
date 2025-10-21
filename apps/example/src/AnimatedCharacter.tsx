@@ -1,19 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 interface AnimatedCharacterProps {
   state: 'idle' | 'thinking' | 'working' | 'success' | 'error';
   className?: string;
 }
 
-export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterProps) {
+export function AnimatedCharacter({
+  state,
+  className = '',
+}: AnimatedCharacterProps) {
   const [blink, setBlink] = useState(false);
 
   // Random blinking
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBlink(true);
-      setTimeout(() => setBlink(false), 150);
-    }, Math.random() * 3000 + 2000);
+    const interval = setInterval(
+      () => {
+        setBlink(true);
+        setTimeout(() => setBlink(false), 150);
+      },
+      Math.random() * 3000 + 2000
+    );
 
     return () => clearInterval(interval);
   }, []);
@@ -23,37 +29,37 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
       case 'thinking':
         return {
           eyeOffset: 2,
-          mouthPath: "M 20 35 Q 25 40 30 35",
+          mouthPath: 'M 20 35 Q 25 40 30 35',
           eyebrowOffset: -2,
-          animation: "thinking"
+          animation: 'thinking',
         };
       case 'working':
         return {
           eyeOffset: 0,
-          mouthPath: "M 18 35 Q 25 38 32 35",
+          mouthPath: 'M 18 35 Q 25 38 32 35',
           eyebrowOffset: -1,
-          animation: "working"
+          animation: 'working',
         };
       case 'success':
         return {
           eyeOffset: 0,
-          mouthPath: "M 15 30 Q 25 40 35 30",
+          mouthPath: 'M 15 30 Q 25 40 35 30',
           eyebrowOffset: 0,
-          animation: "success"
+          animation: 'success',
         };
       case 'error':
         return {
           eyeOffset: 0,
-          mouthPath: "M 20 40 Q 25 35 30 40",
+          mouthPath: 'M 20 40 Q 25 35 30 40',
           eyebrowOffset: -3,
-          animation: "error"
+          animation: 'error',
         };
       default:
         return {
           eyeOffset: 0,
-          mouthPath: "M 18 35 Q 25 38 32 35",
+          mouthPath: 'M 18 35 Q 25 38 32 35',
           eyebrowOffset: 0,
-          animation: "idle"
+          animation: 'idle',
         };
     }
   };
@@ -79,7 +85,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           strokeWidth="1.5"
           className="character-body"
         />
-        
+
         {/* Head */}
         <circle
           cx="40"
@@ -90,14 +96,14 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           strokeWidth="1.5"
           className="character-head"
         />
-        
+
         {/* Hair */}
         <path
           d="M 25 20 Q 30 15 35 18 Q 40 12 45 18 Q 50 15 55 20 Q 55 25 50 28 Q 45 25 40 30 Q 35 25 30 28 Q 25 25 25 20"
           fill="#8b4513"
           className="character-hair"
         />
-        
+
         {/* Eyebrows */}
         <path
           d="M 28 28 Q 32 26 36 28"
@@ -115,7 +121,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           transform={`translate(0, ${characterState.eyebrowOffset})`}
           className="character-eyebrow"
         />
-        
+
         {/* Eyes */}
         <circle
           cx="32"
@@ -123,7 +129,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           r="3"
           fill="#2c3e50"
           transform={`translate(${characterState.eyeOffset}, 0)`}
-          className={blink ? "character-eye blink" : "character-eye"}
+          className={blink ? 'character-eye blink' : 'character-eye'}
         />
         <circle
           cx="48"
@@ -131,9 +137,9 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           r="3"
           fill="#2c3e50"
           transform={`translate(${characterState.eyeOffset}, 0)`}
-          className={blink ? "character-eye blink" : "character-eye"}
+          className={blink ? 'character-eye blink' : 'character-eye'}
         />
-        
+
         {/* Eye highlights */}
         <circle
           cx="33"
@@ -151,7 +157,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           transform={`translate(${characterState.eyeOffset}, 0)`}
           className="character-highlight"
         />
-        
+
         {/* Nose */}
         <ellipse
           cx="40"
@@ -161,7 +167,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           fill="#d4c4a8"
           className="character-nose"
         />
-        
+
         {/* Mouth */}
         <path
           d={characterState.mouthPath}
@@ -170,7 +176,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           fill="none"
           className="character-mouth"
         />
-        
+
         {/* Arms */}
         <ellipse
           cx="25"
@@ -194,7 +200,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           transform="rotate(20 55 50)"
           className="character-arm"
         />
-        
+
         {/* Hands */}
         <circle
           cx="22"
@@ -215,7 +221,7 @@ export function AnimatedCharacter({ state, className = "" }: AnimatedCharacterPr
           className="character-hand"
         />
       </svg>
-      
+
       <style>{`
         .character-container {
           display: flex;

@@ -1,27 +1,26 @@
 /**
- * Test setup and utilities
+ * Test setup for @squoosh-kit/core integration tests
+ * @vitest-environment happy-dom
  */
 
 import { beforeAll, afterAll } from 'bun:test';
-import { existsSync } from 'fs';
-import { join } from 'path';
+import { webcrypto } from 'node:crypto';
 
-// Global test setup
-beforeAll(async () => {
-  console.log('Setting up test environment...');
+// Polyfill for crypto.subtle and crypto.randomUUID
+if (!globalThis.crypto) {
+  Object.defineProperty(globalThis, 'crypto', {
+    value: webcrypto,
+    writable: true,
+    configurable: true,
+  });
+}
 
-  // Ensure WASM files are available for testing
-  const wasmDir = join(import.meta.dir, '..', 'wasm');
-  if (!existsSync(wasmDir)) {
-    console.log('WASM files not found, running build...');
-    const { execSync } = await import('child_process');
-    execSync('bun run scripts/copy-codecs.ts', {
-      cwd: join(import.meta.dir, '..'),
-      stdio: 'inherit',
-    });
-  }
+beforeAll(() => {
+  // Setup for integration tests
+  console.log('Setting up @squoosh-kit/core integration tests...');
 });
 
 afterAll(() => {
-  console.log('Cleaning up test environment...');
+  // Teardown for integration tests
+  console.log('Tearing down @squoosh-kit/core integration tests...');
 });

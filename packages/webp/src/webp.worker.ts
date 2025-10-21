@@ -2,12 +2,13 @@
  * WebP encoder - single-source worker/client implementation
  */
 
-import { isWorker } from '../../runtime/env.ts';
-import type {
-  WorkerRequest,
-  WorkerResponse,
-} from '../../runtime/worker-call.ts';
-import type { ImageInput, WebpOptions } from '../../runtime/worker-bridge.ts';
+import {
+  isWorker,
+  type WorkerRequest,
+  type WorkerResponse,
+  type ImageInput,
+} from '@squoosh-kit/runtime';
+import type { WebpOptions } from './types.js';
 
 // Types from webp_enc.d.ts
 interface EncodeOptions {
@@ -71,17 +72,19 @@ async function loadWebPModule(): Promise<WebPModule> {
       };
     }
 
+    // When running tests, Bun executes the .ts file directly from `src`.
+    // In production, the compiled .js file is run from `dist`.
+    // We need to adjust the asset path accordingly.
+    const isTest = import.meta.url.endsWith('.ts');
+    const wasmDirectory = isTest ? '../dist/wasm/webp' : './wasm/webp';
+
     // Dynamically import the WebP encoder module
-    // Path is relative to this file (src/features/webp/)
-    const modulePath = new URL(
-      '../../../wasm/webp/webp_enc.js',
-      import.meta.url
-    ).href;
+    const modulePath = new URL(`${wasmDirectory}/webp_enc.js`, import.meta.url)
+      .href;
     const moduleFactory = await import(modulePath);
 
     // Initialize the WebP module with locateFile to properly resolve the WASM
-    // The glue file expects to load webp_enc.wasm from the same directory
-    const wasmPath = new URL('../../../wasm/webp/', import.meta.url).href;
+    const wasmPath = new URL(`${wasmDirectory}/`, import.meta.url).href;
     const module = await moduleFactory.default({
       locateFile: (path: string) => {
         // Return the full URL to the WASM file
@@ -193,9 +196,12 @@ export async function webpEncodeClient(
 
 /**
  * Worker message handler
+ * Register the handler regardless of environment (for both worker context and tests)
  */
-if (isWorker()) {
+console.log('🔧 WebP worker: Message handler registered');
+if (typeof self !== 'undefined') {
   self.onmessage = async (event: MessageEvent) => {
+    console.log('🔧 WebP worker: Received message', event.data);
     const request = event.data as WorkerRequest<{
       image: ImageInput;
       options?: WebpOptions;
@@ -222,8 +228,8 @@ if (isWorker()) {
         response.ok = true;
         response.data = result;
 
-        // Transfer the result buffer back
-        const resultBuffer: ArrayBuffer = result.buffer as ArrayBuffer;
+        // Transfer the result buffer back directly from the response data
+        const resultBuffer: ArrayBuffer = response.data.buffer as ArrayBuffer;
         self.postMessage(response, [resultBuffer]);
       } else {
         response.error = `Unknown message type: ${request.type}`;

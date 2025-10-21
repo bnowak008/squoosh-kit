@@ -1,0 +1,41 @@
+{
+  "name": "@squoosh-kit/resize",
+  "version": "0.0.1",
+  "type": "module",
+  "entry": "src/index.ts",
+  "description": "Image resize module for squoosh-kit.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/resize"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/resize#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./resize.worker.js": {
+      "import": "./dist/resize.worker.js"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun run scripts/copy-assets.ts && tsc && bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/resize.worker.ts",
+    "clean:local": "rm -rf dist *.tsbuildinfo",
+    "prepack": "bun run build"
+  },
+  "dependencies": {
+    "@squoosh-kit/runtime": "workspace:*"
+  }
+}

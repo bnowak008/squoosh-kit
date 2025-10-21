@@ -1,0 +1,29 @@
+{
+  "name": "@squoosh-kit/runtime",
+  "version": "0.0.1",
+  "type": "module",
+  "entry": "src/index.ts",
+  "description": "Core runtime logic for squoosh-kit, including the worker bridge and environment utilities.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/runtime"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/runtime#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc && bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts",
+    "clean:local": "rm -rf dist *.tsbuildinfo",
+    "prepack": "bun run build"
+  }
+}

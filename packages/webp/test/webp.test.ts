@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { createWebpEncoder } from '../dist/features/webp/index.js';
-import type { ImageInput, WebpOptions } from '../dist/features/webp/index.js';
+import { createWebpEncoder } from '../src/index.js';
+import type { ImageInput, WebpOptions } from '../src/index.js';
 
 // Test image data: 2x2 red square
 const createTestImage = (): ImageInput => {
@@ -29,15 +29,15 @@ const createTestImage = (): ImageInput => {
   return { data, width: 2, height: 2 };
 };
 
-describe('WebP Encoder', () => {
-  it('should create encoder factory function', () => {
-    const encoder = createWebpEncoder('client');
-    expect(typeof encoder).toBe('function');
+describe('WebP Factory', () => {
+  it('should create a factory function for client mode', () => {
+    const webpEncoder = createWebpEncoder('client');
+    expect(typeof webpEncoder).toBe('function');
   });
 
-  it('should create encoder factory function for worker mode', () => {
-    const encoder = createWebpEncoder('worker');
-    expect(typeof encoder).toBe('function');
+  it('should create a factory function for worker mode', () => {
+    const webpEncoder = createWebpEncoder('worker');
+    expect(typeof webpEncoder).toBe('function');
   });
 
   it('should validate image input structure', () => {

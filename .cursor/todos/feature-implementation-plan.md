@@ -9,6 +9,7 @@ The current `squoosh-kit` project supports WebP encoding and image resizing. The
 The original Squoosh project supports several other codecs: MozJPEG, AVIF, and OxiPNG for optimization. It also has a WebP decoder, which is currently present in the `squoosh-kit` `wasm` directory but not exposed through an API.
 
 The implementation for each new feature will follow the existing pattern:
+
 1.  Update the `copy-codecs.ts` script to bring in the necessary WASM and JS glue files.
 2.  Create a new feature directory under `src/features/`.
 3.  Implement the public API in `index.ts` for the feature.
@@ -20,6 +21,7 @@ The implementation for each new feature will follow the existing pattern:
 ## Implementation Plan
 
 ### Task Group 1: Add MozJPEG Support
+
 - [ ] Update `scripts/copy-codecs.ts` to copy MozJPEG encoder files from `codecs/mozjpeg/enc` in the Squoosh repo.
 - [ ] Create `src/features/mozjpeg/index.ts` with `encode` and `createMozjpegEncoder` functions.
 - [ ] Create `src/features/mozjpeg/mozjpeg.worker.ts` to handle the encoding logic, similar to the WebP worker.
@@ -29,6 +31,7 @@ The implementation for each new feature will follow the existing pattern:
 - [ ] Create `test/mozjpeg.test.ts` with integration tests to verify encoding.
 
 ### Task Group 2: Add AVIF Support
+
 - [ ] Update `scripts/copy-codecs.ts` to copy AVIF encoder files from `codecs/avif/enc`.
 - [ ] Create `src/features/avif/index.ts` with `encode` and `createAvifEncoder` functions.
 - [ ] Create `src/features/avif/avif.worker.ts` to handle AVIF encoding.
@@ -38,7 +41,9 @@ The implementation for each new feature will follow the existing pattern:
 - [ ] Create `test/avif.test.ts` with integration tests.
 
 ### Task Group 3: Add OxiPNG Support
+
 OxiPNG is an optimizer, not an encoder. The API will likely take PNG data and return optimized PNG data.
+
 - [ ] Update `scripts/copy-codecs.ts` to copy OxiPNG files from `codecs/oxipng/pkg`.
 - [ ] Create `src/features/oxipng/index.ts` with an `optimize` and `createOxipngOptimizer` function.
 - [ ] Create `src/features/oxipng/oxipng.worker.ts` to handle the optimization logic.
@@ -48,7 +53,9 @@ OxiPNG is an optimizer, not an encoder. The API will likely take PNG data and re
 - [ ] Create `test/oxipng.test.ts` with integration tests.
 
 ### Task Group 4: Expose WebP Decoder
+
 The WASM files for the WebP decoder are already being copied. This task involves exposing them via an API.
+
 - [ ] Verify WebP decoder WASM is copied to `wasm/webp-dec/`.
 - [ ] Create `src/features/webp-dec/index.ts` with `decode` and `createWebpDecoder` functions.
 - [ ] Create `src/features/webp-dec/webp-dec.worker.ts` to handle the decoding logic. The output should be image data (`{ data, width, height }`).
@@ -58,6 +65,7 @@ The WASM files for the WebP decoder are already being copied. This task involves
 - [ ] Create `test/webp-dec.test.ts` with integration tests.
 
 ### Task Group 5: Refactoring and General Improvements
+
 - [ ] Refactor `scripts/copy-codecs.ts` to be more modular and data-driven to make adding future codecs easier.
 - [ ] Update the project `README.md` to document all the new features and how to use them.
 - [ ] Review the `worker-bridge.ts` and other runtime components to ensure they are generic enough for all codec operations (encoding, decoding, optimizing).

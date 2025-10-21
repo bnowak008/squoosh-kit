@@ -1,18 +1,15 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "lib": ["ES2022", "DOM"],
     "composite": true,
-    "declaration": true,
     "emitDeclarationOnly": true,
     "declarationDir": "dist",
-    "rootDir": "src",
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "types": ["bun"]
+    "rootDir": "src"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    { "path": "../runtime" },
+    { "path": "../webp" },
+    { "path": "../resize" }
+  ]
 }

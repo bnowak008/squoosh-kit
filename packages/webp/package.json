@@ -1,0 +1,41 @@
+{
+  "name": "@squoosh-kit/webp",
+  "version": "0.0.1",
+  "type": "module",
+  "entry": "src/index.ts",
+  "description": "WebP codec for squoosh-kit, providing encoding functionality.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/webp"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/webp#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./webp.worker.js": {
+      "import": "./dist/webp.worker.js"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun run scripts/copy-assets.ts && tsc && bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/webp.worker.ts",
+    "clean:local": "rm -rf dist *.tsbuildinfo",
+    "prepack": "bun run build"
+  },
+  "dependencies": {
+    "@squoosh-kit/runtime": "workspace:*"
+  }
+}

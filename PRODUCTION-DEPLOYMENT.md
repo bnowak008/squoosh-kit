@@ -9,6 +9,7 @@ This guide covers the complete process of building and deploying `@squoosh-kit/c
 The repository is configured with automated CI/CD pipelines. Simply:
 
 1. **Commit with conventional commits**:
+
    ```bash
    git commit -m "feat: add new WebP encoding options"
    git push origin main
@@ -181,12 +182,7 @@ Key configuration for production:
       "import": "./dist/features/resize/index.js"
     }
   },
-  "files": [
-    "dist/**",
-    "wasm/**",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist/**", "wasm/**", "README.md", "LICENSE"],
   "sideEffects": false,
   "engines": {
     "bun": ">=1.0.0",
