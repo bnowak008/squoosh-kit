@@ -29,8 +29,7 @@ async function init(): Promise<void> {
     return;
   }
 
-  const isTest = import.meta.url.endsWith('.ts');
-  const wasmDirectory = isTest ? '../dist/wasm/resize' : './wasm/resize';
+  const wasmDirectory = './wasm/resize';
   const modulePath = await import.meta.resolve(
     `${wasmDirectory}/squoosh_resize.js`,
   );

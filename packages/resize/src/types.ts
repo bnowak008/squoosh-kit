@@ -2,9 +2,26 @@
  * Type definitions for the Resize package
  */
 
-export interface ResizeOptions {
+/**
+ * Options for resizing an image.
+ */
+export type ResizeOptions = {
+  /**
+   * The target width of the resized image.
+   */
   width?: number;
+  /**
+   * The target height of the resized image.
+   */
   height?: number;
-  premultiply?: boolean; // Premultiply alpha (default: false)
-  linearRGB?: boolean; // Use linear RGB color space (default: false)
-}
+  /**
+   * Premultiply the alpha channel.
+   * @default false
+   */
+  premultiply?: boolean;
+  /**
+   * Use a linear RGB color space for resizing.
+   * @default false
+   */
+  linearRGB?: boolean;
+};

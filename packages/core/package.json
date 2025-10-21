@@ -1,9 +1,8 @@
 {
   "name": "@squoosh-kit/core",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "type": "module",
-  "entry": "src/index.ts",
-  "description": "Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.",
+  "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
   "license": "MIT",
   "repository": {

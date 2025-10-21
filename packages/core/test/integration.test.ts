@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { createWebpEncoder, createResizer } from '../dist/index.js';
+import { createWebpEncoder, createResizer } from '../src/index.ts';
 
 // Test image data: 3x3 red square
 const createTestImage = (): {

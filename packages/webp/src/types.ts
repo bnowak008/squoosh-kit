@@ -2,8 +2,23 @@
  * Type definitions for the WebP package
  */
 
-export interface WebpOptions {
-  quality?: number; // 0-100, default: 82
-  lossless?: boolean; // default: false
-  nearLossless?: boolean; // default: false
-}
+/**
+ * Options for WebP encoding.
+ */
+export type WebpOptions = {
+  /**
+   * Quality, 0-100.
+   * @default 82
+   */
+  quality?: number;
+  /**
+   * Use lossless compression.
+   * @default false
+   */
+  lossless?: boolean;
+  /**
+   * Use near-lossless compression.
+   * @default false
+   */
+  nearLossless?: boolean;
+};

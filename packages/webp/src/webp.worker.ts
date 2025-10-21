@@ -72,11 +72,8 @@ async function loadWebPModule(): Promise<WebPModule> {
       };
     }
 
-    // When running tests, Bun executes the .ts file directly from `src`.
-    // In production, the compiled .js file is run from `dist`.
-    // We need to adjust the asset path accordingly.
-    const isTest = import.meta.url.endsWith('.ts');
-    const wasmDirectory = isTest ? '../dist/wasm/webp' : './wasm/webp';
+    // The WASM assets are expected to be in a directory relative to the worker script.
+    const wasmDirectory = './wasm/webp';
 
     // Dynamically import the WebP encoder module
     const modulePath = new URL(`${wasmDirectory}/webp_enc.js`, import.meta.url)
@@ -198,10 +195,8 @@ export async function webpEncodeClient(
  * Worker message handler
  * Register the handler regardless of environment (for both worker context and tests)
  */
-console.log('🔧 WebP worker: Message handler registered');
 if (typeof self !== 'undefined') {
   self.onmessage = async (event: MessageEvent) => {
-    console.log('🔧 WebP worker: Received message', event.data);
     const request = event.data as WorkerRequest<{
       image: ImageInput;
       options?: WebpOptions;
