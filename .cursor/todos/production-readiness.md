@@ -1,6 +1,6 @@
-# Squoosh-Lite Production Readiness Analysis
+# squoosh-kit Production Readiness Analysis
 
-This document provides a comprehensive analysis of the `@squoosh-lite/core` package and a roadmap to make it 100% production-ready for publishing to npm.
+This document provides a comprehensive analysis of the `@squoosh-kit/core` package and a roadmap to make it 100% production-ready for publishing to npm.
 
 ## 1. Executive Summary
 
@@ -145,7 +145,7 @@ Good documentation is as important as the code itself.
 
 The `README.md` should be enhanced to include:
 
-- **Installation Instructions**: `bun add @squoosh-lite/core`
+- **Installation Instructions**: `bun add @squoosh-kit/core`
 - **API Reference**: A detailed breakdown of the exported functions (`encode`, `resize`, `createWebpEncoder`, etc.), their parameters, and return values.
 - **Usage Examples**: Clear, concise examples for both browser and Bun environments.
 - **Performance Considerations**: Guidance on when to use `'worker'` vs `'client'` mode.
@@ -164,6 +164,6 @@ The goal of evolving to a monorepo is a good one. It will allow for better separ
 **Roadmap:**
 
 1.  Introduce a workspace manager (e.g., Bun workspaces, Turborepo, Nx).
-2.  Move `@squoosh-lite/core` into a `packages/core` directory.
+2.  Move `@squoosh-kit/core` into a `packages/core` directory.
 3.  Create new packages for each feature (e.g., `packages/webp`, `packages/resize`).
-4.  The `core` package could become a thin wrapper that re-exports functionality from the feature packages, or it could be deprecated in favor of users installing only what they need (e.g., `@squoosh-lite/webp`).
+4.  The `core` package could become a thin wrapper that re-exports functionality from the feature packages, or it could be deprecated in favor of users installing only what they need (e.g., `@squoosh-kit/webp`).

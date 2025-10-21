@@ -1,12 +1,12 @@
-# Squoosh-Lite Feature Implementation Plan
+# squoosh-kit Feature Implementation Plan
 
-This document outlines the plan to implement additional codecs and features from the original Squoosh project into `squoosh-lite`.
+This document outlines the plan to implement additional codecs and features from the original Squoosh project into `squoosh-kit`.
 
 ## Analysis Summary
 
-The current `squoosh-lite` project supports WebP encoding and image resizing. The architecture uses a worker bridge to offload heavy processing to a separate thread, which is a solid foundation. The `scripts/copy-codecs.ts` script handles bringing in pre-built WASM codecs from a fork of the Squoosh repository.
+The current `squoosh-kit` project supports WebP encoding and image resizing. The architecture uses a worker bridge to offload heavy processing to a separate thread, which is a solid foundation. The `scripts/copy-codecs.ts` script handles bringing in pre-built WASM codecs from a fork of the Squoosh repository.
 
-The original Squoosh project supports several other codecs: MozJPEG, AVIF, and OxiPNG for optimization. It also has a WebP decoder, which is currently present in the `squoosh-lite` `wasm` directory but not exposed through an API.
+The original Squoosh project supports several other codecs: MozJPEG, AVIF, and OxiPNG for optimization. It also has a WebP decoder, which is currently present in the `squoosh-kit` `wasm` directory but not exposed through an API.
 
 The implementation for each new feature will follow the existing pattern:
 1.  Update the `copy-codecs.ts` script to bring in the necessary WASM and JS glue files.

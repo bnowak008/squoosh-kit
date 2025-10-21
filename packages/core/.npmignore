@@ -1,0 +1,44 @@
+# Source files
+src/
+scripts/
+test/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Development files
+tsconfig.json
+tsconfig.tsbuildinfo
+.eslintrc.json
+.prettierrc.json
+bunfig.toml
+bun.lock
+
+# Build artifacts (except dist/)
+*.tsbuildinfo
+node_modules/
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+.tmp/
+temp/

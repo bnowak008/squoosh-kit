@@ -1,5 +1,5 @@
 {
-  "name": "@squoosh-lite/core",
+  "name": "@squoosh-kit/core",
   "version": "0.1.0",
   "type": "module",
   "entry": "src/index.ts",
@@ -8,11 +8,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bnowak008/squoosh-lite.git"
+    "url": "https://github.com/bnowak008/squoosh-kit.git"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-lite#readme",
+  "homepage": "https://github.com/bnowak008/squoosh-kit#readme",
   "bugs": {
-    "url": "https://github.com/bnowak008/squoosh-lite/issues"
+    "url": "https://github.com/bnowak008/squoosh-kit/issues"
   },
   "keywords": [
     "squoosh",
@@ -24,8 +24,20 @@
     "typescript",
     "worker",
     "codec",
-    "compression"
+    "compression",
+    "image-processing",
+    "web-assembly",
+    "modern",
+    "lightweight"
   ],
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -42,25 +54,30 @@
   },
   "files": [
     "dist/**",
-    "wasm/**",
     "README.md",
     "LICENSE"
   ],
   "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf dist",
     "build:declarations": "tsc --emitDeclarationOnly --outDir dist",
     "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/features/webp/index.ts src/features/webp/webp.worker.ts src/features/resize/index.ts src/features/resize/resize.worker.ts",
-    "build": "bun run clean && bun run scripts/copy-codecs.ts && bun run build:declarations && bun run build:code",
-    "prepublishOnly": "bun run test && bun run lint && bun run format && bun run build",
+    "build": "bun run scripts/copy-codecs.ts && bun run build:declarations && bun run build:code",
+    "build:production": "bun run scripts/build-production.ts",
+    "prepublishOnly": "bun run build && bun run test && bun run lint && bun run format",
     "example": "bun run examples/browser.ts",
     "test": "bun test",
     "test:wasm": "bun test test/wasm/wasm.test.ts.skip",
+    "test:coverage": "bun test --coverage",
     "check-types": "tsc --noEmit",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "clean:local": "rm -rf dist *.tsbuildinfo && echo 'Cleaned core package artifacts'",
+    "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
+    "validate-build": "bun run scripts/validate-build.ts",
+    "prepack": "bun run build",
+    "postpack": "bun run clean:local"
   },
   "devDependencies": {
     "@types/bun": "latest",

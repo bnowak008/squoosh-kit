@@ -1,8 +1,13 @@
-# @squoosh-lite/core
+# Squoosh Kit
 
-Lightweight, modular package that exposes **per-feature** [Squoosh](https://github.com/GoogleChromeLabs/squoosh) functionality (WebP encode, Resize) through **simple subpath imports**, reusing **already-built** Squoosh codec artifacts.
+[![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fcore.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fcore)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
 
-**Bun-first** with support for modern browsers and Node.js 18+.
+**Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.**
+
+Squoosh Kit provides a clean, modern interface to Google's Squoosh image processing capabilities, optimized for Bun runtime with full TypeScript support and Web Worker integration.
 
 ## Features
 
@@ -15,9 +20,9 @@ Lightweight, modular package that exposes **per-feature** [Squoosh](https://gith
 ## Installation
 
 ```bash
-bun add @squoosh-lite/core
+bun add @squoosh-kit/core
 # or
-npm install @squoosh-lite/core
+npm install @squoosh-kit/core
 ```
 
 ## Quick Start
@@ -25,7 +30,7 @@ npm install @squoosh-lite/core
 ### WebP Encoding (Bun - Client Mode)
 
 ```typescript
-import { createWebpEncoder } from '@squoosh-lite/core/webp';
+import { createWebpEncoder } from '@squoosh-kit/core/webp';
 
 const encoder = createWebpEncoder('client');
 
@@ -49,7 +54,7 @@ await Bun.write('output.webp', webpData);
 ### WebP Encoding (Browser - Worker Mode)
 
 ```typescript
-import { encode as webpEncode } from '@squoosh-lite/core/webp';
+import { encode as webpEncode } from '@squoosh-kit/core/webp';
 
 // Get image data from canvas
 const canvas = document.getElementById('myCanvas');
@@ -71,7 +76,7 @@ const url = URL.createObjectURL(blob);
 ### Image Resizing
 
 ```typescript
-import { createResizer } from '@squoosh-lite/core/resize';
+import { createResizer } from '@squoosh-kit/core/resize';
 
 const resizer = createResizer('client');
 
@@ -88,7 +93,7 @@ console.log(`Resized to ${resized.width}x${resized.height}`);
 ### Resize with Aspect Ratio Preservation
 
 ```typescript
-import { resize } from '@squoosh-lite/core/resize';
+import { resize } from '@squoosh-kit/core/resize';
 
 // Resize to width 800, height calculated automatically
 const controller = new AbortController();
@@ -103,8 +108,8 @@ const resized = await resize(
 ### Complete Pipeline (Resize + Encode)
 
 ```typescript
-import { createResizer } from '@squoosh-lite/core/resize';
-import { createWebpEncoder } from '@squoosh-lite/core/webp';
+import { createResizer } from '@squoosh-kit/core/resize';
+import { createWebpEncoder } from '@squoosh-kit/core/webp';
 
 const resizer = createResizer('client');
 const encoder = createWebpEncoder('client');
@@ -123,7 +128,7 @@ await Bun.write('resized-output.webp', webpData);
 
 ## API Reference
 
-### WebP Module (`@squoosh-lite/core/webp`)
+### WebP Module (`@squoosh-kit/core/webp`)
 
 #### `encode(signal, workerBridge, imageData, options?)`
 
@@ -158,7 +163,7 @@ type WebpOptions = {
 };
 ```
 
-### Resize Module (`@squoosh-lite/core/resize`)
+### Resize Module (`@squoosh-kit/core/resize`)
 
 #### `resize(signal, workerBridge, imageData, options)`
 
@@ -217,7 +222,7 @@ type ImageInput =
 Runs codecs in a Web Worker for non-blocking execution. Best for browser environments and larger images.
 
 ```typescript
-import { createWebpEncoder } from '@squoosh-lite/core/webp';
+import { createWebpEncoder } from '@squoosh-kit/core/webp';
 
 const encoder = createWebpEncoder('worker');
 // or
@@ -229,7 +234,7 @@ const encoder = createWebpEncoder(); // defaults to 'worker'
 Runs codecs inline in the main thread. Best for Bun/Node.js or when worker overhead is unnecessary.
 
 ```typescript
-import { createWebpEncoder } from '@squoosh-lite/core/webp';
+import { createWebpEncoder } from '@squoosh-kit/core/webp';
 
 const encoder = createWebpEncoder('client');
 ```

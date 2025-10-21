@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Simple development server for @squoosh-lite/core browser demo
+ * Simple development server for @squoosh-kit/core browser demo
  * Properly handles MIME types for JavaScript and WebAssembly files
  */
 
@@ -97,6 +97,6 @@ const server = Bun.serve({
 });
 
 console.log(
-  `🚀 @squoosh-lite/core demo server running at http://localhost:${server.port}`
+  `🚀 @squoosh-kit/core demo server running at http://localhost:${server.port}`
 );
 console.log('📖 Open http://localhost:8000 to view the demo');

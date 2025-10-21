@@ -1,10 +1,10 @@
 /**
- * @squoosh-lite/core - Per-feature adapters around Squoosh codecs
+ * @squoosh-kit/core - Per-feature adapters around Squoosh codecs
  *
  * Main entry point with convenience re-exports.
  * For production use, prefer importing from specific subpaths:
- * - @squoosh-lite/core/webp
- * - @squoosh-lite/core/resize
+ * - @squoosh-kit/core/webp
+ * - @squoosh-kit/core/resize
  */
 
 // Re-export WebP

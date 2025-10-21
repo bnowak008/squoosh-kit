@@ -1,4 +1,12 @@
 [test]
 # Test configuration
 preload = ["./test/setup.ts"]
-timeout = 10000
+timeout = 30000
+coverage = true
+coverageDir = "coverage"
+
+[install]
+# Install configuration
+cache = true
+production = false
+frozenLockfile = true

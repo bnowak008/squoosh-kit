@@ -1,0 +1,58 @@
+# Development files
+.cursor/
+.github/
+.cursorignore
+.prettierignore
+.prettierrc.json
+.eslintrc.json
+.releaserc.json
+
+# Documentation (keep only essential)
+DEPLOYMENT.md
+PRODUCTION-DEPLOYMENT.md
+SECURITY.md
+CHANGELOG.md
+
+# Apps and examples
+apps/
+examples/
+
+# Scripts
+scripts/
+
+# Development configuration
+tsconfig.json
+bunfig.toml
+bun.lock
+
+# Source files (only publish built files)
+packages/core/src/
+packages/core/scripts/
+packages/core/test/
+packages/core/tsconfig.json
+packages/core/bunfig.toml
+packages/core/bun.lock
+
+# Build artifacts (only keep dist and wasm)
+packages/core/dist/
+packages/core/wasm/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+.tmp/
+temp/
+.squoosh-temp/

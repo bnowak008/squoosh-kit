@@ -1,0 +1,15 @@
+# Global code owners
+* @bnowak008
+
+# Core package
+packages/core/ @bnowak008
+
+# Documentation
+*.md @bnowak008
+.github/ @bnowak008
+
+# Configuration files
+package.json @bnowak008
+tsconfig.json @bnowak008
+.eslintrc.json @bnowak008
+.prettierrc.json @bnowak008

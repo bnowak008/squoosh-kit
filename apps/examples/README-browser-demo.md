@@ -1,6 +1,6 @@
-# @squoosh-lite/core Browser Demo
+# @squoosh-kit/core Browser Demo
 
-This HTML demo showcases the @squoosh-lite/core library running in a browser environment, demonstrating both WebP encoding and image resizing capabilities.
+This HTML demo showcases the @squoosh-kit/core library running in a browser environment, demonstrating both WebP encoding and image resizing capabilities.
 
 ## Features
 
@@ -112,7 +112,7 @@ Tested browsers:
 The demo uses the same API as the Node.js/Bun example:
 
 ```javascript
-import { createWebpEncoder, createResizer } from '@squoosh-lite/core';
+import { createWebpEncoder, createResizer } from '@squoosh-kit/core';
 
 // Create encoders
 const encoder = createWebpEncoder('worker'); // or 'client'
@@ -176,4 +176,4 @@ For very large images:
 
 ## License
 
-This demo is part of the @squoosh-lite/core project and follows the same license terms.
+This demo is part of the @squoosh-kit/core project and follows the same license terms.

@@ -1,13 +1,14 @@
 {
-  "name": "@squoosh-lite/examples",
+  "name": "@squoosh-kit/examples",
   "private": true,
   "entry": "server.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run server.ts --watch"
+    "dev": "bun run server.ts --watch",
+    "clean:local": "rm -rf dist bundle *.tsbuildinfo && echo 'Cleaned examples app artifacts'"
   },
   "dependencies": {
-    "@squoosh-lite/core": "workspace:*"
+    "@squoosh-kit/core": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

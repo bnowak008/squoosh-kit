@@ -1,13 +1,88 @@
 {
-  "name": "squoosh-lite",
-  "module": "index.ts",
+  "name": "squoosh-kit",
+  "version": "0.0.1",
   "type": "module",
-  "private": true,
+  "private": false,
+  "description": "Per-feature adapters around Squoosh codecs (Bun-first), worker/client runtimes.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bnowak008/squoosh-kit.git"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit#readme",
+  "bugs": {
+    "url": "https://github.com/bnowak008/squoosh-kit/issues"
+  },
+  "keywords": [
+    "squoosh",
+    "webp",
+    "image",
+    "resize",
+    "wasm",
+    "bun",
+    "typescript",
+    "worker",
+    "codec",
+    "compression",
+    "image-processing",
+    "web-assembly",
+    "modern",
+    "lightweight"
+  ],
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./packages/core/dist/index.d.ts",
+      "import": "./packages/core/dist/index.js"
+    },
+    "./webp": {
+      "types": "./packages/core/dist/features/webp/index.d.ts",
+      "import": "./packages/core/dist/features/webp/index.js"
+    },
+    "./resize": {
+      "types": "./packages/core/dist/features/resize/index.d.ts",
+      "import": "./packages/core/dist/features/resize/index.js"
+    }
+  },
+  "files": [
+    "packages/core/dist/**",
+    "packages/core/README.md",
+    "packages/core/LICENSE",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
   "scripts": {
-    "example": "bun --filter '@squoosh-lite/example' dev",
-    "examples": "bun --filter '@squoosh-lite/examples' dev",
-    "build": "bun run clean & bun --filter '@squoosh-lite/core' build",
-    "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'bundle' -type d -prune -exec rm -rf '{}' + && find . -name 'tsconfig.tsbuildinfo' -type f -delete && find . -name 'bun.lockb' -type f -delete"
+    "example": "bun --filter '@squoosh-kit/example' dev",
+    "examples": "bun --filter '@squoosh-kit/examples' dev",
+    "build": "bun --filter '@squoosh-kit/core' build:production",
+    "build:core": "bun --filter '@squoosh-kit/core' build:production",
+    "test": "bun --filter '@squoosh-kit/core' test",
+    "test:coverage": "bun --filter '@squoosh-kit/core' test:coverage",
+    "lint": "bun --filter '@squoosh-kit/core' lint",
+    "lint:fix": "bun --filter '@squoosh-kit/core' lint:fix",
+    "format": "bun --filter '@squoosh-kit/core' format",
+    "format:check": "bun --filter '@squoosh-kit/core' format:check",
+    "check-types": "bun --filter '@squoosh-kit/core' check-types",
+    "validate": "bun --filter '@squoosh-kit/core' validate",
+    "clean": "bun run clean:workspaces",
+    "clean:core": "bun --filter '@squoosh-kit/core' clean:local",
+    "clean:workspaces": "bun --filter '*' clean:local && bun run clean:root",
+    "clean:root": "rm -rf node_modules dist bundle *.tsbuildinfo bun.lock && echo 'Cleaned root workspace artifacts'",
+    "version:patch": "cd packages/core && npm version patch",
+    "version:minor": "cd packages/core && npm version minor",
+    "version:major": "cd packages/core && npm version major",
+    "prepublishOnly": "cd packages/core && bun run build && bun run test && bun run lint && bun run format",
+    "publish:package": "bun run build && npm publish",
+    "release": "bun run build && bun run test && bun run publish:package"
   },
   "devDependencies": {
     "@types/bun": "latest"

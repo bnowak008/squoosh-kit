@@ -7,16 +7,16 @@ alwaysApply: true
 ## Project Overview
 The goal of this project is to use the built files directly from the Google Squoosh repository and provide a small, lightweight bridge to allow users to use specific parts of the Squoosh functionality in their projects. It is designed to be Bun-first and works in both worker and client runtimes.
 
-Users can import specific functionalities like WebP encoding or image resizing. For example: `import { encode } from '@squoosh-lite/core/webp'`.
+Users can import specific functionalities like WebP encoding or image resizing. For example: `import { encode } from '@squoosh-kit/core/webp'`.
 
 ## Architecture Overview
 
 ### Repository Structure
-The project is currently structured as a single package (`@squoosh-lite/core`) that uses subpath exports to provide access to different features. The goal is to evolve this into a monorepo where each feature is a separate package (e.g., `@squoosh-lite/webp`).
+The project is currently structured as a single package (`@squoosh-kit/core`) that uses subpath exports to provide access to different features. The goal is to evolve this into a monorepo where each feature is a separate package (e.g., `@squoosh-kit/webp`).
 
 The current structure is as follows:
 ```
-squoosh-lite/
+squoosh-kit/
 ├── dist/              # Built output files
 ├── examples/          # Example usage of the library
 ├── scripts/           # Build-related scripts
