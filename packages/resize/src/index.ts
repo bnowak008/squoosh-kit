@@ -3,8 +3,8 @@
  */
 
 import type { ImageInput } from '@squoosh-kit/runtime';
-import { createBridge } from './bridge.ts';
-import type { ResizeOptions } from './types.ts';
+import { createBridge } from './bridge';
+import type { ResizeOptions } from './types';
 
 export type { ImageInput, ResizeOptions };
 
@@ -39,4 +39,4 @@ export function createResizer(mode: 'worker' | 'client' = 'worker') {
 
 // Export the client-side implementation for direct use by the bridge.
 // This is not intended for public consumption.
-export { resizeClient } from './resize.worker.js';
+export { resizeClient } from './resize.worker';

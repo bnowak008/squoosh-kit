@@ -7,7 +7,7 @@
     "dev": "bun --hot src/index.tsx",
     "start": "NODE_ENV=production bun src/index.tsx",
     "build": "bun run build.ts",
-    "clean:local": "rm -rf dist bundle *.tsbuildinfo && echo 'Cleaned example app artifacts'"
+    "clean:local": "rm -rf dist bundle node_modules bun.lock bun.lockb *.tsbuildinfo && echo 'Cleaned example app artifacts'"
   },
   "dependencies": {
     "@squoosh-kit/core": "workspace:*",

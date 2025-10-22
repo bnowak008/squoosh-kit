@@ -1,5 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { AnimatedCharacter } from './AnimatedCharacter';
+import { encode, resize, ImageInput } from '@squoosh-kit/core';
+
+type SquooshImageData = ImageInput['data'];
 
 interface ProcessingState {
   status: 'idle' | 'thinking' | 'working' | 'success' | 'error';
@@ -106,14 +109,14 @@ export function ImageProcessor() {
       message: 'Analyzing your image...',
     });
 
-    // Simulate processing steps
-    setTimeout(() => {
-      setProcessingState({
-        status: 'working',
-        message: 'Resizing image...',
-        progress: 30,
-      });
-    }, 800);
+    const imageData: SquooshImageData = {
+      width: 
+    }
+
+    const resizedImage = await resize(
+      new AbortController().signal,
+
+    )
 
     setTimeout(() => {
       setProcessingState({

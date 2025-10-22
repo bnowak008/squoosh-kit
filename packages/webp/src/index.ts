@@ -3,8 +3,8 @@
  */
 
 import type { ImageInput } from '@squoosh-kit/runtime';
-import { createBridge } from './bridge.js';
-import type { WebpOptions } from './types.js';
+import { createBridge } from './bridge';
+import type { WebpOptions } from './types';
 
 export type { ImageInput, WebpOptions };
 
@@ -41,4 +41,4 @@ export function createWebpEncoder(mode: 'worker' | 'client' = 'worker') {
 
 // Export the client-side implementation for direct use by the bridge.
 // This is not intended for public consumption.
-export { webpEncodeClient } from './webp.worker.js';
+export { webpEncodeClient } from './webp.worker';

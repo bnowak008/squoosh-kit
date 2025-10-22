@@ -1,6 +1,6 @@
 {
   "name": "squoosh-kit",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
@@ -44,7 +44,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "tsc --noEmit",
-    "clean": "bun run --filter \"@squoosh-kit/*\" clean:local && rm -rf node_modules .bun/install/cache bun.lockb",
+    "clean": "bun run --filter \"@squoosh-kit/*\" clean:local && rm -rf node_modules .bun/install/cache bun.lockb bun.lock",
     "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
     "release": "bun run release:core --dry-run && bun run release:runtime --dry-run && bun run release:resize --dry-run && bun run release:webp --dry-run",
     "release:core": "cd packages/core && bun publish",

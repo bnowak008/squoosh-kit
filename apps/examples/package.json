@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run server.ts --watch",
-    "clean:local": "rm -rf dist bundle *.tsbuildinfo && echo 'Cleaned examples app artifacts'"
+    "clean:local": "rm -rf dist bundle node_modules bun.lock bun.lockb *.tsbuildinfo && echo 'Cleaned examples app artifacts'"
   },
   "dependencies": {
     "@squoosh-kit/core": "workspace:*"
