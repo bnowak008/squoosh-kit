@@ -2,9 +2,13 @@
  * Bridge implementation for the WebP package, handling worker and client modes.
  */
 
-import { callWorker, type ImageInput } from '@squoosh-kit/runtime';
-import { webpEncodeClient } from './webp.worker.js';
-import type { WebpOptions } from './types.js';
+import {
+  callWorker,
+  type ImageInput,
+  createCodecWorker,
+} from '@squoosh-kit/runtime';
+import { webpEncodeClient } from './webp.worker';
+import type { WebpOptions } from './types';
 
 interface WebPBridge {
   encode(
@@ -28,10 +32,7 @@ class WebpWorkerBridge implements WebPBridge {
   private worker: Worker | null = null;
   private async getWorker(): Promise<Worker> {
     if (!this.worker) {
-      const workerUrl = await import.meta.resolve(
-        '@squoosh-kit/webp/webp.worker.js'
-      );
-      this.worker = new Worker(workerUrl, { type: 'module' });
+      this.worker = await createCodecWorker('file:///home/bnowak/repos/squoosh-lite/packages/webp/dist/webp.worker.js');
     }
     return this.worker;
   }

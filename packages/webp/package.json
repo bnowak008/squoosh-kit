@@ -20,10 +20,16 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs",
+      "browser": "./dist/index.browser.mjs"
     },
     "./webp.worker.js": {
-      "import": "./dist/webp.worker.js"
+      "bun": "./dist/webp.worker.bun.js",
+      "import": "./dist/webp.worker.node.mjs",
+      "require": "./dist/webp.worker.node.cjs",
+      "browser": "./dist/webp.worker.browser.mjs"
     }
   },
   "files": [

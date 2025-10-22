@@ -1,0 +1,18 @@
+[
+  {
+    "path": "packages/core/dist/index.browser.mjs",
+    "limit": "15 kB"
+  },
+  {
+    "path": "packages/resize/dist/index.browser.mjs",
+    "limit": "10 kB"
+  },
+  {
+    "path": "packages/webp/dist/index.browser.mjs",
+    "limit": "10 kB"
+  },
+  {
+    "path": "packages/runtime/dist/index.browser.mjs",
+    "limit": "5 kB"
+  }
+]

@@ -14,7 +14,7 @@ const PACKAGE_ROOT = join(import.meta.dir, '..');
 const SQUOOSH_ROOT = join(PACKAGE_ROOT, '..', '..', '.squoosh-temp');
 const DEST_DIR = join(PACKAGE_ROOT, 'dist', 'wasm');
 
-async function main() {
+export default async function copyAssets() {
   const webpEncSrc = join(SQUOOSH_ROOT, 'codecs', 'webp', 'enc');
   const webpDecSrc = join(SQUOOSH_ROOT, 'codecs', 'webp', 'dec');
 
@@ -67,8 +67,3 @@ async function main() {
     console.log(`\nCopied ${copiedCount} WebP codec files successfully.`);
   }
 }
-
-main().catch((error) => {
-  console.error('Error copying WebP assets:', error);
-  process.exit(1);
-});

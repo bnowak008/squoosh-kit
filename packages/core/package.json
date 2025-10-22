@@ -42,15 +42,24 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs",
+      "browser": "./dist/index.browser.mjs"
     },
     "./webp": {
       "types": "./dist/features/webp/index.d.ts",
-      "import": "./dist/features/webp/index.js"
+      "bun": "./dist/features/webp/index.bun.js",
+      "import": "./dist/features/webp/index.node.mjs",
+      "require": "./dist/features/webp/index.node.cjs",
+      "browser": "./dist/features/webp/index.browser.mjs"
     },
     "./resize": {
       "types": "./dist/features/resize/index.d.ts",
-      "import": "./dist/features/resize/index.js"
+      "bun": "./dist/features/resize/index.bun.js",
+      "import": "./dist/features/resize/index.node.mjs",
+      "require": "./dist/features/resize/index.node.cjs",
+      "browser": "./dist/features/resize/index.browser.mjs"
     }
   },
   "files": [

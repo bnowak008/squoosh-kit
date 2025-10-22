@@ -1,10 +1,12 @@
 # @squoosh-kit/core
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fcore.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fcore)
+[![CI](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**The complete Squoosh Kit experience in a single package**
+**The complete Squoosh Kit experience in a single package.**
 
-`@squoosh-kit/core` brings together all the image processing power of Squoosh Kit in one convenient package. Perfect for when you want everything at your fingertips without worrying about which specific package to install.
+`@squoosh-kit/core` brings together all the image processing power of Squoosh Kit in one convenient package. It's the perfect way to get started when you want everything at your fingertips without worrying about which specific package to install.
 
 This meta-package re-exports all functionality from the individual Squoosh Kit packages, so you get WebP encoding, high-quality resizing, and all the underlying runtime utilities in one place.
 
@@ -18,58 +20,102 @@ npm install @squoosh-kit/core
 
 ## Quick Start
 
-Everything you need, right at your fingertips:
+### One-off Operations
+
+For simple, one-time conversions, you can use the direct `encode` and `resize` functions.
 
 ```typescript
-import { encode, resize, createWebpEncoder, createResizer } from '@squoosh-kit/core';
+import { encode, resize } from '@squoosh-kit/core';
+import { ImageInput } from '@squoosh-kit/runtime';
 
-// Quick one-off operations
-const webpData = await encode(
-  new AbortController().signal,
-  imageData,
-  { quality: 85 }
-);
+// Example ImageData (replace with your actual image data)
+const imageData: ImageInput = {
+  data: new Uint8Array(100 * 100 * 4).fill(255),
+  width: 100,
+  height: 100,
+};
 
-const resizedImage = await resize(
-  new AbortController().signal,
-  imageData,
-  { width: 800, height: 600 }
-);
+// Encode to WebP
+const webpData = await encode(new AbortController().signal, imageData, {
+  quality: 85,
+});
 
-// Or create reusable processors for batch operations
-const encoder = createWebpEncoder('worker');
-const resizer = createResizer('worker');
+// Resize an image
+const resizedImage = await resize(new AbortController().signal, imageData, {
+  width: 50,
+  height: 50,
+});
 ```
 
-## What's Included
+### Batch Processing
 
-This package bundles together:
+For processing multiple images, it's more efficient to create reusable processors. This will spin up a Web Worker and reuse it for all operations, which is much faster.
 
-- **WebP Encoding** - Convert images to the modern WebP format with fine-tuned quality control
-- **Image Resizing** - High-quality Lanczos3 resizing for crisp, clear results
-- **Worker Management** - Automatic Web Worker integration to keep your app responsive
-- **TypeScript Support** - Full type definitions for a great development experience
+```typescript
+import { createWebpEncoder, createResizer } from '@squoosh-kit/core';
 
-## When to Use Core vs Individual Packages
+const encoder = createWebpEncoder('worker');
+const resizer = createResizer('worker');
 
-**Use `@squoosh-kit/core` when:**
-- You're just getting started and want everything available
-- Your project needs both WebP encoding and resizing
-- You prefer a single dependency for simplicity
-- You're building a prototype or proof of concept
+const imagesToProcess = [imageData1, imageData2, imageData3];
 
-**Consider individual packages when:**
-- You only need one specific feature (like just WebP encoding)
-- Bundle size is critical and you want to minimize dependencies
-- You need fine-grained control over versions
+for (const image of imagesToProcess) {
+  const webpData = await encoder.encode(new AbortController().signal, image);
+  const resizedImage = await resizer.resize(
+    new AbortController().signal,
+    image,
+    { width: 150 }
+  );
+  // ... do something with the results
+}
+```
 
 ## API Reference
 
-All functions follow the same patterns as the individual packages. For detailed documentation, see:
+### `createWebpEncoder(mode: 'worker' | 'client')`
 
-- [WebP Encoding API](./webp) - Advanced encoding options and examples
-- [Resize API](./resize) - Resizing algorithms and configuration details
+Creates a reusable WebP encoder instance.
+
+- **`mode`**:
+  - `'worker'` (recommended): Offloads encoding to a separate thread to avoid blocking the main thread.
+  - `'client'`: Runs encoding on the same thread. Useful in environments where workers are not available.
+- **Returns**: An object with an `encode` method.
+
+### `encoder.encode(signal, image, options?)`
+
+Encodes an image to the WebP format.
+
+- **`signal`**: An `AbortSignal` to cancel the operation.
+- **`image`**: An `ImageInput` object (`{ data: Uint8Array, width: number, height: number }`).
+- **`options?`**: Optional `WebpOptions` for encoding.
+- **Returns**: A `Promise<Uint8Array>` with the WebP data.
+
+### `createResizer(mode: 'worker' | 'client')`
+
+Creates a reusable image resizer instance.
+
+- **`mode`**:
+  - `'worker'` (recommended): Offloads resizing to a separate thread.
+  - `'client'`: Runs resizing on the same thread.
+- **Returns**: An object with a `resize` method.
+
+### `resizer.resize(signal, image, options)`
+
+Resizes an image.
+
+- **`signal`**: An `AbortSignal` to cancel the operation.
+- **`image`**: An `ImageInput` object.
+- **`options`**: `ResizeOptions` (`{ width?: number, height?: number }`).
+- **Returns**: A `Promise<ImageInput>` with the resized image data.
+
+## Environment Compatibility
+
+Squoosh Kit is designed to work seamlessly in multiple environments:
+
+- **Node.js**: Fully supported.
+- **Bun**: Fully supported and optimized for.
+- **Modern Browsers**: Fully supported (Chrome, Firefox, Safari, Edge).
 
 ## License
 
-MIT - part of the Squoosh Kit family
+MIT - part of the Squoosh Kit family.

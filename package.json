@@ -45,8 +45,9 @@
     "format:check": "prettier --check .",
     "check-types": "tsc --noEmit",
     "clean": "bun run --filter \"@squoosh-kit/*\" clean:local && rm -rf node_modules .bun/install/cache bun.lockb bun.lock",
-    "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
-    "release": "bun run release:core --dry-run && bun run release:runtime --dry-run && bun run release:resize --dry-run && bun run release:webp --dry-run",
+    "validate": "bun run check-types && bun run lint && bun run format:check && bun run test && bun audit",
+    "size": "size-limit",
+    "release": "multi-semantic-release",
     "release:core": "cd packages/core && bun publish",
     "release:resize": "cd packages/resize && bun publish",
     "release:webp": "cd packages/webp && bun publish",
@@ -54,12 +55,14 @@
     "release:publish": "bun run release:core && bun run release:runtime && bun run release:resize && bun run release:webp"
   },
   "devDependencies": {
+    "@size-limit/preset-big-lib": "^11.2.0",
     "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.0",
     "multi-semantic-release": "^3.0.2",
     "prettier": "^3.2.5",
+    "size-limit": "^11.2.0",
     "typescript": "^5.6.3"
   },
   "workspaces": [

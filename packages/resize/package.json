@@ -20,10 +20,16 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs",
+      "browser": "./dist/index.browser.mjs"
     },
     "./resize.worker.js": {
-      "import": "./dist/resize.worker.js"
+      "bun": "./dist/resize.worker.bun.js",
+      "import": "./dist/resize.worker.node.mjs",
+      "require": "./dist/resize.worker.node.cjs",
+      "browser": "./dist/resize.worker.browser.mjs"
     }
   },
   "files": [
@@ -32,7 +38,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "bun run scripts/copy-assets.ts && tsc && bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/resize.worker.ts",
+    "build": "bun run build.ts",
     "clean:local": "rm -rf dist *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test"

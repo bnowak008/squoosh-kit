@@ -36,7 +36,9 @@ export async function encode(
  */
 export function createWebpEncoder(mode: 'worker' | 'client' = 'worker') {
   const bridge = createBridge(mode);
-  return bridge.encode.bind(bridge);
+
+  const test = bridge.encode.bind(bridge);
+  return test;
 }
 
 // Export the client-side implementation for direct use by the bridge.

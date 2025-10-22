@@ -14,7 +14,7 @@ const PACKAGE_ROOT = join(import.meta.dir, '..');
 const SQUOOSH_ROOT = join(PACKAGE_ROOT, '..', '..', '.squoosh-temp');
 const DEST_DIR = join(PACKAGE_ROOT, 'dist', 'wasm');
 
-async function main() {
+export default async function copyAssets() {
   const resizeSrc = join(SQUOOSH_ROOT, 'codecs', 'resize', 'pkg');
 
   if (!existsSync(resizeSrc)) {
@@ -57,8 +57,3 @@ async function main() {
     console.log(`\nCopied ${copiedCount} Resize codec files successfully.`);
   }
 }
-
-main().catch((error) => {
-  console.error('Error copying Resize assets:', error);
-  process.exit(1);
-});

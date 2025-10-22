@@ -1,8 +1,10 @@
 # @squoosh-kit/webp
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fwebp.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fwebp)
+[![CI](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Professional WebP encoding that doesn't get in your way**
+**Professional WebP encoding that doesn't get in your way.**
 
 Transform your images into the modern WebP format with the same technology that powers Google's Squoosh. Built on WebAssembly for incredible speed, this package handles the heavy lifting while keeping your application responsive through intelligent worker management.
 
@@ -18,118 +20,73 @@ npm install @squoosh-kit/webp
 
 ## Quick Start
 
-Get started with minimal fuss:
+### One-off Encoding
+
+For a single image, the `encode` function is the simplest solution.
 
 ```typescript
-import { encode, createWebpEncoder } from '@squoosh-kit/webp';
-import type { ImageInput } from '@squoosh-kit/webp';
+import { encode } from '@squoosh-kit/webp';
+import type { ImageInput } from '@squoosh-kit/runtime';
 
-// Your image data - from a file, canvas, or anywhere
 const imageData: ImageInput = {
-  data: imageBuffer,
+  data: new Uint8Array(1920 * 1080 * 4).fill(0),
   width: 1920,
-  height: 1080
+  height: 1080,
 };
 
-// One-off encoding (worker spins up automatically)
-const webpBuffer = await encode(
-  new AbortController().signal,
-  imageData,
-  { quality: 85 }
-);
+const webpBuffer = await encode(new AbortController().signal, imageData, {
+  quality: 85,
+});
+```
 
-// For multiple images, create a persistent encoder
+### Batch Encoding
+
+For processing multiple images, create a reusable `encoder` to improve performance by using a persistent Web Worker.
+
+```typescript
+import { createWebpEncoder } from '@squoosh-kit/webp';
+
 const encoder = createWebpEncoder('worker');
-const optimized = await encoder(
-  new AbortController().signal,
-  imageData,
-  { quality: 90, lossless: false }
+
+const images = [image1, image2, image3];
+
+const results = await Promise.all(
+  images.map((image) =>
+    encoder.encode(new AbortController().signal, image, { quality: 90 })
+  )
 );
-```
-
-## How It Works
-
-Under the hood, this package leverages Google's Squoosh WebP encoder compiled to WebAssembly. The heavy processing happens in a Web Worker by default, so your main thread stays free for user interactions.
-
-You get the same quality and performance as the original Squoosh tool, but wrapped in a clean JavaScript API that fits naturally into modern applications.
-
-## Real-World Examples
-
-**Image Upload Processing**
-```typescript
-// In your upload handler
-const processedImage = await encode(
-  new AbortController().signal,
-  uploadedImage,
-  {
-    quality: 85,
-    lossless: false // Perfect for photos
-  }
-);
-
-await saveToStorage('optimized.webp', processedImage);
-```
-
-**Batch Conversion Service**
-```typescript
-const encoder = createWebpEncoder('client'); // Direct encoding, no worker
-
-for (const imagePath of imageFiles) {
-  const imageData = await loadImage(imagePath);
-  const webpData = await encoder(
-    new AbortController().signal,
-    imageData,
-    { quality: 75 }
-  );
-
-  await writeFile(`${imagePath}.webp`, webpData);
-}
 ```
 
 ## API Reference
 
-### `encode(signal, imageData, options?)`
+### `createWebpEncoder(mode: 'worker' | 'client')`
 
-The main encoding function. Handles everything automatically and returns a Promise.
+Creates a reusable WebP encoder instance.
 
-- `signal` - `AbortSignal` to cancel long-running operations
-- `imageData` - `ImageInput` object with your pixel data
-- `options` - (optional) `WebpOptions` for quality and format settings
-- **Returns** - `Promise<Uint8Array>` with your encoded WebP data
+- **`mode`**:
+  - `'worker'` (recommended): Offloads encoding to a separate thread.
+  - `'client'`: Runs encoding on the same thread.
+- **Returns**: An object with an `encode` method.
 
-### `createWebpEncoder(mode?)`
+### `encoder.encode(signal, image, options?)`
 
-Creates a reusable encoder function. More efficient for processing multiple images.
+Encodes an image to the WebP format.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
-- **Returns** - A function with the same signature as `encode()`
+- **`signal`**: An `AbortSignal` to cancel the operation.
+- **`image`**: An `ImageInput` object (`{ data: Uint8Array, width: number, height: number }`).
+- **`options?`**: Optional `WebpOptions`.
+- **Returns**: A `Promise<Uint8Array>` with the WebP data.
 
-### `WebpOptions`
+### `encode(signal, image, options?)`
 
-Fine-tune your encoding:
+A convenience function for a single encode operation.
 
-```typescript
-type WebpOptions = {
-  quality?: number;     // 0-100, controls file size vs quality (default: 82)
-  lossless?: boolean;   // Lossless compression, larger files (default: false)
-  nearLossless?: boolean; // Near-lossless mode, best of both worlds (default: false)
-};
-```
+## Environment Compatibility
 
-## Performance Tips
-
-- **Use workers for UI apps** - Keeps your interface responsive during encoding
-- **Use client mode for servers** - Direct encoding without worker overhead
-- **Batch with persistent encoders** - More efficient than one-off calls
-- **Adjust quality strategically** - Often 80-90% quality looks identical to 100%
-
-## Works With
-
-- **Bun** - First-class support, fastest performance
-- **Node.js** - Works great in server environments
-- **Browsers** - Full Web Worker support for responsive UIs
-- **TypeScript** - Complete type definitions included
+- **Node.js**: Fully supported.
+- **Bun**: Fully supported.
+- **Modern Browsers**: Fully supported.
 
 ## License
 
-MIT - use it freely in your projects
+MIT - use it freely in your projects.

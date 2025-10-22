@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { AnimatedCharacter } from './AnimatedCharacter';
-import { encode, resize, ImageInput } from '@squoosh-kit/core';
+import { encode, resize, type ImageInput } from '@squoosh-kit/core';
 
 type SquooshImageData = ImageInput['data'];
 
@@ -109,14 +109,10 @@ export function ImageProcessor() {
       message: 'Analyzing your image...',
     });
 
-    const imageData: SquooshImageData = {
-      width: 
-    }
+    // const resizedImage = await resize(
+    //   new AbortController().signal,
 
-    const resizedImage = await resize(
-      new AbortController().signal,
-
-    )
+    // )
 
     setTimeout(() => {
       setProcessingState({

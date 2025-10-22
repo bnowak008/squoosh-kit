@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { createWebpEncoder, createResizer } from '../src/index.ts';
+import { createWebpEncoder, createResizer } from '../src/';
 
 // Test image data: 3x3 red square
 const createTestImage = (): {
@@ -22,27 +22,27 @@ const createTestImage = (): {
 };
 
 describe('Integration Tests', () => {
-  it('should create factory functions from main entry point', () => {
+  it('should create factory functions from main entry point', async () => {
     // Test WebP encoder factory
-    const webpEncoder = createWebpEncoder('client');
+    const webpEncoder = await createWebpEncoder('client');
     expect(typeof webpEncoder).toBe('function');
 
     // Test resize factory
-    const resizer = createResizer('client');
+    const resizer = await createResizer('client');
     expect(typeof resizer).toBe('function');
   });
 
-  it('should create factory functions for worker mode', () => {
+  it('should create factory functions for worker mode', async () => {
     // Test WebP encoder factory
-    const webpEncoder = createWebpEncoder('worker');
+    const webpEncoder = await createWebpEncoder('worker');
     expect(typeof webpEncoder).toBe('function');
 
     // Test resize factory
-    const resizer = createResizer('worker');
+    const resizer = await createResizer('worker');
     expect(typeof resizer).toBe('function');
   });
 
-  it('should validate image input from main entry point', () => {
+  it('should validate image input from main entry point', async () => {
     const image = createTestImage();
     expect(image.data).toBeInstanceOf(Uint8ClampedArray);
     expect(image.width).toBe(3);
@@ -50,7 +50,7 @@ describe('Integration Tests', () => {
     expect(image.data.length).toBe(36); // 3x3x4 = 36 bytes
   });
 
-  it('should handle different execution modes', () => {
+  it('should handle different execution modes', async () => {
     // Test that both modes are supported
     const clientWebpEncoder = createWebpEncoder('client');
     const workerWebpEncoder = createWebpEncoder('worker');

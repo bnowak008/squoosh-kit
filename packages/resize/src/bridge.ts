@@ -2,9 +2,13 @@
  * Bridge implementation for the Resize package, handling worker and client modes.
  */
 
-import { callWorker, type ImageInput } from '@squoosh-kit/runtime';
-import { resizeClient } from './resize.worker.ts';
-import type { ResizeOptions } from './types.ts';
+import {
+  callWorker,
+  type ImageInput,
+  createCodecWorker,
+} from '@squoosh-kit/runtime';
+import { resizeClient } from './resize.worker';
+import type { ResizeOptions } from './types';
 
 interface ResizeBridge {
   resize(
@@ -28,10 +32,7 @@ class ResizeWorkerBridge implements ResizeBridge {
   private worker: Worker | null = null;
   private async getWorker(): Promise<Worker> {
     if (!this.worker) {
-      const workerUrl = await import.meta.resolve(
-        '@squoosh-kit/resize/resize.worker.js'
-      );
-      this.worker = new Worker(workerUrl, { type: 'module' });
+      this.worker = await createCodecWorker('file:///home/bnowak/repos/squoosh-lite/packages/resize/dist/resize.worker.bun.js');
     }
     return this.worker;
   }
@@ -46,10 +47,13 @@ class ResizeWorkerBridge implements ResizeBridge {
     console.log('buffer', buffer);
 
     try {
-      const result = await callWorker<{ image: ImageInput; options: ResizeOptions }, ImageInput>(worker, 'resize:run', { image, options }, signal, [
+      const result = await callWorker<
+        { image: ImageInput; options: ResizeOptions },
+        ImageInput
+      >(worker, 'resize:run', { image, options }, signal, [
         buffer as ArrayBuffer,
       ]);
-      
+
       console.log('result', result);
 
       return result;

@@ -1,85 +1,56 @@
 # @squoosh-kit/runtime
 
-**The engine that makes Squoosh Kit tick**
+[![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fruntime.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fruntime)
+[![CI](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**The engine that makes Squoosh Kit tick.**
 
 This package provides the foundational runtime utilities that power all Squoosh Kit functionality. It handles the complex orchestration between your main application thread and the high-performance WebAssembly workers that do the actual image processing.
 
 While most users won't interact with this package directly (it's consumed internally by the other Squoosh Kit packages), it contains the clever bits that make everything work smoothly across different JavaScript environments.
 
-## What's Inside
+## Core Features
 
-**Worker Bridge**
-- Seamless communication between main thread and Web Workers
-- Automatic worker lifecycle management
-- Graceful fallback for environments without worker support
+- **Worker Bridge**: A seamless communication layer between the main thread and Web Workers, with a client-side fallback.
+- **Environment Detection**: Utilities to detect the current runtime environment (Node.js, Bun, Browser, Worker).
+- **Type-Safe Communication**: A robust request/response messaging system with full TypeScript support.
 
-**Environment Detection**
-- Smart detection of execution context (worker vs main thread)
-- Platform-specific optimizations and polyfills
-- Consistent behavior across Bun, Node.js, and browsers
+## For Squoosh Kit Developers
 
-**Communication Layer**
-- Type-safe request/response messaging
-- Built-in error handling and recovery
-- Support for operation cancellation and progress tracking
+If you are contributing to Squoosh Kit or building a custom codec package, this runtime provides the essential building blocks.
 
-## How It Works
+### `createCodecWorker(workerPath)`
 
-When you call a function like `encode()` or `resize()`, this runtime package:
-
-1. **Chooses the right execution mode** - Web Worker for UI responsiveness or direct execution for maximum speed
-2. **Manages the worker lifecycle** - Spins up workers when needed, reuses them efficiently
-3. **Handles the heavy lifting** - Coordinates between your code and the WebAssembly codecs
-4. **Keeps things responsive** - Ensures your main thread stays free for user interactions
-
-## For Developers
-
-This package is primarily consumed by the other Squoosh Kit packages (`webp`, `resize`, `core`), but if you're building custom image processing functionality or contributing to Squoosh Kit itself, you'll find:
-
-- **Clean abstractions** - Simple APIs that hide WebAssembly complexity
-- **Type safety** - Full TypeScript support throughout
-- **Cross-platform compatibility** - Works everywhere JavaScript runs
-- **Performance optimizations** - Tuned for both speed and responsiveness
-
-## API Overview
-
-The main types and functions you'll encounter:
+This is the most important utility for creating workers in a cross-platform way. It intelligently detects the environment and uses the correct method to instantiate a `Worker`.
 
 ```typescript
-// Core types for image data
-type ImageInput = ImageData | { data: Uint8Array; width: number; height: number };
+import { createCodecWorker } from '@squoosh-kit/runtime';
 
-// Worker communication
-interface WorkerRequest<T = any> {
-  id: string;
-  type: string;
-  payload: T;
-}
-
-interface WorkerResponse<T = any> {
-  id: string;
-  ok: boolean;
-  data?: T;
-  error?: string;
-}
-
-// Bridge creation
-createBridge(mode: 'worker' | 'client'): ImageProcessorBridge;
+// This will work in Bun, Node.js, and the browser.
+const worker = await createCodecWorker('@my-codec/worker.js');
 ```
 
-## Environment Support
+### `callWorker(worker, type, payload, signal, transfer?)`
 
-- **Bun** - Native performance optimizations
-- **Node.js** - Server-grade reliability and speed
-- **Browsers** - Full Web Worker integration for responsive UIs
-- **WebAssembly** - Hardware-accelerated image processing
+A type-safe function for sending a request to a worker and waiting for a response.
 
-## Contributing
+- `worker`: The `Worker` instance.
+- `type`: A string identifier for the worker action (e.g., `'resize:run'`).
+- `payload`: The data to send to the worker.
+- `signal`: An `AbortSignal` to cancel the operation.
+- `transfer?`: An optional array of `Transferable` objects.
 
-If you're working on Squoosh Kit itself, this package is where the magic happens. The bridge implementations, worker management, and cross-platform compatibility logic all live here.
+### Environment Utilities
 
-For detailed API documentation, check the TypeScript definitions and source code comments - everything is thoroughly documented for maintainers.
+You can use the exported environment checkers (`isBun`, `isNode`, `isBrowser`, `isWorker`) to add environment-specific logic to your codecs.
+
+## Environment Compatibility
+
+- **Node.js**: Fully supported.
+- **Bun**: Fully supported.
+- **Modern Browsers**: Fully supported.
 
 ## License
 
-MIT - the foundation of Squoosh Kit
+MIT - the foundation of Squoosh Kit.

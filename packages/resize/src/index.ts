@@ -34,7 +34,9 @@ export async function resize(
  */
 export function createResizer(mode: 'worker' | 'client' = 'worker') {
   const bridge = createBridge(mode);
-  return bridge.resize.bind(bridge);
+  return {
+    resize: bridge.resize.bind(bridge)
+  };
 }
 
 // Export the client-side implementation for direct use by the bridge.

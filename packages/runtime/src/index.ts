@@ -5,6 +5,7 @@
  * and worker communication helpers.
  */
 
-export * from './env.js';
-export * from './worker-call.js';
-export * from './types.js';
+export * from './env';
+export * from './types';
+export * from './worker-call';
+export * from './worker-listener';

@@ -3,10 +3,9 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { resize, createResizer } from '../src/index.ts';
-import type { ResizeOptions } from '../src/types.ts';
-import type { ImageInput } from '../../runtime/src/index.ts';
-
+import { resize, createResizer } from '../src/';
+import type { ResizeOptions } from '../src/types';
+import type { ImageInput } from '../../runtime/src/';
 
 // Test image data: 2x2 red square
 const createTestImage = (): ImageInput => {

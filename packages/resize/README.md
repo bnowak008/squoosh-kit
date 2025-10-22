@@ -1,8 +1,10 @@
 # @squoosh-kit/resize
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fresize.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fresize)
+[![CI](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/bnowak008/squoosh-kit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Professional image resizing with uncompromising quality**
+**Professional image resizing with uncompromising quality.**
 
 Transform your images with the same high-quality resizing algorithm that powers Google's Squoosh. Using the Lanczos3 method for mathematically precise scaling, this package delivers crisp, clear results at any size through WebAssembly acceleration.
 
@@ -18,150 +20,76 @@ npm install @squoosh-kit/resize
 
 ## Quick Start
 
-Resize images with confidence:
+### One-off Resizing
+
+For a single image, the `resize` function is the easiest way to get started. It will maintain the aspect ratio if you only provide a width or a height.
 
 ```typescript
-import { resize, createResizer } from '@squoosh-kit/resize';
-import type { ImageInput } from '@squoosh-kit/resize';
+import { resize } from '@squoosh-kit/resize';
+import type { ImageInput } from '@squoosh-kit/runtime';
 
-// Your image data - works with any source
 const imageData: ImageInput = {
-  data: imageBuffer,
+  data: new Uint8Array(2048 * 1536 * 4).fill(0),
   width: 2048,
-  height: 1536
+  height: 1536,
 };
 
 // Smart resizing maintains aspect ratio
 const thumbnail = await resize(
   new AbortController().signal,
   imageData,
-  { width: 400 } // height calculated automatically
+  { width: 400 } // height will be calculated automatically to 300
 );
+```
 
-// Exact dimensions when you need them
-const resizedImage = await resize(
-  new AbortController().signal,
-  imageData,
-  { width: 1200, height: 800 }
-);
+### Batch Resizing
 
-// Create a resizer for batch operations
+For processing multiple images, create a reusable `resizer` to improve performance by using a persistent Web Worker.
+
+```typescript
+import { createResizer } from '@squoosh-kit/resize';
+
 const resizer = createResizer('worker');
-const results = await Promise.all([
-  resizer(new AbortController().signal, imageData, { width: 800 }),
-  resizer(new AbortController().signal, imageData, { width: 1200 }),
-  resizer(new AbortController().signal, imageData, { width: 1600 })
-]);
-```
 
-## The Quality Difference
+const images = [image1, image2, image3];
 
-This isn't your average image resizer. Under the hood, it uses the Lanczos3 algorithm - a sophisticated mathematical approach that considers surrounding pixels when calculating each new pixel value. The result is resizing that maintains sharpness, avoids artifacts, and preserves the visual quality that matters.
-
-All processing happens in WebAssembly for incredible speed, with Web Workers ensuring your main thread stays free for user interactions.
-
-## Real-World Examples
-
-**Responsive Image Generation**
-```typescript
-// Generate multiple sizes for responsive design
-const sizes = [320, 640, 1024, 1600];
-
-const responsiveImages = await Promise.all(
-  sizes.map(width =>
-    resize(
-      new AbortController().signal,
-      originalImage,
-      { width, height: Math.round(width * 0.75) }
-    )
+const results = await Promise.all(
+  images.map((image) =>
+    resizer.resize(new AbortController().signal, image, { width: 800 })
   )
-);
-```
-
-**Photo Gallery Thumbnails**
-```typescript
-const resizer = createResizer('client'); // Direct for server use
-
-for (const photo of photoFiles) {
-  const fullImage = await loadImage(photo);
-  const thumbnail = await resizer(
-    new AbortController().signal,
-    fullImage,
-    { width: 300, height: 200 }
-  );
-
-  await saveThumbnail(photo.name, thumbnail);
-}
-```
-
-**Dynamic Image Processing**
-```typescript
-// Resize based on user preferences
-const userWidth = getUserPreferredWidth();
-const processedImage = await resize(
-  new AbortController().signal,
-  imageData,
-  {
-    width: userWidth,
-    linearRGB: true,        // Better color accuracy
-    premultiply: false      // Maintain transparency
-  }
 );
 ```
 
 ## API Reference
 
-### `resize(signal, imageData, options)`
+### `createResizer(mode: 'worker' | 'client')`
 
-The main resizing function. Smart defaults make it easy to use.
+Creates a reusable image resizer instance.
 
-- `signal` - `AbortSignal` to cancel long operations
-- `imageData` - `ImageInput` object with your pixel data
-- `options` - (optional) `ResizeOptions` for dimensions and quality
-- **Returns** - `Promise<ImageInput>` with resized image data
+- **`mode`**:
+  - `'worker'` (recommended): Offloads resizing to a separate thread to avoid blocking the main thread.
+  - `'client'`: Runs resizing on the same thread. Useful in environments where workers are not available.
+- **Returns**: An object with a `resize` method.
 
-### `createResizer(mode?)`
+### `resizer.resize(signal, image, options)`
 
-Creates a reusable resizing function for efficient batch processing.
+Resizes an image.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
-- **Returns** - A function with the same signature as `resize()`
+- **`signal`**: An `AbortSignal` to cancel the operation.
+- **`image`**: An `ImageInput` object (`{ data: Uint8Array, width: number, height: number }`).
+- **`options`**: `ResizeOptions` (`{ width?: number, height?: number }`).
+- **Returns**: A `Promise<ImageInput>` with the resized image data.
 
-### `ResizeOptions`
+### `resize(signal, image, options)`
 
-Control the quality and behavior of resizing:
+A convenience function for a single resize operation. It creates a temporary client-side resizer internally.
 
-```typescript
-type ResizeOptions = {
-  width?: number;        // Target width (aspect ratio maintained if only width/height set)
-  height?: number;       // Target height (aspect ratio maintained if only width/height set)
-  premultiply?: boolean; // Premultiply alpha channel (default: false)
-  linearRGB?: boolean;   // Use linear RGB color space (default: false)
-};
-```
+## Environment Compatibility
 
-## Pro Tips
-
-- **Maintain aspect ratio** - Set only width or height, and the other dimension calculates automatically
-- **Use linearRGB for accuracy** - Better color reproduction, especially for photos
-- **Batch with persistent resizers** - More efficient than one-off operations
-- **Workers for UI responsiveness** - Keeps your interface smooth during heavy processing
-
-## Perfect For
-
-- **Web Applications** - Responsive images, user avatar processing
-- **Media Libraries** - Batch thumbnail generation, format conversion
-- **E-commerce** - Product image optimization, zoom functionality
-- **Content Management** - Automated image processing pipelines
-- **Mobile Apps** - Device-specific image sizing and optimization
-
-## Works Everywhere
-
-- **Bun** - Optimized performance and full feature support
-- **Node.js** - Perfect for server-side image processing
-- **Browsers** - Web Worker support for responsive user interfaces
-- **TypeScript** - Complete type safety and IntelliSense support
+- **Node.js**: Fully supported for server-side image processing.
+- **Bun**: Fully supported and optimized for.
+- **Modern Browsers**: Fully supported with Web Workers for a responsive UI.
 
 ## License
 
-MIT - resize with confidence
+MIT - resize with confidence.

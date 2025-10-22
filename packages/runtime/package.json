@@ -20,7 +20,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs",
+      "browser": "./dist/index.browser.mjs"
     }
   },
   "files": [
@@ -29,7 +32,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc && bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts",
+    "build": "bun run build.ts",
     "clean:local": "rm -rf dist *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test"

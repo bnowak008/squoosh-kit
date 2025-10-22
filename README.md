@@ -12,12 +12,12 @@ Whether you're building a web application, a Node.js service, or a desktop app w
 
 ## What You Get
 
-| Package | What's Inside | Best For |
-|---------|---------------|----------|
-| [`@squoosh-kit/webp`](./packages/webp) | WebP encoding with quality control | Next-gen image formats, file size optimization |
-| [`@squoosh-kit/resize`](./packages/resize) | High-quality Lanczos3 resizing | Thumbnails, responsive images, batch processing |
-| [`@squoosh-kit/core`](./packages/core) | Everything bundled together | Quick prototyping, simple projects |
-| [`@squoosh-kit/runtime`](./packages/runtime) | Internal runtime utilities | Advanced customization |
+| Package                                      | What's Inside                      | Best For                                        |
+| -------------------------------------------- | ---------------------------------- | ----------------------------------------------- |
+| [`@squoosh-kit/webp`](./packages/webp)       | WebP encoding with quality control | Next-gen image formats, file size optimization  |
+| [`@squoosh-kit/resize`](./packages/resize)   | High-quality Lanczos3 resizing     | Thumbnails, responsive images, batch processing |
+| [`@squoosh-kit/core`](./packages/core)       | Everything bundled together        | Quick prototyping, simple projects              |
+| [`@squoosh-kit/runtime`](./packages/runtime) | Internal runtime utilities         | Advanced customization                          |
 
 ## Quick Example
 
@@ -26,17 +26,13 @@ import { encode } from '@squoosh-kit/webp';
 import { resize } from '@squoosh-kit/resize';
 
 // Resize first, then encode to WebP
-const resized = await resize(
-  new AbortController().signal,
-  imageData,
-  { width: 800 }
-);
+const resized = await resize(new AbortController().signal, imageData, {
+  width: 800,
+});
 
-const webpBuffer = await encode(
-  new AbortController().signal,
-  resized,
-  { quality: 85 }
-);
+const webpBuffer = await encode(new AbortController().signal, resized, {
+  quality: 85,
+});
 ```
 
 ## Why Squoosh Kit?
