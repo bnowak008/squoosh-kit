@@ -15,7 +15,7 @@ Whether you're building a web application, a Node.js service, or a desktop app w
 | Package | What's Inside | Best For |
 |---------|---------------|----------|
 | [`@squoosh-kit/webp`](./packages/webp) | WebP encoding with quality control | Next-gen image formats, file size optimization |
-| [`@squoosh-kit/resize`](./packages/resize) | High-quality Lanczos3 resizing | Thumbnails, responsive images, batch processing |
+| [`@squoosh-kit/resize`](./packages/resize) | Flexible resizing with 4 algorithms | Thumbnails, responsive images, batch processing (triangular, catrom, mitchell, lanczos3) |
 | [`@squoosh-kit/core`](./packages/core) | Everything bundled together | Quick prototyping, simple projects |
 | [`@squoosh-kit/runtime`](./packages/runtime) | Internal runtime utilities | Advanced customization |
 
@@ -29,7 +29,7 @@ import { resize } from '@squoosh-kit/resize';
 const resized = await resize(
   new AbortController().signal,
   imageData,
-  { width: 800 }
+  { width: 800, method: 'mitchell' }
 );
 
 const webpBuffer = await encode(
@@ -62,6 +62,46 @@ bun add @squoosh-kit/webp @squoosh-kit/resize
 npm install @squoosh-kit/core
 ```
 
+## Package Size & Download Reduction
+
+Squoosh Kit includes WebAssembly binaries for WASM codecs (~30-50KB gzipped per package). These enable fast processing through Web Workers and are essential for optimal performance.
+
+### Size Breakdown
+
+- **JavaScript code**: ~10-15KB gzipped
+- **TypeScript definitions**: ~5KB
+- **WASM binaries**: ~30-50KB gzipped (only needed for worker mode)
+
+### Client-Only Usage
+
+If you're using Squoosh Kit in **client mode only** (direct encoding/resizing without workers) and want to reduce the download size, you can optionally remove the WASM files:
+
+```bash
+# After installation
+rm -rf node_modules/@squoosh-kit/webp/dist/wasm/
+rm -rf node_modules/@squoosh-kit/resize/dist/wasm/
+
+# This reduces the package size by ~30-50KB gzipped
+```
+
+**Important**: Removing WASM files will cause worker mode to fail. Only do this if you're using client mode exclusively:
+
+```typescript
+// This will work (client mode)
+const encoder = createWebpEncoder('client');
+
+// This will fail (worker mode requires WASM)
+const encoder = createWebpEncoder('worker'); // ❌ WASM files missing
+```
+
+### Future Plans
+
+For v1.0+, we may offer separate packages:
+- `@squoosh-kit/resize-core` (client mode only, ~10KB)
+- `@squoosh-kit/resize` (with WASM, ~50KB)
+
+This would give users the choice without manual file removal.
+
 ## Learn More
 
 Each package has its own comprehensive documentation:
@@ -69,6 +109,26 @@ Each package has its own comprehensive documentation:
 - [WebP Encoding](./packages/webp/README.md) - Advanced WebP options and examples
 - [Image Resizing](./packages/resize/README.md) - Resize algorithms and configuration
 - [Core Package](./packages/core/README.md) - Meta-package documentation
+
+## Production Readiness
+
+✅ **All 13 critical production readiness issues have been resolved:**
+
+- ✅ API Parameter Order Consistency - Stable API across all packages
+- ✅ Worker Path Resolution - Reliable worker initialization
+- ✅ AbortSignal Handling - Proper cancellation support
+- ✅ ImageData Copy Performance - Zero-copy Uint8Array views
+- ✅ Worker Memory Leaks - Proper cleanup and resource management
+- ✅ Lanczos3 vs Triangular - Flexible resize algorithms with honest documentation
+- ✅ WASM Module Loading - Robust codec loading with fallbacks
+- ✅ Input Validation - Comprehensive validation with clear error messages
+- ✅ Unsafe Type Casts - Eliminated `as ArrayBuffer` casts with proper type checking
+- ✅ Parameter Order Between Functions - Consistent parameter ordering
+- ✅ WASM Binary Bundling - Clear documentation and optimization paths
+- ✅ Edge Cases in Resize Logic - Safe dimension calculations
+- ✅ Internal Exports - Clean public API surface
+
+See [Production Readiness Issues](/.cursor/todos/issues/README.md) for detailed information on each resolution.
 
 ## Development
 

@@ -47,14 +47,11 @@ export async function callWorker<TPayload, TResponse>(
       const response = event.data as WorkerResponse<TResponse>;
       if (response.id !== id) return;
 
-      console.log('🔧 Worker call: Response received', response);
       cleanup();
 
       if (response.ok && response.data !== undefined) {
-        console.log('🔧 Worker call: Response data', response.data);
         resolve(response.data);
       } else {
-        console.log('🔧 Worker call: Response error', response.error);
         reject(new Error(response.error || 'Unknown worker error'));
       }
     };

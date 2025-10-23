@@ -17,7 +17,7 @@
       "name": "@squoosh-kit/example",
       "version": "0.1.0",
       "dependencies": {
-        "@squoosh-kit/core": "latest",
+        "@squoosh-kit/core": "workspace:*",
         "bun-plugin-tailwind": "^0.1.2",
         "react": "^19",
         "react-dom": "^19",
@@ -29,7 +29,7 @@
         "@types/react-dom": "^19",
       },
     },
-    "apps/examples": {
+    "apps/example_2": {
       "name": "@squoosh-kit/examples",
       "dependencies": {
         "@squoosh-kit/core": "workspace:*",
@@ -79,7 +79,7 @@
 
     "@eslint-community/eslint-utils": ["@eslint-community/eslint-utils@4.9.0", "", { "dependencies": { "eslint-visitor-keys": "^3.4.3" }, "peerDependencies": { "eslint": "^6.0.0 || ^7.0.0 || >=8.0.0" } }, "sha512-ayVFHdtZ+hsq1t2Dy24wCmGXGe4q9Gu3smhLYALJrr473ZH27MsnSL+LKUlimp4BWJqMDMLmPpx/Q9R3OAlL4g=="],
 
-    "@eslint-community/regexpp": ["@eslint-community/regexpp@4.12.1", "", {}, "sha512-CCZCDJuduB9OUkFkY2IgppNZMi2lBQgD2qzwXkEia16cge2pijY/aXi96CJMquDMn3nJdlPV1A5KrJEXwfLNzQ=="],
+    "@eslint-community/regexpp": ["@eslint-community/regexpp@4.12.2", "", {}, "sha512-EriSTlt5OC9/7SXkRSCAhfSxxoSUgBm33OH+IkwbdpgoqsSsUg7y3uh+IICI/Qg4BBWr3U2i39RpmycbxMq4ew=="],
 
     "@eslint/eslintrc": ["@eslint/eslintrc@2.1.4", "", { "dependencies": { "ajv": "^6.12.4", "debug": "^4.3.2", "espree": "^9.6.0", "globals": "^13.19.0", "ignore": "^5.2.0", "import-fresh": "^3.2.1", "js-yaml": "^4.1.0", "minimatch": "^3.1.2", "strip-json-comments": "^3.1.1" } }, "sha512-269Z39MS6wVJtsoUl10L60WdkhJVdPG24Q4eZTH3nnF6lpvSShEK3wQjDX9JRWAUPvPh7COouPpU9IrqaZFvtQ=="],
 
@@ -125,27 +125,27 @@
 
     "@octokit/types": ["@octokit/types@9.3.2", "", { "dependencies": { "@octokit/openapi-types": "^18.0.0" } }, "sha512-D4iHGTdAnEEVsB8fl95m1hiz7D5YiRdQ9b/OEb3BYRVwbLsGHcRVPz+u+BgRLNk0Q0/4iZCBqDN96j2XNxfXrA=="],
 
-    "@oven/bun-darwin-aarch64": ["@oven/bun-darwin-aarch64@1.3.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-WeXSaL29ylJEZMYHHW28QZ6rgAbxQ1KuNSZD9gvd3fPlo0s6s2PglvPArjjP07nmvIK9m4OffN0k4M98O7WmAg=="],
+    "@oven/bun-darwin-aarch64": ["@oven/bun-darwin-aarch64@1.3.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-7Rap1BHNWqgnexc4wLjjdZeVRQKtk534iGuJ7qZ42i/q1B+cxJZ6zSnrFsYmo+zreH7dUyUXL3AHuXGrl2772Q=="],
 
-    "@oven/bun-darwin-x64": ["@oven/bun-darwin-x64@1.3.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-CFKjoUWQH0Oz3UHYfKbdKLq0wGryrFsTJEYq839qAwHQSECvVZYAnxVVDYUDa0yQFonhO2qSHY41f6HK+b7xtw=="],
+    "@oven/bun-darwin-x64": ["@oven/bun-darwin-x64@1.3.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-wpqmgT/8w+tEr5YMGt1u1sEAMRHhyA2SKZddC6GCPasHxSqkCWOPQvYIHIApnTsoSsxhxP0x6Cpe93+4c7hq/w=="],
 
-    "@oven/bun-darwin-x64-baseline": ["@oven/bun-darwin-x64-baseline@1.3.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-+FSr/ub5vA/EkD3fMhHJUzYioSf/sXd50OGxNDAntVxcDu4tXL/81Ka3R/gkZmjznpLFIzovU/1Ts+b7dlkrfw=="],
+    "@oven/bun-darwin-x64-baseline": ["@oven/bun-darwin-x64-baseline@1.3.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-mJo715WvwEHmJ6khNymWyxi0QrFzU94wolsUmxolViNHrk+2ugzIkVIJhTnxf7pHnarxxHwyJ/kgatuV//QILQ=="],
 
-    "@oven/bun-linux-aarch64": ["@oven/bun-linux-aarch64@1.3.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-WHthS/eLkCNcp9pk4W8aubRl9fIUgt2XhHyLrP0GClB1FVvmodu/zIOtG0NXNpzlzB8+gglOkGo4dPjfVf4Z+g=="],
+    "@oven/bun-linux-aarch64": ["@oven/bun-linux-aarch64@1.3.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-ACn038SZL8del+sFnqCjf+haGB02//j2Ez491IMmPTvbv4a/D0iiNz9xiIB3ICbQd3EwQzi+Ut/om3Ba/KoHbQ=="],
 
-    "@oven/bun-linux-aarch64-musl": ["@oven/bun-linux-aarch64-musl@1.3.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-HT5sr7N8NDYbQRjAnT7ISpx64y+ewZZRQozOJb0+KQObKvg4UUNXGm4Pn1xA4/WPMZDDazjO8E2vtOQw1nJlAQ=="],
+    "@oven/bun-linux-aarch64-musl": ["@oven/bun-linux-aarch64-musl@1.3.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-gKU3Wv3BTG5VMjqMMnRwqU6tipCveE9oyYNt62efy6cQK3Vo1DOBwY2SmjbFw+yzj+Um20YoFOLGxghfQET4Ng=="],
 
-    "@oven/bun-linux-x64": ["@oven/bun-linux-x64@1.3.0", "", { "os": "linux", "cpu": "x64" }, "sha512-sGEWoJQXO4GDr0x4t/yJQ/Bq1yNkOdX9tHbZZ+DBGJt3z3r7jeb4Digv8xQUk6gdTFC9vnGHuin+KW3/yD1Aww=="],
+    "@oven/bun-linux-x64": ["@oven/bun-linux-x64@1.3.1", "", { "os": "linux", "cpu": "x64" }, "sha512-cAUeM3I5CIYlu5Ur52eCOGg9yfqibQd4lzt9G1/rA0ajqcnCBaTuekhUDZETJJf5H9QV+Gm46CqQg2DpdJzJsw=="],
 
-    "@oven/bun-linux-x64-baseline": ["@oven/bun-linux-x64-baseline@1.3.0", "", { "os": "linux", "cpu": "x64" }, "sha512-OmlEH3nlxQyv7HOvTH21vyNAZGv9DIPnrTznzvKiOQxkOphhCyKvPTlF13ydw4s/i18iwaUrhHy+YG9HSSxa4Q=="],
+    "@oven/bun-linux-x64-baseline": ["@oven/bun-linux-x64-baseline@1.3.1", "", { "os": "linux", "cpu": "x64" }, "sha512-7+2aCrL81mtltZQbKdiPB58UL+Gr3DAIuPyUAKm0Ib/KG/Z8t7nD/eSMRY/q6b+NsAjYnVPiPwqSjC3edpMmmQ=="],
 
-    "@oven/bun-linux-x64-musl": ["@oven/bun-linux-x64-musl@1.3.0", "", { "os": "linux", "cpu": "x64" }, "sha512-rtzUEzCynl3Rhgn/iR9DQezSFiZMcAXAbU+xfROqsweMGKwvwIA2ckyyckO08psEP8XcUZTs3LT9CH7PnaMiEA=="],
+    "@oven/bun-linux-x64-musl": ["@oven/bun-linux-x64-musl@1.3.1", "", { "os": "linux", "cpu": "x64" }, "sha512-8AgEAHyuJ5Jm9MUo1L53K1SRYu0bNGqV0E0L5rB5DjkteO4GXrnWGBT8qsuwuy7WMuCMY3bj64/pFjlRkZuiXw=="],
 
-    "@oven/bun-linux-x64-musl-baseline": ["@oven/bun-linux-x64-musl-baseline@1.3.0", "", { "os": "linux", "cpu": "x64" }, "sha512-hrr7mDvUjMX1tuJaXz448tMsgKIqGJBY8+rJqztKOw1U5+a/v2w5HuIIW1ce7ut0ZwEn+KIDvAujlPvpH33vpQ=="],
+    "@oven/bun-linux-x64-musl-baseline": ["@oven/bun-linux-x64-musl-baseline@1.3.1", "", { "os": "linux", "cpu": "x64" }, "sha512-tP0WWcAqrMayvkggOHBGBoyyoK+QHAqgRUyj1F6x5/udiqc9vCXmIt1tlydxYV/NvyvUAmJ7MWT0af44Xm2kJw=="],
 
-    "@oven/bun-windows-x64": ["@oven/bun-windows-x64@1.3.0", "", { "os": "win32", "cpu": "x64" }, "sha512-xXwtpZVVP7T+vkxcF/TUVVOGRjEfkByO4mKveKYb4xnHWV4u4NnV0oNmzyMKkvmj10to5j2h0oZxA4ZVVv4gfA=="],
+    "@oven/bun-windows-x64": ["@oven/bun-windows-x64@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-xdUjOZRq6PwPbbz4/F2QEMLBZwintGp7AS50cWxgkHnyp7Omz5eJfV6/vWtN4qwZIyR3V3DT/2oXsY1+7p3rtg=="],
 
-    "@oven/bun-windows-x64-baseline": ["@oven/bun-windows-x64-baseline@1.3.0", "", { "os": "win32", "cpu": "x64" }, "sha512-/jVZ8eYjpYHLDFNoT86cP+AjuWvpkzFY+0R0a1bdeu0sQ6ILuy1FV6hz1hUAP390E09VCo5oP76fnx29giHTtA=="],
+    "@oven/bun-windows-x64-baseline": ["@oven/bun-windows-x64-baseline@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-dcA+Kj7hGFrY3G8NWyYf3Lj3/GMViknpttWUf5pI6p6RphltZaoDu0lY5Lr71PkMdRZTwL2NnZopa/x/NWCdKA=="],
 
     "@pnpm/config.env-replace": ["@pnpm/config.env-replace@1.1.0", "", {}, "sha512-htyl8TWnKL7K/ESFa1oW2UB5lVDxuF5DpM7tBi6Hu2LNL3mWkIzNLG6N4zoCUP1lCKNxWy/3iu8mS8MvToGd6w=="],
 
@@ -167,7 +167,7 @@
 
     "@squoosh-kit/example": ["@squoosh-kit/example@workspace:apps/example"],
 
-    "@squoosh-kit/examples": ["@squoosh-kit/examples@workspace:apps/examples"],
+    "@squoosh-kit/examples": ["@squoosh-kit/examples@workspace:apps/example_2"],
 
     "@squoosh-kit/resize": ["@squoosh-kit/resize@workspace:packages/resize"],
 
@@ -249,7 +249,7 @@
 
     "braces": ["braces@3.0.3", "", { "dependencies": { "fill-range": "^7.1.1" } }, "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="],
 
-    "bun": ["bun@1.3.0", "", { "optionalDependencies": { "@oven/bun-darwin-aarch64": "1.3.0", "@oven/bun-darwin-x64": "1.3.0", "@oven/bun-darwin-x64-baseline": "1.3.0", "@oven/bun-linux-aarch64": "1.3.0", "@oven/bun-linux-aarch64-musl": "1.3.0", "@oven/bun-linux-x64": "1.3.0", "@oven/bun-linux-x64-baseline": "1.3.0", "@oven/bun-linux-x64-musl": "1.3.0", "@oven/bun-linux-x64-musl-baseline": "1.3.0", "@oven/bun-windows-x64": "1.3.0", "@oven/bun-windows-x64-baseline": "1.3.0" }, "os": [ "linux", "win32", "darwin", ], "cpu": [ "x64", "arm64", ], "bin": { "bun": "bin/bun.exe", "bunx": "bin/bunx.exe" } }, "sha512-YI7mFs7iWc/VsGsh2aw6eAPD2cjzn1j+LKdYVk09x1CrdTWKYIHyd+dG5iQoN9//3hCDoZj8U6vKpZzEf5UARA=="],
+    "bun": ["bun@1.3.1", "", { "optionalDependencies": { "@oven/bun-darwin-aarch64": "1.3.1", "@oven/bun-darwin-x64": "1.3.1", "@oven/bun-darwin-x64-baseline": "1.3.1", "@oven/bun-linux-aarch64": "1.3.1", "@oven/bun-linux-aarch64-musl": "1.3.1", "@oven/bun-linux-x64": "1.3.1", "@oven/bun-linux-x64-baseline": "1.3.1", "@oven/bun-linux-x64-musl": "1.3.1", "@oven/bun-linux-x64-musl-baseline": "1.3.1", "@oven/bun-windows-x64": "1.3.1", "@oven/bun-windows-x64-baseline": "1.3.1" }, "os": [ "linux", "win32", "darwin", ], "cpu": [ "x64", "arm64", ], "bin": { "bun": "bin/bun.exe", "bunx": "bin/bunx.exe" } }, "sha512-enqkEb0RhNOgDzHQwv7uvnIhX3uSzmKzz779dL7kdH8SauyTdQvCz4O1UT2rU0UldQp2K9OlrJNdyDHayPEIvw=="],
 
     "bun-plugin-tailwind": ["bun-plugin-tailwind@0.1.2", "", { "peerDependencies": { "bun": ">=1.0.0" } }, "sha512-41jNC1tZRSK3s1o7pTNrLuQG8kL/0vR/JgiTmZAJ1eHwe0w5j6HFPKeqEk0WAD13jfrUC7+ULuewFBBCoADPpg=="],
 
@@ -839,8 +839,6 @@
 
     "@semantic-release/npm/fs-extra": ["fs-extra@11.3.2", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^6.0.1", "universalify": "^2.0.0" } }, "sha512-Xr9F6z6up6Ws+NjzMCZc6WXg2YFRlrLP9NQDO3VQrWrfiojdhS56TzueT88ze0uBdCTwEIhQ3ptnmKeWGFAe0A=="],
 
-    "@squoosh-kit/example/@squoosh-kit/core": ["@squoosh-kit/core@0.0.4", "", { "dependencies": { "@squoosh-kit/resize": "0.0.3", "@squoosh-kit/webp": "0.0.3" } }, "sha512-LKNVKc1chaGL5XTCgEF3Ophhp+5BwdqSpMfnx3og/iib6EAMnwnRnW4qYa32cx/3wCmmWf27+vQGMpUtufQj7Q=="],
-
     "@typescript-eslint/typescript-estree/globby": ["globby@11.1.0", "", { "dependencies": { "array-union": "^2.1.0", "dir-glob": "^3.0.1", "fast-glob": "^3.2.9", "ignore": "^5.2.0", "merge2": "^1.4.1", "slash": "^3.0.0" } }, "sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g=="],
 
     "@typescript-eslint/typescript-estree/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
@@ -1303,10 +1301,6 @@
 
     "@semantic-release/npm/fs-extra/universalify": ["universalify@2.0.1", "", {}, "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw=="],
 
-    "@squoosh-kit/example/@squoosh-kit/core/@squoosh-kit/resize": ["@squoosh-kit/resize@0.0.3", "", { "dependencies": { "@squoosh-kit/runtime": "0.0.3" } }, "sha512-MuDWxEzr/l55osBbPNwTZhf3WAfRY9CUk+O5BY8Mh5nii9ZuY3NkaGgsLpj5+cv9UklB1IvR8T8ah7ucRP1V9g=="],
-
-    "@squoosh-kit/example/@squoosh-kit/core/@squoosh-kit/webp": ["@squoosh-kit/webp@0.0.3", "", { "dependencies": { "@squoosh-kit/runtime": "0.0.3" } }, "sha512-Yu+qZv1RpTs5SW9lcIiWLZsg6kIfZTlybar3NI0aOLJjfNOgTV76nVdHrVFVgvaFHpOrUigPoVPh6BlHfsJd7g=="],
-
     "@typescript-eslint/typescript-estree/minimatch/brace-expansion": ["brace-expansion@2.0.2", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ=="],
 
     "conventional-changelog-writer/through2/readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "^2.0.3", "string_decoder": "^1.1.1", "util-deprecate": "^1.0.1" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
@@ -1352,10 +1346,6 @@
     "signale/figures/escape-string-regexp": ["escape-string-regexp@1.0.5", "", {}, "sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg=="],
 
     "@manypkg/find-root/find-up/locate-path/p-locate": ["p-locate@4.1.0", "", { "dependencies": { "p-limit": "^2.2.0" } }, "sha512-R79ZZ/0wAxKGu3oYMlz8jy/kbhsNrS7SKZ7PxEHBgJ5+F2mtFW2fK2cOtBh1cHYkQsbzFV7I+EoRKe6Yt0oK7A=="],
-
-    "@squoosh-kit/example/@squoosh-kit/core/@squoosh-kit/resize/@squoosh-kit/runtime": ["@squoosh-kit/runtime@0.0.3", "", {}, "sha512-lvvrOgXIXu6ey5WIU6ed/nm1tOEqWqBmNFLyp2RozszgjqR2gHTbZ7amk5E3pfLqXKtuX/At11Soc7qo/lVKlw=="],
-
-    "@squoosh-kit/example/@squoosh-kit/core/@squoosh-kit/webp/@squoosh-kit/runtime": ["@squoosh-kit/runtime@0.0.3", "", {}, "sha512-lvvrOgXIXu6ey5WIU6ed/nm1tOEqWqBmNFLyp2RozszgjqR2gHTbZ7amk5E3pfLqXKtuX/At11Soc7qo/lVKlw=="],
 
     "npm/node-gyp/glob/minimatch": ["minimatch@3.1.2", "", { "dependencies": { "brace-expansion": "^1.1.7" } }, "sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw=="],
 

@@ -2,49 +2,72 @@
  * Bridge implementation for the WebP package, handling worker and client modes.
  */
 
-import { callWorker, type ImageInput } from '@squoosh-kit/runtime';
+import { callWorker, createReadyWorker, type ImageInput } from '@squoosh-kit/runtime';
+import { validateArrayBuffer } from '@squoosh-kit/runtime';
 import { webpEncodeClient } from './webp.worker.js';
 import type { WebpOptions } from './types.js';
 
 interface WebPBridge {
   encode(
-    signal: AbortSignal,
     image: ImageInput,
-    options?: WebpOptions
+    options?: WebpOptions,
+    signal?: AbortSignal
   ): Promise<Uint8Array>;
+  terminate(): Promise<void>;
 }
 
 class WebpClientBridge implements WebPBridge {
   async encode(
-    signal: AbortSignal,
     image: ImageInput,
-    options?: WebpOptions
+    options?: WebpOptions,
+    signal?: AbortSignal
   ): Promise<Uint8Array> {
-    return webpEncodeClient(signal, image, options);
+    return webpEncodeClient(image, options, signal);
+  }
+
+  async terminate(): Promise<void> {
+    // Client mode has nothing to terminate
   }
 }
 
 class WebpWorkerBridge implements WebPBridge {
   private worker: Worker | null = null;
+  private workerReady: Promise<Worker> | null = null;
+  
   private async getWorker(): Promise<Worker> {
     if (!this.worker) {
-      const workerUrl = await import.meta.resolve(
-        '@squoosh-kit/webp/webp.worker.js'
-      );
-      this.worker = new Worker(workerUrl, { type: 'module' });
+      if (!this.workerReady) {
+        this.workerReady = this.createWorker();
+      }
+      this.worker = await this.workerReady;
     }
     return this.worker;
   }
+  
+  private async createWorker(): Promise<Worker> {
+    // Use the centralized worker helper for robust path resolution
+    return createReadyWorker('webp.worker');
+  }
+  
   async encode(
-    signal: AbortSignal,
     image: ImageInput,
-    options?: WebpOptions
+    options?: WebpOptions,
+    signal?: AbortSignal
   ): Promise<Uint8Array> {
     const worker = await this.getWorker();
     const buffer = image.data.buffer;
+    validateArrayBuffer(buffer);
     return callWorker(worker, 'webp:encode', { image, options }, signal, [
-      buffer as ArrayBuffer,
+      buffer,
     ]);
+  }
+
+  async terminate(): Promise<void> {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+      this.workerReady = null;
+    }
   }
 }
 

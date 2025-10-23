@@ -3,10 +3,12 @@
  */
 
 import {
-  hasImageData,
   type WorkerRequest,
   type WorkerResponse,
   type ImageInput,
+  loadWasmBinary,
+  validateImageInput,
+  validateResizeOptions,
 } from '@squoosh-kit/runtime';
 import type { ResizeOptions } from './types.ts';
 
@@ -23,29 +25,48 @@ type SquooshWasmResize = (
 ) => Uint8Array;
 
 let wasmResize: SquooshWasmResize | null = null;
+let initPromise: Promise<void> | null = null;
 
 async function init(): Promise<void> {
   if (wasmResize) {
     return;
   }
+  
+  if (initPromise) {
+    return initPromise;
+  }
 
-  const wasmDirectory = './wasm/resize';
-  const modulePath = await import.meta.resolve(
-    `${wasmDirectory}/squoosh_resize.js`,
-  );
-  const module = await import(modulePath);
-
-  // Squoosh's WASM modules expect to be initialized with promises
-  await module.default(
-    fetch(new URL(`${wasmDirectory}/squoosh_resize_bg.wasm`, modulePath)),
-  );
-  wasmResize = module.resize;
+  initPromise = (async () => {
+    try {
+      // Try direct static import first
+      const wasmPath = './wasm/squoosh_resize.js';
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval
+      const module = await import(wasmPath);
+      
+      // Load WASM binary with robust fallback strategies
+      const wasmBuffer = await loadWasmBinary('./wasm/squoosh_resize_bg.wasm');
+      
+      // Initialize WASM module with the binary buffer
+      await module.default(wasmBuffer);
+      wasmResize = module.resize;
+    } catch (error) {
+      initPromise = null;
+      throw new Error(
+        `Failed to initialize resize WASM module: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  })();
+  
+  return initPromise;
 }
 
 async function _resizeCore(
   image: ImageInput,
   options: ResizeOptions,
 ): Promise<ImageInput> {
+  validateImageInput(image);
+  validateResizeOptions(options);
+  
   await init();
   if (!wasmResize) {
     throw new Error('Resize module not initialized');
@@ -57,17 +78,21 @@ async function _resizeCore(
   let outputHeight = options.height ?? inputHeight;
 
   if (options.width && !options.height) {
-    outputHeight = Math.round((inputHeight * options.width) / inputWidth);
+    outputHeight = Math.max(1, Math.round((inputHeight * options.width) / inputWidth));
   } else if (options.height && !options.width) {
-    outputWidth = Math.round((inputWidth * options.height) / inputHeight);
+    outputWidth = Math.max(1, Math.round((inputWidth * options.height) / inputHeight));
   }
 
-  if (outputWidth <= 0 || outputHeight <= 0) {
-    throw new Error('Invalid output dimensions');
+  if (outputWidth < 1 || outputHeight < 1) {
+    throw new RangeError(
+      `Output dimensions must be at least 1x1, got ${outputWidth}x${outputHeight}`
+    );
   }
 
+  // Create a zero-copy Uint8Array view if needed
+  // (don't copy the buffer - just create a view on the same memory)
   const dataArray =
-    data instanceof Uint8ClampedArray ? new Uint8Array(data) : data;
+    data instanceof Uint8ClampedArray ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length) : new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length);
 
   const result = wasmResize(
     dataArray,
@@ -75,7 +100,7 @@ async function _resizeCore(
     inputHeight,
     outputWidth,
     outputHeight,
-    getResizeMethod(),
+    getResizeMethod(options),
     options.premultiply ? 1 : 0,
     options.linearRGB ? 1 : 0,
   );
@@ -88,35 +113,48 @@ async function _resizeCore(
 }
 
 export async function resizeClient(
-  signal: AbortSignal,
   image: ImageInput,
   options: ResizeOptions,
+  signal?: AbortSignal,
 ): Promise<ImageInput> {
-  if (signal.aborted) {
+  if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
   return _resizeCore(image, options);
 }
 
 /**
- * Map ResizeOptions to the typ_idx parameter for the resize function
- * 0: Triangular, 1: Catrom, 2: Mitchell, 3: Lanczos3
+ * Map ResizeOptions method to WASM typ_idx parameter
+ * typ_idx values (from Squoosh):
+ *   0: Triangular   - fastest, lowest quality
+ *   1: Catrom       - medium quality and speed
+ *   2: Mitchell     - good balance (default)
+ *   3: Lanczos3     - highest quality, slowest
  */
-function getResizeMethod(): number {
-  // Default to Lanczos3 (highest quality)
-  return 3;
+function getResizeMethod(options?: ResizeOptions): number {
+  const methodMap: Record<string, number> = {
+    'triangular': 0,
+    'catrom': 1,
+    'mitchell': 2,
+    'lanczos3': 3,
+  };
+  return methodMap[options?.method ?? 'mitchell'] ?? 2;
 }
 
 /**
  * Worker message handler
  */
 if (typeof self !== 'undefined') {
-  self.onmessage = async (
-    event: MessageEvent<
-      WorkerRequest<{ image: ImageInput; options: ResizeOptions }>
-    >,
-  ) => {
-    const { id, type, payload } = event.data;
+  self.onmessage = async (event: MessageEvent) => {
+    const data = event.data;
+    
+    // Handle worker ping for initialization
+    if (data?.type === 'worker:ping') {
+      self.postMessage({ type: 'worker:ready' });
+      return;
+    }
+    
+    const { id, type, payload } = data as WorkerRequest<{ image: ImageInput; options: ResizeOptions }>;
 
     const response: WorkerResponse<ImageInput> = { id, ok: false };
 

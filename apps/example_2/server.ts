@@ -18,22 +18,22 @@ const server = Bun.serve({
       filePath = 'index.html';
     }
 
-    // Map paths to serve dist/ directory as root
+    // Map paths to serve from the core package dist directory
     if (filePath.startsWith('/dist/')) {
       console.log(`/dist/: ${filePath}`);
-      filePath = filePath.replace('/dist/', './dist/'); // Replace '/dist/' with 'dist/'
+      filePath = filePath.replace('/dist/', '../../packages/core/dist/'); // Point to core package dist
     } else if (filePath.startsWith('/wasm/')) {
       console.log(`/wasm/: ${filePath}`);
-      filePath = 'dist' + filePath; // Remove leading '/' to get actual file path
+      filePath = '../../packages/core/dist' + filePath; // Point to core package dist
     } else if (filePath.startsWith('/features/')) {
       console.log(`/features/: ${filePath}`);
-      filePath = 'dist' + filePath; // Add 'dist/' prefix for features
+      filePath = '../../packages/core/dist' + filePath; // Point to core package dist
     } else if (filePath.startsWith('/examples/')) {
       console.log(`/examples/: ${filePath}`);
       // Keep examples as-is for the HTML demo
     } else if (filePath !== 'index.html') {
-      // For any other paths, assume they're in dist/
-      filePath = 'dist' + filePath;
+      // For any other paths, assume they're in core package dist/
+      filePath = '../../packages/core/dist' + filePath;
     }
 
     try {

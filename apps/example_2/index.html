@@ -314,12 +314,10 @@
       </div>
     </div>
 
-    <script type="module">
-      // Import from the built distribution
-      // The server maps /dist/* requests to the actual dist/ directory
-      // For development with bun serve: bun examples/browser.ts
-      // For production, adjust path as needed or use a CDN
-      import { createWebpEncoder, createResizer } from './dist/index.js';
+    <script async type="module">
+      // Import from individual packages to avoid WASM path issues
+      import { encode } from '/dist/features/webp/index.js';
+      import { resize } from '/dist/features/resize/index.js';
 
       // DOM elements
       const fileInput = document.getElementById('fileInput');
@@ -353,26 +351,25 @@
       // State
       let currentFile = null;
       let currentWebpData = null;
-
-      // Initialize encoders
-      let encoder = null;
-      let resizer = null;
       let controller = null;
 
-      function updateMode() {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        encoder = createWebpEncoder(mode);
-        resizer = createResizer(mode);
+      // Get current mode
+      function getCurrentMode() {
+        return document.querySelector('input[name="mode"]:checked').value;
+      }
+
+      function updateModeInfo() {
+        const mode = getCurrentMode();
         modeInfo.textContent = mode === 'worker' ? 'Web Worker' : 'Main Thread';
       }
 
-      // Initialize with default mode
-      updateMode();
-
-      // Update mode when changed
+      // Update mode info when changed
       modeRadios.forEach((radio) => {
-        radio.addEventListener('change', updateMode);
+        radio.addEventListener('change', updateModeInfo);
       });
+
+      // Initialize
+      updateModeInfo();
 
       // Update quality display
       qualitySlider.addEventListener('input', () => {
@@ -445,7 +442,7 @@
           };
 
           const resizeStart = performance.now();
-          const resized = await resizer(
+          const resized = await resize(
             controller.signal,
             imageData,
             resizeOptions
@@ -475,7 +472,7 @@
           };
 
           // The resized result should be in ImageData format, use it directly
-          currentWebpData = await encoder(
+          currentWebpData = await encode(
             controller.signal,
             resized,
             webpOptions

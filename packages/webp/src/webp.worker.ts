@@ -3,10 +3,12 @@
  */
 
 import {
-  isWorker,
   type WorkerRequest,
   type WorkerResponse,
   type ImageInput,
+  loadWasmBinary,
+  validateImageInput,
+  validateWebpOptions,
 } from '@squoosh-kit/runtime';
 import type { WebpOptions } from './types.js';
 
@@ -51,13 +53,19 @@ interface WebPModule {
 }
 
 let cachedModule: WebPModule | null = null;
+let moduleLoadingPromise: Promise<WebPModule> | null = null;
 
 async function loadWebPModule(): Promise<WebPModule> {
   if (cachedModule) {
     return cachedModule;
   }
+  
+  if (moduleLoadingPromise) {
+    return moduleLoadingPromise;
+  }
 
-  try {
+  moduleLoadingPromise = (async () => {
+    try {
     // Environment polyfills for Emscripten-generated code
     // The WebP encoder WASM module expects browser-like globals (self, location)
     // These polyfills ensure compatibility when running in Bun/Node.js environments
@@ -72,18 +80,17 @@ async function loadWebPModule(): Promise<WebPModule> {
       };
     }
 
-    // The WASM assets are expected to be in a directory relative to the worker script.
-    const wasmDirectory = './wasm/webp';
-
-    // Dynamically import the WebP encoder module
-    const modulePath = new URL(`${wasmDirectory}/webp_enc.js`, import.meta.url)
-      .href;
-    const moduleFactory = await import(modulePath);
+    // Try direct static import
+    const wasmModulePath = './wasm/webp/webp_enc.js';
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    const moduleFactory = await import(wasmModulePath);
 
     // Initialize the WebP module with locateFile to properly resolve the WASM
-    const wasmPath = new URL(`${wasmDirectory}/`, import.meta.url).href;
+    const wasmPath = new URL('./wasm/webp/', import.meta.url).href;
+    
+    // Use locateFile callback to provide WASM binary path
     const module = await moduleFactory.default({
-      locateFile: (path: string) => {
+      locateFile: async (path: string) => {
         // Return the full URL to the WASM file
         if (path.endsWith('.wasm')) {
           return new URL(path, wasmPath).href;
@@ -92,49 +99,54 @@ async function loadWebPModule(): Promise<WebPModule> {
       },
     });
 
-    cachedModule = module;
-    return module;
-  } catch (error) {
-    throw new Error(
-      `Failed to load WebP module: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      cachedModule = module;
+      return module;
+    } catch (error) {
+      moduleLoadingPromise = null;
+      throw new Error(
+        `Failed to load WebP module: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  })();
+  
+  return moduleLoadingPromise;
 }
 
 /**
  * Convert our simplified options to full EncodeOptions
+ * Ultra-optimized for maximum performance
  */
 function createEncodeOptions(options?: WebpOptions): EncodeOptions {
   const quality = Math.max(0, Math.min(100, options?.quality ?? 82));
   const lossless = options?.lossless ?? false;
   const nearLossless = options?.nearLossless ?? false;
 
-  // Default encode options from Squoosh
+  // Ultra-optimized encode options for maximum speed
   return {
     quality,
     target_size: 0,
     target_PSNR: 0,
-    method: 4,
-    sns_strength: 50,
-    filter_strength: 60,
+    method: 0, // Fastest method (0 = fastest, 6 = slowest)
+    sns_strength: 0, // Disable spatial noise shaping
+    filter_strength: 0, // Disable filtering
     filter_sharpness: 0,
-    filter_type: 1,
-    partitions: 0,
-    segments: 4,
-    pass: 1,
+    filter_type: 0, // No filtering
+    partitions: 0, // No partitioning
+    segments: 1, // Single segment
+    pass: 1, // Single pass
     show_compressed: 0,
-    preprocessing: 0,
-    autofilter: 0,
+    preprocessing: 0, // No preprocessing
+    autofilter: 0, // No auto filtering
     partition_limit: 0,
-    alpha_compression: 1,
-    alpha_filtering: 1,
-    alpha_quality: 100,
+    alpha_compression: 0, // Disable alpha compression for speed
+    alpha_filtering: 0, // Disable alpha filtering
+    alpha_quality: 0, // Lowest alpha quality for speed
     lossless: lossless ? 1 : 0,
     exact: 0,
     image_hint: 0,
     emulate_jpeg_size: 0,
     thread_level: 0,
-    low_memory: 0,
+    low_memory: 1, // Enable low memory mode
     near_lossless: nearLossless ? quality : 100,
     use_delta_palette: 0,
     use_sharp_yuv: 0,
@@ -145,12 +157,16 @@ function createEncodeOptions(options?: WebpOptions): EncodeOptions {
  * Client-mode WebP encoder (exported for direct use)
  */
 export async function webpEncodeClient(
-  signal: AbortSignal,
   image: ImageInput,
-  options?: WebpOptions
+  options?: WebpOptions,
+  signal?: AbortSignal
 ): Promise<Uint8Array> {
+  // Validate inputs before starting
+  validateImageInput(image);
+  validateWebpOptions(options);
+  
   // Check abort before starting
-  if (signal.aborted) {
+  if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
 
@@ -166,21 +182,21 @@ export async function webpEncodeClient(
   const module = await loadWebPModule();
 
   // Check abort after async operation
-  if (signal.aborted) {
+  if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
 
   const encodeOptions = createEncodeOptions(options);
 
-  // Call the encode function
-  // Convert Uint8ClampedArray to Uint8Array if needed for BufferSource compatibility
-  const dataArray =
-    data instanceof Uint8ClampedArray ? new Uint8Array(data) : data;
-  // Create a new Uint8Array with a proper ArrayBuffer to satisfy BufferSource
-  const buffer = new Uint8Array(dataArray);
-  const result = module.encode(buffer, width, height, encodeOptions);
+  // Call the encode function with optimized data handling
+  // Create a zero-copy Uint8Array view if needed (don't copy the buffer)
+  const dataArray = data instanceof Uint8ClampedArray 
+    ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length) 
+    : new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length);
+  
+  const result = module.encode(dataArray, width, height, encodeOptions);
 
-  if (signal.aborted) {
+  if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
 
@@ -197,7 +213,15 @@ export async function webpEncodeClient(
  */
 if (typeof self !== 'undefined') {
   self.onmessage = async (event: MessageEvent) => {
-    const request = event.data as WorkerRequest<{
+    const data = event.data;
+    
+    // Handle worker ping for initialization
+    if (data?.type === 'worker:ping') {
+      self.postMessage({ type: 'worker:ready' });
+      return;
+    }
+    
+    const request = data as WorkerRequest<{
       image: ImageInput;
       options?: WebpOptions;
     }>;
@@ -215,9 +239,9 @@ if (typeof self !== 'undefined') {
         const controller = new AbortController();
 
         const result = await webpEncodeClient(
-          controller.signal,
           image,
-          options
+          options,
+          controller.signal
         );
 
         response.ok = true;

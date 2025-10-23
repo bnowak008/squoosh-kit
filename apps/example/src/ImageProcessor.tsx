@@ -109,14 +109,6 @@ export function ImageProcessor() {
       message: 'Analyzing your image...',
     });
 
-    const imageData: SquooshImageData = {
-      width: 
-    }
-
-    const resizedImage = await resize(
-      new AbortController().signal,
-
-    )
 
     setTimeout(() => {
       setProcessingState({
