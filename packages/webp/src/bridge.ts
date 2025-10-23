@@ -2,8 +2,12 @@
  * Bridge implementation for the WebP package, handling worker and client modes.
  */
 
-import { callWorker, createReadyWorker, type ImageInput } from '@squoosh-kit/runtime';
-import { validateArrayBuffer } from '@squoosh-kit/runtime';
+import {
+  callWorker,
+  createReadyWorker,
+  type ImageInput,
+} from '@squoosh-kit/runtime';
+import { validateArrayBuffer, validateImageInput } from '@squoosh-kit/runtime';
 import { webpEncodeClient } from './webp.worker.js';
 import type { WebpOptions } from './types.js';
 
@@ -33,7 +37,7 @@ class WebpClientBridge implements WebPBridge {
 class WebpWorkerBridge implements WebPBridge {
   private worker: Worker | null = null;
   private workerReady: Promise<Worker> | null = null;
-  
+
   private async getWorker(): Promise<Worker> {
     if (!this.worker) {
       if (!this.workerReady) {
@@ -43,23 +47,48 @@ class WebpWorkerBridge implements WebPBridge {
     }
     return this.worker;
   }
-  
+
   private async createWorker(): Promise<Worker> {
     // Use the centralized worker helper for robust path resolution
     return createReadyWorker('webp.worker');
   }
-  
+
   async encode(
     image: ImageInput,
     options?: WebpOptions,
     signal?: AbortSignal
   ): Promise<Uint8Array> {
     const worker = await this.getWorker();
-    const buffer = image.data.buffer;
+
+    // Validate and normalize image - ensure all required properties exist
+    if (!image || typeof image !== 'object') {
+      throw new TypeError('image must be an object');
+    }
+
+    const imageRecord = image as Record<string, unknown>;
+    if (!imageRecord.data) {
+      throw new TypeError('image.data is required');
+    }
+    if (imageRecord.width === undefined || imageRecord.height === undefined) {
+      throw new TypeError('image.width and image.height are required');
+    }
+
+    const normalizedImage: ImageInput = {
+      data: imageRecord.data as Uint8Array | Uint8ClampedArray,
+      width: imageRecord.width as number,
+      height: imageRecord.height as number,
+    };
+
+    validateImageInput(normalizedImage);
+    const buffer = normalizedImage.data.buffer;
     validateArrayBuffer(buffer);
-    return callWorker(worker, 'webp:encode', { image, options }, signal, [
-      buffer,
-    ]);
+    return callWorker(
+      worker,
+      'webp:encode',
+      { image: normalizedImage, options },
+      signal,
+      [buffer]
+    );
   }
 
   async terminate(): Promise<void> {

@@ -44,10 +44,11 @@ Add a standard `exports` map to `packages/runtime/package.json`. This will also 
 
 There are minor inconsistencies in the build and lifecycle scripts across the packages.
 
--   The `@squoosh-kit/core` package contains legacy build scripts (`build:declarations`, `build:code`) from the pre-monorepo era. It also has a `copy:assets` script, which contradicts the monorepo goal of `core` having no source of its own.
--   The `prepublishOnly` script in `@squoosh-kit/core` runs tests, while the `prepack` scripts in other packages do not.
+- The `@squoosh-kit/core` package contains legacy build scripts (`build:declarations`, `build:code`) from the pre-monorepo era. It also has a `copy:assets` script, which contradicts the monorepo goal of `core` having no source of its own.
+- The `prepublishOnly` script in `@squoosh-kit/core` runs tests, while the `prepack` scripts in other packages do not.
 
 **Recommendation:**
+
 1.  Simplify the `build` script in `packages/core/package.json` to be a simple re-exporting mechanism, removing the asset and complex build steps. Its build should likely just be `tsc`.
 2.  Standardize the `prepack` script across all publishable packages. Including `bun test` is a good practice to prevent publishing failing versions.
 
@@ -103,8 +104,9 @@ Each package (`runtime`, `webp`, `resize`, `core`) has its own `README.md`. This
 
 **Recommendation:**
 Before the first publish, perform a thorough review of each `README.md` to ensure it contains:
+
 - The specific package name for installation (e.g., `bun add @squoosh-kit/webp`).
-- A clear API reference for the functions exported by *that specific package*.
+- A clear API reference for the functions exported by _that specific package_.
 - A concise, copy-pasteable usage example.
 
 #### 5.2. TSDoc Review

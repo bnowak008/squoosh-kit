@@ -54,7 +54,7 @@ No parameter swapping between layers - all use the public API order.
 ### Resize Package (`packages/resize/src/`)
 
 1. **bridge.ts**: Updated ResizeBridge interface and both implementations:
-   - ResizeClientBridge.resize: `(image, options, signal?)` 
+   - ResizeClientBridge.resize: `(image, options, signal?)`
    - ResizeWorkerBridge.resize: `(image, options, signal?)`
 
 2. **index.ts**: Updated public functions:
@@ -81,8 +81,9 @@ No parameter swapping between layers - all use the public API order.
 ### Test Status
 
 All 106 tests passing:
+
 - packages/resize/test/resize.test.ts: 44 pass
-- packages/webp/test/webp.test.ts: 46 pass  
+- packages/webp/test/webp.test.ts: 46 pass
 - packages/core/test/integration.test.ts: 4 pass
 - packages/runtime/test/unit.test.ts: 12 pass
 
@@ -117,10 +118,12 @@ Core Processing:
 ### Function Call Chain
 
 **Resize**: `resize()` → `bridge.resize()` → `resizeClient()` → `_resizeCore()`
+
 - All layers: `(imageData, options, signal?)`
 - No parameter swapping ✅
 
 **WebP**: `encode()` → `bridge.encode()` → `webpEncodeClient()`
+
 - All layers: `(imageData, options?, signal?)`
 - No parameter swapping ✅
 
@@ -129,6 +132,7 @@ Core Processing:
 ## Design Rationale
 
 The consistent parameter order follows the public API established in Issue #1:
+
 1. **imageData first** - Most important, user-provided input
 2. **options second** - Configuration for the operation
 3. **signal last** - Optional cancellation signal (can be omitted in simple cases)

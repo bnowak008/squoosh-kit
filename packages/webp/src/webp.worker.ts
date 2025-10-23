@@ -10,7 +10,8 @@ import {
   validateImageInput,
   validateWebpOptions,
 } from '@squoosh-kit/runtime';
-import type { WebpOptions } from './types.js';
+import type { WebpOptions } from './types';
+import webp_enc from '../wasm/webp/webp_enc';
 
 // Types from webp_enc.d.ts
 interface EncodeOptions {
@@ -59,45 +60,35 @@ async function loadWebPModule(): Promise<WebPModule> {
   if (cachedModule) {
     return cachedModule;
   }
-  
+
   if (moduleLoadingPromise) {
     return moduleLoadingPromise;
   }
 
   moduleLoadingPromise = (async () => {
     try {
-    // Environment polyfills for Emscripten-generated code
-    // The WebP encoder WASM module expects browser-like globals (self, location)
-    // These polyfills ensure compatibility when running in Bun/Node.js environments
-    if (typeof self === 'undefined') {
-      // Polyfill 'self' global for Emscripten compatibility
-      (global as { self?: typeof globalThis }).self = global;
-    }
-    if (typeof self !== 'undefined' && !self.location) {
-      // Polyfill 'location' object for Emscripten module initialization
-      (self as { location?: { href: string } }).location = {
-        href: import.meta.url,
-      };
-    }
+      // Environment polyfills for Emscripten-generated code
+      // The WebP encoder WASM module expects browser-like globals (self, location)
+      // These polyfills ensure compatibility when running in Bun/Node.js environments
+      if (typeof self === 'undefined') {
+        // Polyfill 'self' global for Emscripten compatibility
+        (global as { self?: typeof globalThis }).self = global;
+      }
+      if (typeof self !== 'undefined' && !self.location) {
+        // Polyfill 'location' object for Emscripten module initialization
+        (self as { location?: { href: string } }).location = {
+          href: import.meta.url,
+        };
+      }
 
-    // Try direct static import
-    const wasmModulePath = './wasm/webp/webp_enc.js';
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    const moduleFactory = await import(wasmModulePath);
+      // Load WASM binary with robust fallback strategies
+      const wasmBuffer = await loadWasmBinary(
+        new URL('../wasm/webp/webp_enc.wasm', import.meta.url).href
+      );
 
-    // Initialize the WebP module with locateFile to properly resolve the WASM
-    const wasmPath = new URL('./wasm/webp/', import.meta.url).href;
-    
-    // Use locateFile callback to provide WASM binary path
-    const module = await moduleFactory.default({
-      locateFile: async (path: string) => {
-        // Return the full URL to the WASM file
-        if (path.endsWith('.wasm')) {
-          return new URL(path, wasmPath).href;
-        }
-        return path;
-      },
-    });
+      // Initialize WASM module by passing buffer as wasmBinary
+      // The Emscripten-compiled module will use this instead of trying to fetch
+      const module = await webp_enc({ wasmBinary: wasmBuffer });
 
       cachedModule = module;
       return module;
@@ -108,7 +99,7 @@ async function loadWebPModule(): Promise<WebPModule> {
       );
     }
   })();
-  
+
   return moduleLoadingPromise;
 }
 
@@ -164,7 +155,7 @@ export async function webpEncodeClient(
   // Validate inputs before starting
   validateImageInput(image);
   validateWebpOptions(options);
-  
+
   // Check abort before starting
   if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -190,10 +181,15 @@ export async function webpEncodeClient(
 
   // Call the encode function with optimized data handling
   // Create a zero-copy Uint8Array view if needed (don't copy the buffer)
-  const dataArray = data instanceof Uint8ClampedArray 
-    ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length) 
-    : new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length);
-  
+  const dataArray =
+    data instanceof Uint8ClampedArray
+      ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length)
+      : new Uint8Array(
+          data.buffer as ArrayBuffer,
+          data.byteOffset,
+          data.length
+        );
+
   const result = module.encode(dataArray, width, height, encodeOptions);
 
   if (signal?.aborted) {
@@ -214,13 +210,13 @@ export async function webpEncodeClient(
 if (typeof self !== 'undefined') {
   self.onmessage = async (event: MessageEvent) => {
     const data = event.data;
-    
+
     // Handle worker ping for initialization
     if (data?.type === 'worker:ping') {
       self.postMessage({ type: 'worker:ready' });
       return;
     }
-    
+
     const request = data as WorkerRequest<{
       image: ImageInput;
       options?: WebpOptions;

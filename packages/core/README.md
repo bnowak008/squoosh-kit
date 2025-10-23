@@ -21,20 +21,22 @@ npm install @squoosh-kit/core
 Everything you need, right at your fingertips:
 
 ```typescript
-import { encode, resize, createWebpEncoder, createResizer } from '@squoosh-kit/core';
+import {
+  encode,
+  resize,
+  createWebpEncoder,
+  createResizer,
+} from '@squoosh-kit/core';
 
 // Quick one-off operations
-const webpData = await encode(
-  new AbortController().signal,
-  imageData,
-  { quality: 85 }
-);
+const webpData = await encode(new AbortController().signal, imageData, {
+  quality: 85,
+});
 
-const resizedImage = await resize(
-  new AbortController().signal,
-  imageData,
-  { width: 800, height: 600 }
-);
+const resizedImage = await resize(new AbortController().signal, imageData, {
+  width: 800,
+  height: 600,
+});
 
 // Or create reusable processors for batch operations
 const encoder = createWebpEncoder('worker');
@@ -53,12 +55,14 @@ This package bundles together:
 ## When to Use Core vs Individual Packages
 
 **Use `@squoosh-kit/core` when:**
+
 - You're just getting started and want everything available
 - Your project needs both WebP encoding and resizing
 - You prefer a single dependency for simplicity
 - You're building a prototype or proof of concept
 
 **Consider individual packages when:**
+
 - You only need one specific feature (like just WebP encoding)
 - Bundle size is critical and you want to minimize dependencies
 - You need fine-grained control over versions

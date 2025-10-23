@@ -8,8 +8,7 @@ import type { WebpOptions } from './types';
 
 export type { ImageInput, WebpOptions };
 
-// Global bridge instances for reuse
-const globalWorkerBridge: ReturnType<typeof createBridge> | null = null;
+// Global bridge instance for reuse
 let globalClientBridge: ReturnType<typeof createBridge> | null = null;
 
 /**
@@ -37,7 +36,7 @@ export type WebpEncoderFactory = ((
 };
 
 /**
- * Encodes an image to WebP format. Uses client mode for better performance.
+ * Encodes an image to WebP format. Uses worker mode for UI responsiveness.
  *
  * @param imageData - The image data to encode.
  * @param options - WebP encoding options.
@@ -62,11 +61,11 @@ export async function encode(
   options?: WebpOptions,
   signal?: AbortSignal
 ): Promise<Uint8Array> {
-  // Use client mode for better performance - no worker overhead
+  // Use worker mode for UI responsiveness - prevents blocking the main thread
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('client');
+    globalClientBridge = createBridge('worker');
   }
-  
+
   return globalClientBridge.encode(imageData, options, signal);
 }
 
@@ -78,16 +77,22 @@ export async function encode(
  * @param mode - The execution mode, either 'worker' or 'client'.
  * @returns A function that encodes an image to WebP format with optional AbortSignal.
  */
-export function createWebpEncoder(mode: 'worker' | 'client' = 'worker'): WebpEncoderFactory {
+export function createWebpEncoder(
+  mode: 'worker' | 'client' = 'worker'
+): WebpEncoderFactory {
   const bridge = createBridge(mode);
-  
-  const encoder = (imageData: ImageInput, options?: WebpOptions, signal?: AbortSignal) => {
+
+  const encoder = (
+    imageData: ImageInput,
+    options?: WebpOptions,
+    signal?: AbortSignal
+  ) => {
     return bridge.encode(imageData, options, signal);
   };
-  
+
   encoder.terminate = async () => {
     await bridge.terminate();
   };
-  
+
   return encoder as WebpEncoderFactory;
 }

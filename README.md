@@ -12,12 +12,12 @@ Whether you're building a web application, a Node.js service, or a desktop app w
 
 ## What You Get
 
-| Package | What's Inside | Best For |
-|---------|---------------|----------|
-| [`@squoosh-kit/webp`](./packages/webp) | WebP encoding with quality control | Next-gen image formats, file size optimization |
-| [`@squoosh-kit/resize`](./packages/resize) | Flexible resizing with 4 algorithms | Thumbnails, responsive images, batch processing (triangular, catrom, mitchell, lanczos3) |
-| [`@squoosh-kit/core`](./packages/core) | Everything bundled together | Quick prototyping, simple projects |
-| [`@squoosh-kit/runtime`](./packages/runtime) | Internal runtime utilities | Advanced customization |
+| Package                                      | What's Inside                       | Best For                                                                                 |
+| -------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| [`@squoosh-kit/webp`](./packages/webp)       | WebP encoding with quality control  | Next-gen image formats, file size optimization                                           |
+| [`@squoosh-kit/resize`](./packages/resize)   | Flexible resizing with 4 algorithms | Thumbnails, responsive images, batch processing (triangular, catrom, mitchell, lanczos3) |
+| [`@squoosh-kit/core`](./packages/core)       | Everything bundled together         | Quick prototyping, simple projects                                                       |
+| [`@squoosh-kit/runtime`](./packages/runtime) | Internal runtime utilities          | Advanced customization                                                                   |
 
 ## Quick Example
 
@@ -26,17 +26,14 @@ import { encode } from '@squoosh-kit/webp';
 import { resize } from '@squoosh-kit/resize';
 
 // Resize first, then encode to WebP
-const resized = await resize(
-  new AbortController().signal,
-  imageData,
-  { width: 800, method: 'mitchell' }
-);
+const resized = await resize(new AbortController().signal, imageData, {
+  width: 800,
+  method: 'mitchell',
+});
 
-const webpBuffer = await encode(
-  new AbortController().signal,
-  resized,
-  { quality: 85 }
-);
+const webpBuffer = await encode(new AbortController().signal, resized, {
+  quality: 85,
+});
 ```
 
 ## Why Squoosh Kit?
@@ -97,6 +94,7 @@ const encoder = createWebpEncoder('worker'); // ❌ WASM files missing
 ### Future Plans
 
 For v1.0+, we may offer separate packages:
+
 - `@squoosh-kit/resize-core` (client mode only, ~10KB)
 - `@squoosh-kit/resize` (with WASM, ~50KB)
 

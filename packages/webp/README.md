@@ -28,16 +28,12 @@ import type { ImageInput } from '@squoosh-kit/webp';
 const imageData: ImageInput = {
   data: imageBuffer,
   width: 1920,
-  height: 1080
+  height: 1080,
 };
 
 // With cancellation support
 const controller = new AbortController();
-const webpBuffer = await encode(
-  imageData,
-  { quality: 85 },
-  controller.signal
-);
+const webpBuffer = await encode(imageData, { quality: 85 }, controller.signal);
 
 // For multiple images, create a persistent encoder
 const encoder = createWebpEncoder('worker');
@@ -72,6 +68,7 @@ You get the same quality and performance as the original Squoosh tool, but wrapp
 ## Real-World Examples
 
 **Image Upload Processing with Timeout**
+
 ```typescript
 // In your upload handler
 const controller = new AbortController();
@@ -84,11 +81,11 @@ try {
     uploadedImage,
     {
       quality: 85,
-      lossless: false // Perfect for photos
+      lossless: false, // Perfect for photos
     },
     controller.signal
   );
-  
+
   await saveToStorage('optimized.webp', processedImage);
 } catch (error) {
   if (error.name === 'AbortError') {
@@ -102,15 +99,13 @@ try {
 ```
 
 **Batch Conversion Service**
+
 ```typescript
 const encoder = createWebpEncoder('client'); // Direct encoding, no worker
 
 for (const imagePath of imageFiles) {
   const imageData = await loadImage(imagePath);
-  const webpData = await encoder(
-    imageData,
-    { quality: 75 }
-  );
+  const webpData = await encoder(imageData, { quality: 75 });
 
   await writeFile(`${imagePath}.webp`, webpData);
 }
@@ -171,7 +166,7 @@ The `ImageInput` must contain valid image data:
 const validImage: ImageInput = {
   data: new Uint8Array(4096), // or Uint8ClampedArray
   width: 32,
-  height: 32
+  height: 32,
 };
 
 // Will throw TypeError: image must be an object
@@ -184,11 +179,17 @@ await encode({ width: 32, height: 32 }, { quality: 85 });
 await encode({ data: [0, 0, 0, 255], width: 32, height: 32 }, { quality: 85 });
 
 // Will throw RangeError: image.width must be a positive integer
-await encode({ data: new Uint8Array(100), width: 0, height: 32 }, { quality: 85 });
+await encode(
+  { data: new Uint8Array(100), width: 0, height: 32 },
+  { quality: 85 }
+);
 
 // Will throw RangeError: image.data too small
 // (needs 32 * 32 * 4 = 4096 bytes, but only 100 provided)
-await encode({ data: new Uint8Array(100), width: 32, height: 32 }, { quality: 85 });
+await encode(
+  { data: new Uint8Array(100), width: 32, height: 32 },
+  { quality: 85 }
+);
 ```
 
 ### Options Validation
@@ -209,6 +210,7 @@ await encode(validImage, { nearLossless: 'true' });
 ### Why Validation Matters
 
 Input validation prevents:
+
 - **Cryptic WASM errors** - Clear messages instead of "undefined behavior"
 - **Out-of-bounds buffer access** - Catches undersized buffers early
 - **Silent failures** - Invalid options are caught immediately
@@ -221,6 +223,7 @@ All validation happens synchronously before WASM processing, so you get errors i
 This package includes WebAssembly binaries (~30-40KB gzipped) for the WebP encoder. These enable fast processing through Web Workers and are essential for optimal performance.
 
 **Size breakdown:**
+
 - JavaScript code: ~5-8KB gzipped
 - TypeScript definitions: ~3KB
 - WASM binaries: ~30-40KB gzipped (required for encoding)
@@ -258,9 +261,9 @@ try {
   const webpImages = await Promise.all([
     encoder(image1, { quality: 85 }),
     encoder(image2, { quality: 85 }),
-    encoder(image3, { quality: 85 })
+    encoder(image3, { quality: 85 }),
   ]);
-  
+
   // Save encoded images...
 } finally {
   // Clean up when all operations are complete
@@ -276,8 +279,8 @@ Fine-tune your encoding:
 
 ```typescript
 type WebpOptions = {
-  quality?: number;     // 0-100, controls file size vs quality (default: 82)
-  lossless?: boolean;   // Lossless compression, larger files (default: false)
+  quality?: number; // 0-100, controls file size vs quality (default: 82)
+  lossless?: boolean; // Lossless compression, larger files (default: false)
   nearLossless?: boolean; // Near-lossless mode, best of both worlds (default: false)
 };
 ```

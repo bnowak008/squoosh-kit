@@ -8,8 +8,7 @@ import type { ResizeOptions } from './types';
 
 export type { ImageInput, ResizeOptions };
 
-// Global bridge instances for reuse
-const globalWorkerBridge: ReturnType<typeof createBridge> | null = null;
+// Global bridge instance for reuse
 let globalClientBridge: ReturnType<typeof createBridge> | null = null;
 
 /**
@@ -37,7 +36,7 @@ export type ResizerFactory = ((
 };
 
 /**
- * Resizes an image. Uses client mode for better performance.
+ * Resizes an image. Uses worker mode for UI responsiveness.
  *
  * @param imageData - The image data to resize.
  * @param options - Resize options.
@@ -62,11 +61,11 @@ export async function resize(
   options: ResizeOptions,
   signal?: AbortSignal
 ): Promise<ImageInput> {
-  // Use client mode for better performance - no worker overhead
+  // Use worker mode for UI responsiveness - prevents blocking the main thread
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('client');
+    globalClientBridge = createBridge('worker');
   }
-  
+
   return globalClientBridge.resize(imageData, options, signal);
 }
 
@@ -76,16 +75,22 @@ export async function resize(
  * @param mode - The execution mode, either 'worker' or 'client'.
  * @returns A function that resizes an image with optional AbortSignal.
  */
-export function createResizer(mode: 'worker' | 'client' = 'worker'): ResizerFactory {
+export function createResizer(
+  mode: 'worker' | 'client' = 'worker'
+): ResizerFactory {
   const bridge = createBridge(mode);
-  
-  const resizer = (imageData: ImageInput, options: ResizeOptions, signal?: AbortSignal) => {
+
+  const resizer = (
+    imageData: ImageInput,
+    options: ResizeOptions,
+    signal?: AbortSignal
+  ) => {
     return bridge.resize(imageData, options, signal);
   };
-  
+
   resizer.terminate = async () => {
     await bridge.terminate();
   };
-  
+
   return resizer as ResizerFactory;
 }

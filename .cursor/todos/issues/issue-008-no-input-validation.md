@@ -45,12 +45,17 @@
 The validation functions use TypeScript assertion signatures for type safety:
 
 ```typescript
-export function validateImageInput(image: unknown): asserts image is ImageInput
-export function validateResizeOptions(options: unknown): asserts options is ResizeOptions
-export function validateWebpOptions(options: unknown): asserts options is WebpOptions
+export function validateImageInput(image: unknown): asserts image is ImageInput;
+export function validateResizeOptions(
+  options: unknown
+): asserts options is ResizeOptions;
+export function validateWebpOptions(
+  options: unknown
+): asserts options is WebpOptions;
 ```
 
 This ensures:
+
 - Type narrowing after validation passes
 - No runtime casting needed
 - Full TypeScript type safety
@@ -59,14 +64,16 @@ This ensures:
 ### Validation Checks
 
 **Image Validation:**
+
 - ✅ Null/undefined checks
 - ✅ Object type verification
 - ✅ Presence of required properties (data, width, height)
 - ✅ Data type verification (Uint8Array | Uint8ClampedArray only)
 - ✅ Width/height are positive integers (no floats, no NaN, no zero, no negative)
-- ✅ Buffer size is sufficient (width * height * 4 bytes minimum)
+- ✅ Buffer size is sufficient (width _ height _ 4 bytes minimum)
 
 **Resize Options Validation:**
+
 - ✅ Width/height are positive integers (if provided)
 - ✅ Method is one of: triangular, catrom, mitchell, lanczos3
 - ✅ Premultiply is boolean (if provided)
@@ -74,6 +81,7 @@ This ensures:
 - ✅ All error messages are descriptive
 
 **WebP Options Validation:**
+
 - ✅ Quality is integer 0-100 (if provided)
 - ✅ Lossless is boolean (if provided)
 - ✅ NearLossless is boolean (if provided)
@@ -84,6 +92,7 @@ This ensures:
 ## Test Coverage
 
 ### Resize Validation Tests (25 tests)
+
 - ✅ Null/undefined image rejection
 - ✅ Missing properties (data, width, height)
 - ✅ Wrong data types (Float32Array, regular arrays)
@@ -96,6 +105,7 @@ This ensures:
 - ✅ Clear error message for invalid method
 
 ### WebP Validation Tests (25 tests)
+
 - ✅ Null/undefined image rejection
 - ✅ Missing properties (data, width, height)
 - ✅ Wrong data types (Float32Array, regular arrays)
@@ -108,6 +118,7 @@ This ensures:
 - ✅ Clear error message for quality out of range
 
 ### Runtime Utility Tests (4 tests)
+
 - ✅ validateImageInput assertion
 - ✅ Uint8ClampedArray support
 - ✅ validateWebpOptions assertion
@@ -118,6 +129,7 @@ This ensures:
 ## Error Messages Before vs After
 
 ### Before (Cryptic)
+
 ```
 TypeError: Cannot destructure property 'data' of null
 // or
@@ -127,6 +139,7 @@ Undefined reference at WASM offset
 ```
 
 ### After (Clear & Actionable)
+
 ```
 TypeError: image must be an object
 TypeError: image.data is required
@@ -187,16 +200,25 @@ await resize(null, { width: 800 });
 // Error: TypeError: Cannot destructure property 'data' of null (unclear location)
 
 // User passes invalid buffer size
-await resize({ data: new Uint8Array(10), width: 1000, height: 1000 }, { width: 500 });
+await resize(
+  { data: new Uint8Array(10), width: 1000, height: 1000 },
+  { width: 500 }
+);
 // Should be 1000 * 1000 * 4 = 4MB, but only 10 bytes
 // WASM reads out of bounds → undefined behavior
 
 // User passes NaN dimensions
-await resize({ data: new Uint8Array(100), width: NaN, height: 100 }, { width: 800 });
+await resize(
+  { data: new Uint8Array(100), width: NaN, height: 100 },
+  { width: 800 }
+);
 // NaN passes through validation, WASM gets NaN
 
 // User passes negative dimensions
-await resize({ data: new Uint8Array(100), width: 100, height: 100 }, { width: -800 });
+await resize(
+  { data: new Uint8Array(100), width: 100, height: 100 },
+  { width: -800 }
+);
 // Calculated output: -800 pixels (invalid)
 ```
 
@@ -207,6 +229,7 @@ await resize({ data: new Uint8Array(100), width: 100, height: 100 }, { width: -8
 ✅ **IMPLEMENTED** - Early validation in bridge layer before calling WASM
 
 All inputs are validated synchronously before WASM processing begins, ensuring:
+
 - Clear, actionable error messages
 - Type safety with TypeScript assertions
 - No out-of-bounds buffer access

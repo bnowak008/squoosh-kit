@@ -10,19 +10,20 @@ import {
   validateImageInput,
   validateResizeOptions,
 } from '@squoosh-kit/runtime';
-import type { ResizeOptions } from './types.ts';
+import type { ResizeOptions } from './types';
+import * as squoosh_resize_module from '../wasm/squoosh_resize';
 
 // Define the type locally to avoid module resolution issues with the linter
 type SquooshWasmResize = (
-  data: Uint8Array,
+  input_image: Uint8Array,
   input_width: number,
   input_height: number,
   output_width: number,
   output_height: number,
   typ_idx: number,
-  premultiply: number,
-  color_space_conversion: number,
-) => Uint8Array;
+  premultiply: boolean,
+  color_space_conversion: boolean
+) => Uint8ClampedArray;
 
 let wasmResize: SquooshWasmResize | null = null;
 let initPromise: Promise<void> | null = null;
@@ -31,24 +32,22 @@ async function init(): Promise<void> {
   if (wasmResize) {
     return;
   }
-  
+
   if (initPromise) {
     return initPromise;
   }
 
   initPromise = (async () => {
     try {
-      // Try direct static import first
-      const wasmPath = './wasm/squoosh_resize.js';
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      const module = await import(wasmPath);
-      
       // Load WASM binary with robust fallback strategies
-      const wasmBuffer = await loadWasmBinary('./wasm/squoosh_resize_bg.wasm');
-      
+      const wasmBuffer = await loadWasmBinary(
+        new URL('../wasm/squoosh_resize_bg.wasm', import.meta.url).href
+      );
+
       // Initialize WASM module with the binary buffer
-      await module.default(wasmBuffer);
-      wasmResize = module.resize;
+      await squoosh_resize_module.default(wasmBuffer);
+      // After initialization, the module's exported resize function is ready to use
+      wasmResize = squoosh_resize_module.resize as unknown as SquooshWasmResize;
     } catch (error) {
       initPromise = null;
       throw new Error(
@@ -56,17 +55,17 @@ async function init(): Promise<void> {
       );
     }
   })();
-  
+
   return initPromise;
 }
 
 async function _resizeCore(
   image: ImageInput,
-  options: ResizeOptions,
+  options: ResizeOptions
 ): Promise<ImageInput> {
   validateImageInput(image);
   validateResizeOptions(options);
-  
+
   await init();
   if (!wasmResize) {
     throw new Error('Resize module not initialized');
@@ -78,9 +77,15 @@ async function _resizeCore(
   let outputHeight = options.height ?? inputHeight;
 
   if (options.width && !options.height) {
-    outputHeight = Math.max(1, Math.round((inputHeight * options.width) / inputWidth));
+    outputHeight = Math.max(
+      1,
+      Math.round((inputHeight * options.width) / inputWidth)
+    );
   } else if (options.height && !options.width) {
-    outputWidth = Math.max(1, Math.round((inputWidth * options.height) / inputHeight));
+    outputWidth = Math.max(
+      1,
+      Math.round((inputWidth * options.height) / inputHeight)
+    );
   }
 
   if (outputWidth < 1 || outputHeight < 1) {
@@ -92,7 +97,13 @@ async function _resizeCore(
   // Create a zero-copy Uint8Array view if needed
   // (don't copy the buffer - just create a view on the same memory)
   const dataArray =
-    data instanceof Uint8ClampedArray ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length) : new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length);
+    data instanceof Uint8ClampedArray
+      ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length)
+      : new Uint8Array(
+          data.buffer as ArrayBuffer,
+          data.byteOffset,
+          data.length
+        );
 
   const result = wasmResize(
     dataArray,
@@ -101,8 +112,8 @@ async function _resizeCore(
     outputWidth,
     outputHeight,
     getResizeMethod(options),
-    options.premultiply ? 1 : 0,
-    options.linearRGB ? 1 : 0,
+    options.premultiply ?? true,
+    options.linearRGB ?? true
   );
 
   return {
@@ -115,7 +126,7 @@ async function _resizeCore(
 export async function resizeClient(
   image: ImageInput,
   options: ResizeOptions,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<ImageInput> {
   if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -133,10 +144,10 @@ export async function resizeClient(
  */
 function getResizeMethod(options?: ResizeOptions): number {
   const methodMap: Record<string, number> = {
-    'triangular': 0,
-    'catrom': 1,
-    'mitchell': 2,
-    'lanczos3': 3,
+    triangular: 0,
+    catrom: 1,
+    mitchell: 2,
+    lanczos3: 3,
   };
   return methodMap[options?.method ?? 'mitchell'] ?? 2;
 }
@@ -147,14 +158,17 @@ function getResizeMethod(options?: ResizeOptions): number {
 if (typeof self !== 'undefined') {
   self.onmessage = async (event: MessageEvent) => {
     const data = event.data;
-    
+
     // Handle worker ping for initialization
     if (data?.type === 'worker:ping') {
       self.postMessage({ type: 'worker:ready' });
       return;
     }
-    
-    const { id, type, payload } = data as WorkerRequest<{ image: ImageInput; options: ResizeOptions }>;
+
+    const { id, type, payload } = data as WorkerRequest<{
+      image: ImageInput;
+      options: ResizeOptions;
+    }>;
 
     const response: WorkerResponse<ImageInput> = { id, ok: false };
 

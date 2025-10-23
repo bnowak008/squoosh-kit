@@ -10,35 +10,35 @@ This directory contains detailed todo files for resolving critical issues in the
 
 These issues prevent the package from functioning correctly in real-world scenarios.
 
-| # | Title | Status | Effort | Dependencies |
-|---|-------|--------|--------|--------------|
-| 1 | [API Parameter Order Inconsistency](./issue-001-api-parameter-order-inconsistency.md) | ✅ COMPLETED | 3-4 days | None |
-| 2 | [Worker Path Resolution Fails](./issue-002-worker-path-resolution.md) | ✅ COMPLETED | 1 hour | Issue #1 |
-| 3 | [Useless Default AbortSignal](./issue-003-useless-default-abortsignal.md) | ✅ COMPLETED | 2 hours | Issue #2 |
+| #   | Title                                                                                 | Status       | Effort   | Dependencies |
+| --- | ------------------------------------------------------------------------------------- | ------------ | -------- | ------------ |
+| 1   | [API Parameter Order Inconsistency](./issue-001-api-parameter-order-inconsistency.md) | ✅ COMPLETED | 3-4 days | None         |
+| 2   | [Worker Path Resolution Fails](./issue-002-worker-path-resolution.md)                 | ✅ COMPLETED | 1 hour   | Issue #1     |
+| 3   | [Useless Default AbortSignal](./issue-003-useless-default-abortsignal.md)             | ✅ COMPLETED | 2 hours  | Issue #2     |
 
 ### 🟠 MAJOR (4 issues) - High Impact
 
 These issues cause significant problems in production use or mislead users.
 
-| # | Title | Status | Effort | Dependencies |
-|---|-------|--------|--------|--------------|
-| 4 | [ImageData Copy Performance Cliff](./issue-004-imagedata-copy-performance-cliff.md) | ✅ COMPLETED | 1-2 hours | None |
-| 5 | [Worker Memory Leaks](./issue-005-worker-memory-leaks.md) | ✅ COMPLETED | 2-3 hours | Issue #2 |
-| 6 | [Lanczos3 vs Triangular Discrepancy](./issue-006-lanczos3-vs-triangular-discrepancy.md) | ✅ COMPLETED | 1-2 hours | None |
-| 7 | [WASM Module Loading Fragility](./issue-007-wasm-module-loading-fragility.md) | ✅ COMPLETED | 2-3 hours | None |
+| #   | Title                                                                                   | Status       | Effort    | Dependencies |
+| --- | --------------------------------------------------------------------------------------- | ------------ | --------- | ------------ |
+| 4   | [ImageData Copy Performance Cliff](./issue-004-imagedata-copy-performance-cliff.md)     | ✅ COMPLETED | 1-2 hours | None         |
+| 5   | [Worker Memory Leaks](./issue-005-worker-memory-leaks.md)                               | ✅ COMPLETED | 2-3 hours | Issue #2     |
+| 6   | [Lanczos3 vs Triangular Discrepancy](./issue-006-lanczos3-vs-triangular-discrepancy.md) | ✅ COMPLETED | 1-2 hours | None         |
+| 7   | [WASM Module Loading Fragility](./issue-007-wasm-module-loading-fragility.md)           | ✅ COMPLETED | 2-3 hours | None         |
 
 ### 🟡 SIGNIFICANT (6 issues) - Code Quality
 
 These issues affect code maintainability, reliability, and developer experience.
 
-| # | Title | Status | Effort | Dependencies |
-|---|-------|--------|--------|--------------|
-| 8 | [No Input Validation](./issue-008-no-input-validation.md) | ✅ COMPLETED | 1-2 hours | None |
-| 9 | [Unsafe Type Casts](./issue-009-unsafe-type-casts.md) | ✅ COMPLETED | 1 hour | None |
-| 10 | [Parameter Order Between Functions](./issue-010-parameter-order-between-functions.md) | ✅ COMPLETED | 1-2 hours | Issue #1 |
-| 11 | [WASM Binary Bundled](./issue-011-wasm-binary-bundled.md) | ✅ COMPLETED | 1-2 hours | None |
-| 12 | [Edge Cases in Resize Logic](./issue-012-edge-cases-in-resize-logic.md) | ✅ COMPLETED | 1-2 hours | Issue #8 |
-| 13 | [Internal Exports Create Confusion](./issue-013-internal-exports-create-confusion.md) | ✅ COMPLETED | 30 min | Issue #1 |
+| #   | Title                                                                                 | Status       | Effort    | Dependencies |
+| --- | ------------------------------------------------------------------------------------- | ------------ | --------- | ------------ |
+| 8   | [No Input Validation](./issue-008-no-input-validation.md)                             | ✅ COMPLETED | 1-2 hours | None         |
+| 9   | [Unsafe Type Casts](./issue-009-unsafe-type-casts.md)                                 | ✅ COMPLETED | 1 hour    | None         |
+| 10  | [Parameter Order Between Functions](./issue-010-parameter-order-between-functions.md) | ✅ COMPLETED | 1-2 hours | Issue #1     |
+| 11  | [WASM Binary Bundled](./issue-011-wasm-binary-bundled.md)                             | ✅ COMPLETED | 1-2 hours | None         |
+| 12  | [Edge Cases in Resize Logic](./issue-012-edge-cases-in-resize-logic.md)               | ✅ COMPLETED | 1-2 hours | Issue #8     |
+| 13  | [Internal Exports Create Confusion](./issue-013-internal-exports-create-confusion.md) | ✅ COMPLETED | 30 min    | Issue #1     |
 
 ---
 
@@ -47,6 +47,7 @@ These issues affect code maintainability, reliability, and developer experience.
 **This order respects dependencies and groups related work:**
 
 ### Phase 1: Critical Path (Days 1-2)
+
 1. **Issue #1**: API Parameter Order Inconsistency ✅ **COMPLETED**
    - ~~Foundation for API design~~ ✅ **RESOLVED**
    - ~~Affects multiple downstream issues~~ ✅ **RESOLVED**
@@ -63,6 +64,7 @@ These issues affect code maintainability, reliability, and developer experience.
    - ~~Actual: 2 hours (worker fix + docs)~~ ✅ **ACTUAL: 2 hours**
 
 ### Phase 2: Quality & Performance (Days 3-4)
+
 4. **Issue #4**: ImageData Copy Performance
    - Simple, independent fix
    - Measurable performance improvement
@@ -82,6 +84,7 @@ These issues affect code maintainability, reliability, and developer experience.
    - ~~Independent work~~ ✅ **RESOLVED**
 
 ### Phase 3: Validation & Polish (Days 5-6)
+
 8. **Issue #8**: No Input Validation
    - Foundation for other tests
    - Enables Issue #12
@@ -94,6 +97,7 @@ These issues affect code maintainability, reliability, and developer experience.
     - Depends on validation framework
 
 ### Phase 4: Cleanup (Day 7)
+
 11. **Issue #10**: Parameter Order Consistency ✅ **UNBLOCKED** (Issue #1 completed)
     - ~~Internal cleanup after Issue #1~~ ✅ **READY TO START**
 
@@ -159,6 +163,7 @@ cat .cursor/todos/issue-001-api-parameter-order-inconsistency.md
 ### Consistency Across Packages
 
 All codec packages (`@squoosh-kit/resize`, `@squoosh-kit/webp`, future ones) should:
+
 - Use identical API patterns
 - Have consistent parameter ordering
 - Share validation and error handling
@@ -236,6 +241,7 @@ After all issues resolved:
 ## Questions?
 
 Refer to the specific issue file for:
+
 - Detailed problem descriptions
 - Code examples
 - Testing strategies

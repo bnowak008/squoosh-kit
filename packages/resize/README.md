@@ -28,7 +28,7 @@ import type { ImageInput } from '@squoosh-kit/resize';
 const imageData: ImageInput = {
   data: imageBuffer,
   width: 2048,
-  height: 1536
+  height: 1536,
 };
 
 // With cancellation support
@@ -43,17 +43,14 @@ const thumbnail = await resize(
 setTimeout(() => controller.abort(), 5000);
 
 // Without cancellation (operation cannot be stopped once started)
-const resizedImage = await resize(
-  imageData,
-  { width: 1200, height: 800 }
-);
+const resizedImage = await resize(imageData, { width: 1200, height: 800 });
 
 // Create a resizer for batch operations
 const resizer = createResizer('worker');
 const results = await Promise.all([
   resizer(imageData, { width: 800 }, new AbortController().signal),
   resizer(imageData, { width: 1200 }, new AbortController().signal),
-  resizer(imageData, { width: 1600 }, new AbortController().signal)
+  resizer(imageData, { width: 1600 }, new AbortController().signal),
 ]);
 ```
 
@@ -75,22 +72,13 @@ Control the quality/speed trade-off with the `method` option:
 
 ```typescript
 // Balanced quality and speed (default)
-const balanced = await resize(
-  imageData,
-  { width: 800, method: 'mitchell' }
-);
+const balanced = await resize(imageData, { width: 800, method: 'mitchell' });
 
 // Fast for real-time preview
-const fast = await resize(
-  imageData,
-  { width: 800, method: 'triangular' }
-);
+const fast = await resize(imageData, { width: 800, method: 'triangular' });
 
 // Highest quality for production
-const highQuality = await resize(
-  imageData,
-  { width: 800, method: 'lanczos3' }
-);
+const highQuality = await resize(imageData, { width: 800, method: 'lanczos3' });
 ```
 
 ### Available Methods
@@ -106,23 +94,17 @@ All methods are provided by the Squoosh WASM codec:
 
 ```typescript
 // Color space control - use linear RGB for more accurate math
-const linearResize = await resize(
-  imageData,
-  { 
-    width: 800,
-    method: 'lanczos3',
-    linearRGB: true  // Proper color space conversion
-  }
-);
+const linearResize = await resize(imageData, {
+  width: 800,
+  method: 'lanczos3',
+  linearRGB: true, // Proper color space conversion
+});
 
 // Alpha channel handling - premultiply for better transparency
-const transparencyResize = await resize(
-  imageData,
-  {
-    width: 800,
-    premultiply: true  // Improves quality with transparent images
-  }
-);
+const transparencyResize = await resize(imageData, {
+  width: 800,
+  premultiply: true, // Improves quality with transparent images
+});
 ```
 
 ## The Quality Difference
@@ -132,12 +114,13 @@ This isn't your average image resizer. Choose your trade-off between speed and q
 ## Real-World Examples
 
 **Responsive Image Generation**
+
 ```typescript
 // Generate multiple sizes for responsive design
 const sizes = [320, 640, 1024, 1600];
 
 const responsiveImages = await Promise.all(
-  sizes.map(width =>
+  sizes.map((width) =>
     resize(
       originalImage,
       { width, height: Math.round(width * 0.75) },
@@ -148,15 +131,16 @@ const responsiveImages = await Promise.all(
 ```
 
 **Photo Gallery Thumbnails with Timeout**
+
 ```typescript
 const resizer = createResizer('client'); // Direct for server use
 
 for (const photo of photoFiles) {
   const controller = new AbortController();
-  
+
   // Set a 30-second timeout
   const timeout = setTimeout(() => controller.abort(), 30000);
-  
+
   try {
     const fullImage = await loadImage(photo);
     const thumbnail = await resizer(
@@ -164,7 +148,7 @@ for (const photo of photoFiles) {
       { width: 300, height: 200 },
       controller.signal
     );
-    
+
     await saveThumbnail(photo.name, thumbnail);
   } catch (error) {
     if (error.name === 'AbortError') {
@@ -179,17 +163,15 @@ for (const photo of photoFiles) {
 ```
 
 **Dynamic Image Processing**
+
 ```typescript
 // Resize based on user preferences
 const userWidth = getUserPreferredWidth();
-const processedImage = await resize(
-  imageData,
-  {
-    width: userWidth,
-    linearRGB: true,        // Better color accuracy
-    premultiply: false      // Maintain transparency
-  }
-);
+const processedImage = await resize(imageData, {
+  width: userWidth,
+  linearRGB: true, // Better color accuracy
+  premultiply: false, // Maintain transparency
+});
 ```
 
 ## API Reference
@@ -247,7 +229,7 @@ The `ImageInput` must contain valid image data:
 const validImage: ImageInput = {
   data: new Uint8Array(4096), // or Uint8ClampedArray
   width: 32,
-  height: 32
+  height: 32,
 };
 
 // Will throw TypeError: image must be an object
@@ -260,11 +242,17 @@ await resize({ width: 32, height: 32 }, { width: 800 });
 await resize({ data: [0, 0, 0, 255], width: 32, height: 32 }, { width: 800 });
 
 // Will throw RangeError: image.width must be a positive integer
-await resize({ data: new Uint8Array(100), width: 0, height: 32 }, { width: 800 });
+await resize(
+  { data: new Uint8Array(100), width: 0, height: 32 },
+  { width: 800 }
+);
 
 // Will throw RangeError: image.data too small
 // (needs 32 * 32 * 4 = 4096 bytes, but only 100 provided)
-await resize({ data: new Uint8Array(100), width: 32, height: 32 }, { width: 800 });
+await resize(
+  { data: new Uint8Array(100), width: 32, height: 32 },
+  { width: 800 }
+);
 ```
 
 ### Options Validation
@@ -288,6 +276,7 @@ await resize(validImage, { width: 800, premultiply: 1 });
 ### Why Validation Matters
 
 Input validation prevents:
+
 - **Cryptic WASM errors** - Clear messages instead of "undefined behavior"
 - **Out-of-bounds buffer access** - Catches undersized buffers early
 - **NaN propagation** - Rejects invalid numeric dimensions
@@ -352,10 +341,7 @@ const minimal = await resize(
 // This throws validation error (width must be ≥1)
 
 // But if validation passes, minimum 1x1 is guaranteed
-const valid = await resize(
-  { data, width: 1000, height: 1000 },
-  { width: 1 }
-);
+const valid = await resize({ data, width: 1000, height: 1000 }, { width: 1 });
 // Result: width=1, height≥1
 ```
 
@@ -371,6 +357,7 @@ const valid = await resize(
 This package includes WebAssembly binaries (~30-50KB gzipped) for the resize codec. These enable fast processing through Web Workers and are essential for optimal performance.
 
 **Size breakdown:**
+
 - JavaScript code: ~5-10KB gzipped
 - TypeScript definitions: ~3KB
 - WASM binaries: ~30-50KB gzipped (required for resizing)
@@ -408,9 +395,9 @@ try {
   const results = await Promise.all([
     resizer(image1, { width: 800 }),
     resizer(image2, { width: 800 }),
-    resizer(image3, { width: 800 })
+    resizer(image3, { width: 800 }),
   ]);
-  
+
   // Process results...
 } finally {
   // Clean up when all operations are complete
@@ -426,11 +413,11 @@ Control the quality and behavior of resizing:
 
 ```typescript
 type ResizeOptions = {
-  width?: number;        // Target width (aspect ratio maintained if only width/height set)
-  height?: number;       // Target height (aspect ratio maintained if only width/height set)
-  method?: 'triangular' | 'catrom' | 'mitchell' | 'lanczos3';  // Resize algorithm (default: 'mitchell')
+  width?: number; // Target width (aspect ratio maintained if only width/height set)
+  height?: number; // Target height (aspect ratio maintained if only width/height set)
+  method?: 'triangular' | 'catrom' | 'mitchell' | 'lanczos3'; // Resize algorithm (default: 'mitchell')
   premultiply?: boolean; // Premultiply alpha channel (default: false)
-  linearRGB?: boolean;   // Use linear RGB color space (default: false)
+  linearRGB?: boolean; // Use linear RGB color space (default: false)
 };
 ```
 
@@ -438,13 +425,13 @@ type ResizeOptions = {
 
 All options map directly to the Squoosh WASM resize function:
 
-| Option | WASM Parameter | Type | Default | Description |
-|--------|---|---|---|---|
-| `width` | output_width | number? | original width | Target width (aspect ratio maintained if height omitted) |
-| `height` | output_height | number? | original height | Target height (aspect ratio maintained if width omitted) |
-| `method` | typ_idx | 'triangular' \| 'catrom' \| 'mitchell' \| 'lanczos3' | 'mitchell' | Resize algorithm selection |
-| `premultiply` | premultiply | boolean? | false | Pre-multiply alpha channel before resizing |
-| `linearRGB` | color_space_conversion | boolean? | false | Use linear RGB color space instead of sRGB |
+| Option        | WASM Parameter         | Type                                                 | Default         | Description                                              |
+| ------------- | ---------------------- | ---------------------------------------------------- | --------------- | -------------------------------------------------------- |
+| `width`       | output_width           | number?                                              | original width  | Target width (aspect ratio maintained if height omitted) |
+| `height`      | output_height          | number?                                              | original height | Target height (aspect ratio maintained if width omitted) |
+| `method`      | typ_idx                | 'triangular' \| 'catrom' \| 'mitchell' \| 'lanczos3' | 'mitchell'      | Resize algorithm selection                               |
+| `premultiply` | premultiply            | boolean?                                             | false           | Pre-multiply alpha channel before resizing               |
+| `linearRGB`   | color_space_conversion | boolean?                                             | false           | Use linear RGB color space instead of sRGB               |
 
 ## Pro Tips
 

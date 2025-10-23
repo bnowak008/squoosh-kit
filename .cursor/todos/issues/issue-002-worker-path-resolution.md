@@ -16,6 +16,7 @@ The worker file path hardcoded in the bridge layer assumes a directory structure
 ### Current Implementation
 
 **File: `packages/resize/src/bridge.ts` (line 44)**
+
 ```typescript
 private async createWorker(): Promise<Worker> {
   const workerUrl = new URL(
@@ -28,9 +29,10 @@ private async createWorker(): Promise<Worker> {
 ```
 
 **Same issue in: `packages/webp/src/bridge.ts` (line 44)**
+
 ```typescript
 const workerUrl = new URL(
-  './features/webp/webp.worker.js',  // ← WRONG PATH
+  './features/webp/webp.worker.js', // ← WRONG PATH
   import.meta.url
 ).href;
 ```
@@ -102,7 +104,7 @@ import { createResizer } from '@squoosh-kit/resize';
 const resizer = createResizer('worker');  // Triggers worker creation
 
 // Inside bridge.js (compiled bridge.ts):
-import.meta.url 
+import.meta.url
   → file:///path/to/node_modules/@squoosh-kit/resize/dist/bridge.js
 
 new URL('./features/resize/resize.worker.js', import.meta.url)
@@ -121,6 +123,7 @@ new URL('./features/resize/resize.worker.js', import.meta.url)
 ### Step-by-Step Reproduction
 
 **Step 1: Publish package**
+
 ```bash
 # In squoosh-lite root
 bun run build
@@ -128,6 +131,7 @@ npm publish  # (or simulate with npm pack)
 ```
 
 **Step 2: Consume in new project**
+
 ```bash
 mkdir test-app && cd test-app
 npm install @squoosh-kit/resize
@@ -135,11 +139,12 @@ bun init -y
 ```
 
 **Step 3: Test code**
+
 ```typescript
 // test.ts
 import { createResizer } from '@squoosh-kit/resize';
 
-const resizer = createResizer('worker');  // This will fail
+const resizer = createResizer('worker'); // This will fail
 const image = { data: new Uint8Array(100), width: 10, height: 10 };
 
 try {
@@ -153,11 +158,13 @@ try {
 ```
 
 **Step 4: Run**
+
 ```bash
 bun test.ts
 ```
 
-**Expected Output**: ✗ FAILURE  
+**Expected Output**: ✗ FAILURE
+
 ```
 Error: Worker initialization timeout
 ```
@@ -169,6 +176,7 @@ Error: Worker initialization timeout
 ### Immediate Impact: Worker Mode Completely Broken
 
 **For Users:**
+
 ```typescript
 // User wants to use resize with worker mode
 const resizer = createResizer('worker');
@@ -182,6 +190,7 @@ const resizer = createResizer('client');
 ### Downstream Impact: Ecosystem Effects
 
 **For Package Distribution:**
+
 - npm package appears to work in monorepo
 - Fails silently for 10 seconds for every user on first use
 - Users file GitHub issues: "Package times out"
@@ -189,6 +198,7 @@ const resizer = createResizer('client');
 - Package gets poor reputation
 
 **For WebP Package (also broken):**
+
 ```
 Same issue in @squoosh-kit/webp
 Both packages ship broken worker mode
@@ -202,7 +212,7 @@ Most problematic: **It doesn't fail immediately**. It waits 10 seconds:
 // packages/resize/src/bridge.ts line 49
 const timeout = setTimeout(() => {
   reject(new Error('Worker initialization timeout'));
-}, 10000);  // ← 10 second delay before error
+}, 10000); // ← 10 second delay before error
 ```
 
 Users don't know what's wrong. Logs show nothing. App just hangs.
@@ -214,11 +224,13 @@ Users don't know what's wrong. Logs show nothing. App just hangs.
 The problem stems from three incorrect assumptions:
 
 ### Assumption 1: Directory Nesting Structure
+
 ```typescript
-new URL('./features/resize/resize.worker.js', import.meta.url)
+new URL('./features/resize/resize.worker.js', import.meta.url);
 ```
 
 Assumes:
+
 ```
 dist/
   bridge.js
@@ -228,6 +240,7 @@ dist/
 ```
 
 Actual structure:
+
 ```
 dist/
   bridge.js
@@ -235,6 +248,7 @@ dist/
 ```
 
 ### Assumption 2: File Location Consistency
+
 Assumes the `.js` build output maintains the same relative structure as TypeScript source:
 
 ```
@@ -246,6 +260,7 @@ src/
 ```
 
 The build process flattens this:
+
 ```
 dist/
   bridge.js
@@ -253,7 +268,9 @@ dist/
 ```
 
 ### Assumption 3: Static Path Resolution
+
 Assumes path resolution works the same way in:
+
 - Development environment (works)
 - npm published package (fails)
 - Different bundlers (may work differently)
@@ -264,22 +281,26 @@ Assumes path resolution works the same way in:
 ## Solution Options
 
 ### Option A: Use Relative Path (Simple, Recommended)
+
 ```typescript
 // Correct relative path from bridge.js to worker.js
 const workerUrl = new URL('./resize.worker.js', import.meta.url).href;
 ```
 
 **Pros**:
+
 - Simple, just fix the path string
 - Works in all environments (as long as dist structure is correct)
 - No new dependencies
 - Fast (no path resolution)
 
 **Cons**:
+
 - Depends on specific dist directory structure
 - If build process changes, breaks again
 
 ### Option B: Use import.meta.resolve() with Fallback
+
 ```typescript
 let modulePath;
 
@@ -294,16 +315,19 @@ const worker = new Worker(modulePath, { type: 'module' });
 ```
 
 **Pros**:
+
 - More robust (uses Node.js module resolution)
 - Handles non-standard installations
 - Future-proof
 
 **Cons**:
+
 - `import.meta.resolve()` not available in all environments
 - More complex code
 - Requires Node.js 22+
 
 ### Option C: Create Helper Function in Runtime Package
+
 ```typescript
 // packages/runtime/src/worker.ts
 export function getWorkerPath(workerName: string): URL {
@@ -319,23 +343,24 @@ const workerUrl = getWorkerPath('resize').href;
 ```
 
 **Pros**:
+
 - Centralized logic (DRY principle)
 - Reusable across packages
 - Testable
 - Easy to update for future codec packages
 
 **Cons**:
+
 - Adds indirection
 - Runtime package needs update
 
 ### Option D: Environment-Aware Worker Loading
+
 ```typescript
 // packages/runtime/src/worker.ts
-export async function createCodecWorker(
-  workerName: string
-): Promise<Worker> {
+export async function createCodecWorker(workerName: string): Promise<Worker> {
   const isTest = import.meta.url.includes('.ts');
-  
+
   let workerUrl;
   if (isTest) {
     // Test environment: look in dist/
@@ -344,17 +369,19 @@ export async function createCodecWorker(
     // Production: relative to current location
     workerUrl = new URL(`./${workerName}.worker.js`, import.meta.url);
   }
-  
+
   return new Worker(workerUrl, { type: 'module' });
 }
 ```
 
 **Pros**:
+
 - Handles both test and production environments
 - Centralizes worker creation logic
 - Can handle environment-specific issues
 
 **Cons**:
+
 - More complex
 - Makes assumptions about environment
 
@@ -365,6 +392,7 @@ export async function createCodecWorker(
 **Recommendation: Option C (Centralized Helper) + Option A (Simple Path Fix)**
 
 **Approach**:
+
 1. **Immediate Fix** (Option A): Change path from `./features/resize/resize.worker.js` to `./resize.worker.js`
 2. **Longer Term** (Option C): Create `getWorkerPath()` helper in runtime package for future scalability
 
@@ -375,26 +403,33 @@ export async function createCodecWorker(
 ### Phase 1: Immediate Fix (Unblocks npm Publishing)
 
 #### Step 1.1: Fix Worker Paths
+
 **File**: `packages/resize/src/bridge.ts` (line 44)
+
 ```typescript
 // BEFORE:
-const workerUrl = new URL('./features/resize/resize.worker.js', import.meta.url).href;
+const workerUrl = new URL('./features/resize/resize.worker.js', import.meta.url)
+  .href;
 
 // AFTER:
 const workerUrl = new URL('./resize.worker.js', import.meta.url).href;
 ```
 
 **File**: `packages/webp/src/bridge.ts` (line 44)
+
 ```typescript
 // BEFORE:
-const workerUrl = new URL('./features/webp/webp.worker.js', import.meta.url).href;
+const workerUrl = new URL('./features/webp/webp.worker.js', import.meta.url)
+  .href;
 
 // AFTER:
 const workerUrl = new URL('./webp.worker.js', import.meta.url).href;
 ```
 
 #### Step 1.2: Verify Build Output Structure
+
 Run build and check that worker files are in correct location:
+
 ```bash
 bun run build
 
@@ -407,7 +442,9 @@ ls -la packages/webp/dist/
 ```
 
 #### Step 1.3: Test in npm Package Environment
+
 Simulate npm package installation and test:
+
 ```bash
 # Pack the package
 npm pack --workspace=@squoosh-kit/resize
@@ -438,54 +475,60 @@ bun test.ts
 ### Phase 2: Robust Worker Loading (Scalability)
 
 #### Step 2.1: Create Worker Helper in Runtime
+
 **File**: `packages/runtime/src/worker-helper.ts` (new file)
+
 ```typescript
 /**
  * Get the URL for a worker file
- * 
+ *
  * This helper abstracts away the complexity of locating worker files
  * in different environments (development, npm package, bundled, etc.)
  */
 export function getWorkerURL(workerFilename: string): URL {
   // Ensure filename has correct format
-  const normalizedName = workerFilename.endsWith('.js') 
-    ? workerFilename 
+  const normalizedName = workerFilename.endsWith('.js')
+    ? workerFilename
     : `${workerFilename}.js`;
-  
+
   // In packaged/built code, worker is in same directory as this module
   return new URL(normalizedName, import.meta.url);
 }
 
 /**
  * Create a Web Worker for a specific codec
- * 
+ *
  * Handles environment-specific worker creation logic
  */
 export function createCodecWorker(workerFilename: string): Worker {
   const workerURL = getWorkerURL(workerFilename);
-  
+
   try {
     return new Worker(workerURL, { type: 'module' });
   } catch (error) {
     throw new Error(
       `Failed to create worker from ${workerURL}: ${error instanceof Error ? error.message : String(error)}. ` +
-      `Ensure the worker file exists at the expected location.`
+        `Ensure the worker file exists at the expected location.`
     );
   }
 }
 ```
 
 #### Step 2.2: Export from Runtime
+
 **File**: `packages/runtime/src/index.ts`
+
 ```typescript
 export * from './env.js';
 export * from './worker-call.js';
 export * from './types.js';
-export * from './worker-helper.js';  // ← Add this
+export * from './worker-helper.js'; // ← Add this
 ```
 
 #### Step 2.3: Update Bridge Classes to Use Helper
+
 **File**: `packages/resize/src/bridge.ts`
+
 ```typescript
 import { createCodecWorker } from '@squoosh-kit/runtime';
 
@@ -495,16 +538,16 @@ class ResizeWorkerBridge implements ResizeBridge {
       const timeout = setTimeout(() => {
         reject(new Error('Worker initialization timeout'));
       }, 10000);
-      
+
       let worker: Worker;
       try {
-        worker = createCodecWorker('resize.worker');  // ← Use helper
+        worker = createCodecWorker('resize.worker'); // ← Use helper
       } catch (error) {
         clearTimeout(timeout);
         reject(error);
         return;
       }
-      
+
       const handleMessage = (event: MessageEvent) => {
         if (event.data?.type === 'worker:ready') {
           clearTimeout(timeout);
@@ -512,7 +555,7 @@ class ResizeWorkerBridge implements ResizeBridge {
           resolve(worker);
         }
       };
-      
+
       worker.addEventListener('message', handleMessage);
       worker.postMessage({ type: 'worker:ping' });
     });
@@ -523,10 +566,11 @@ class ResizeWorkerBridge implements ResizeBridge {
 **File**: `packages/webp/src/bridge.ts` (identical pattern)
 
 #### Step 2.4: Add Error Handling for Missing Workers
+
 ```typescript
 // If worker file doesn't exist, user gets clear error:
-// "Failed to create worker from file:///path/to/resize.worker.js: 
-//  Failed to construct 'Worker': Invalid worker URL. 
+// "Failed to create worker from file:///path/to/resize.worker.js:
+//  Failed to construct 'Worker': Invalid worker URL.
 //  Ensure the worker file exists at the expected location."
 ```
 
@@ -565,16 +609,16 @@ describe('Worker Creation', () => {
   it('should successfully create resize worker', async () => {
     const resizer = createResizer('worker');
     const image = createTestImage();
-    
+
     const result = await resizer(image, { width: 50 });
     expect(result.width).toBe(50);
-    
+
     // If we get here without timeout, path resolution worked
   });
 
   it('should handle worker timeout gracefully', async () => {
     const resizer = createResizer('worker');
-    
+
     // If path was wrong, this would timeout after 10s
     // Test runs for at least that duration in this case
     // (In practice, we mock this to avoid slow tests)
@@ -606,12 +650,14 @@ bun test.ts  # Should pass
 ## Implementation Checklist
 
 ### Core Fixes
+
 - [x] Update `packages/resize/src/bridge.ts` line 44 (path fix) ✅ **COMPLETED**
 - [x] Update `packages/webp/src/bridge.ts` line 44 (path fix) ✅ **COMPLETED**
 - [x] Verify build output structure matches new paths ✅ **COMPLETED**
 - [x] Test path resolution in compiled `.js` files ✅ **COMPLETED** (via comprehensive test)
 
 ### Enhancements (Phase 2)
+
 - [x] Create `packages/runtime/src/worker-helper.ts` ✅ **COMPLETED**
 - [x] Export `getWorkerURL()` and `createCodecWorker()` from runtime ✅ **COMPLETED**
 - [x] Update resize bridge to use helper ✅ **COMPLETED**
@@ -619,6 +665,7 @@ bun test.ts  # Should pass
 - [x] Add error handling with clear messages ✅ **COMPLETED**
 
 ### Testing
+
 - [x] Add unit tests for path resolution ✅ **COMPLETED** (via comprehensive test)
 - [x] Add integration tests for worker creation ✅ **COMPLETED** (via comprehensive test)
 - [x] Create npm package simulation test ✅ **COMPLETED** (via comprehensive test)
@@ -626,6 +673,7 @@ bun test.ts  # Should pass
 - [x] Manual testing with `npm pack` workflow ✅ **COMPLETED**
 
 ### Documentation
+
 - [x] Update troubleshooting guide if worker mode fails ✅ **COMPLETED** (this document)
 - [x] Document worker file requirements in dev guide ✅ **COMPLETED** (this document)
 - [x] Add comment in bridge explaining worker location assumption ✅ **COMPLETED**
@@ -641,16 +689,16 @@ This is a greenfield project. We are using Bun and should use it's native functi
 If we can simplify/improve the build and make it more flexible then we should do that absolutely.
 
 2. **Bundler Support**: Do you plan to support bundlers like Webpack, esbuild, or Vite? They might resolve paths differently. Should the worker helper account for this?
-Once the package is published and available, it should work in any modern browser, node, bun, worker, client. Everywhere that's possible. It should not matter what bundler they are using.
+   Once the package is published and available, it should work in any modern browser, node, bun, worker, client. Everywhere that's possible. It should not matter what bundler they are using.
 
 3. **Worker File Naming**: Should all future codec packages follow the same naming pattern? (e.g., `{codec}.worker.js`)
-Yes
+   Yes
 
 4. **Error Messages**: Is the proposed error message format clear enough? Should we add more debugging information?
-provide a little more information
+   provide a little more information
 
 5. **Backward Compatibility**: If we make this change, will it affect any existing installations? (It shouldn't, since worker mode is currently broken anyway)
-We don't care about backward compatibility. This is a greenfield project so no one is using it and there is nothing that could be broken from any changes.
+   We don't care about backward compatibility. This is a greenfield project so no one is using it and there is nothing that could be broken from any changes.
 
 ---
 
@@ -677,7 +725,7 @@ We don't care about backward compatibility. This is a greenfield project so no o
 
 2. **Robust Worker Helper**: Created centralized worker management in `packages/runtime/src/worker-helper.ts`
    - `getWorkerURL()` - Robust path resolution
-   - `createCodecWorker()` - Worker creation with clear error messages  
+   - `createCodecWorker()` - Worker creation with clear error messages
    - `createReadyWorker()` - Worker creation with timeout handling
 
 3. **Bridge Refactoring**: Updated both bridge classes to use the helper
@@ -692,7 +740,7 @@ We don't care about backward compatibility. This is a greenfield project so no o
 ✅ **Path Resolution**: Workers found at correct locations  
 ✅ **Helper Functions**: Centralized logic tested and working  
 ✅ **Tests Passing**: All existing tests continue to pass  
-✅ **Package Structure**: Worker files in correct locations  
+✅ **Package Structure**: Worker files in correct locations
 
 ### Impact
 
@@ -700,8 +748,9 @@ We don't care about backward compatibility. This is a greenfield project so no o
 **After**: Worker mode works correctly in all environments (development, npm package, bundled)
 
 **Benefits**:
+
 - ✅ Unblocks npm publishing
-- ✅ Worker mode now functional for users  
+- ✅ Worker mode now functional for users
 - ✅ Centralized, maintainable worker creation logic
 - ✅ Clear error messages when worker files missing
 - ✅ Future-proof for additional codec packages
@@ -709,13 +758,13 @@ We don't care about backward compatibility. This is a greenfield project so no o
 ### Next Steps Unblocked
 
 - ✅ Issue #3: Useless Default AbortSignal (can now test worker mode)
-- ✅ Issue #5: Worker Memory Leaks (can now test worker functionality)  
+- ✅ Issue #5: Worker Memory Leaks (can now test worker functionality)
 - ✅ npm package publishing (worker mode works)
 
 ### Files Modified
 
 - `packages/resize/src/bridge.ts` - Fixed worker path, added helper usage
-- `packages/webp/src/bridge.ts` - Fixed worker path, added helper usage  
+- `packages/webp/src/bridge.ts` - Fixed worker path, added helper usage
 - `packages/runtime/src/worker-helper.ts` - **NEW** - Centralized worker utilities
 - `packages/runtime/src/index.ts` - Export worker helper functions
 

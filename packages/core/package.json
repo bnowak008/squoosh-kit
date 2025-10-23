@@ -61,14 +61,11 @@
   "sideEffects": false,
   "scripts": {
     "copy:assets": "bun run scripts/copy-assets.ts",
-    "build:declarations": "tsc",
-    "build:code": "bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts",
-    "build": "bun run copy:assets && bun run build:declarations && bun run build:code",
-    "build:production": "bun run build",
-    "prepublishOnly": "bun run build && bun test",
-    "test": "bun test",
+    "build": "tsc && bun build --sourcemap --minify --format=esm --splitting --target=browser --outdir=dist src/index.ts",
     "clean:local": "rm -rf dist *.tsbuildinfo",
-    "prepack": "bun run build"
+    "prepack": "bun run build && bun test",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@squoosh-kit/webp": "workspace:*",

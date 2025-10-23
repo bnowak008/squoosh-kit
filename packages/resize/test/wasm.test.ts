@@ -7,7 +7,6 @@ import { resize, createResizer } from '../src/index.ts';
 import type { ResizeOptions } from '../src/types.ts';
 import type { ImageInput } from '../../runtime/src/index.ts';
 
-
 // Test image data: 2x2 red square
 const createTestImage = (): ImageInput => {
   const data = new Uint8Array([

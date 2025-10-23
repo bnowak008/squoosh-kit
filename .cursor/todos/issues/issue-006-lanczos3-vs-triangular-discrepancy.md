@@ -14,29 +14,32 @@ Documentation promises "Lanczos3" algorithm but code uses "Triangular" (lowest q
 ### Current State
 
 **README.md (line 59)**
+
 ```markdown
 "it uses the Lanczos3 algorithm - a sophisticated mathematical approach..."
 ```
 
 **Code (line 116-119 in resize.worker.ts)**
+
 ```typescript
 function getResizeMethod(): number {
-  return 0;  // Triangular, NOT Lanczos3
+  return 0; // Triangular, NOT Lanczos3
 }
 ```
 
 ### Quality Difference
 
-| Algorithm | Quality | Speed | Use Case |
-|-----------|---------|-------|----------|
+| Algorithm      | Quality    | Speed   | Use Case          |
+| -------------- | ---------- | ------- | ----------------- |
 | Triangular (0) | Low-Medium | Fastest | Real-time preview |
-| Lanczos3 (3) | High | Slower | Production output |
+| Lanczos3 (3)   | High       | Slower  | Production output |
 
 ---
 
 ## Solution Options
 
 ### Option A: Update Documentation (Honest)
+
 ```markdown
 "Fast image resizing with good-enough quality using the Triangular algorithm"
 ```
@@ -45,9 +48,10 @@ function getResizeMethod(): number {
 **Cons**: Lower perceived quality
 
 ### Option B: Use Lanczos3 (Deliver Promise)
+
 ```typescript
 function getResizeMethod(): number {
-  return 3;  // Lanczos3
+  return 3; // Lanczos3
 }
 ```
 
@@ -55,6 +59,7 @@ function getResizeMethod(): number {
 **Cons**: ~2-3x slower
 
 ### Option C: Make It Configurable (Best)
+
 ```typescript
 type ResizeOptions = {
   method?: 'triangular' | 'catrom' | 'mitchell' | 'lanczos3';
@@ -80,6 +85,7 @@ This allows users to get what they need without lying about current behavior.
 ### WASM Parameter Analysis
 
 **Squoosh Resize WASM Function Signature:**
+
 ```typescript
 resize(
   input_image: Uint8Array,           // ← Image buffer
@@ -95,28 +101,29 @@ resize(
 
 **Current Exposure Status:**
 
-| Parameter | WASM | Currently Exposed? | ResizeOptions Field | Status |
-|-----------|------|-------------------|-------------------|--------|
-| input_image | ✓ | ✓ | Derived from `image.data` | **EXPOSED** |
-| input_width | ✓ | ✓ | Derived from `image.width` | **EXPOSED** |
-| input_height | ✓ | ✓ | Derived from `image.height` | **EXPOSED** |
-| output_width | ✓ | ✓ | `width` option | **EXPOSED** |
-| output_height | ✓ | ✓ | `height` option | **EXPOSED** |
-| typ_idx | ✓ | ✗ | `method` option (MISSING) | **NOT EXPOSED** |
-| premultiply | ✓ | ✓ | `premultiply` option | **EXPOSED** |
-| color_space_conversion | ✓ | ✓ | `linearRGB` option | **EXPOSED** |
+| Parameter              | WASM | Currently Exposed? | ResizeOptions Field         | Status          |
+| ---------------------- | ---- | ------------------ | --------------------------- | --------------- |
+| input_image            | ✓    | ✓                  | Derived from `image.data`   | **EXPOSED**     |
+| input_width            | ✓    | ✓                  | Derived from `image.width`  | **EXPOSED**     |
+| input_height           | ✓    | ✓                  | Derived from `image.height` | **EXPOSED**     |
+| output_width           | ✓    | ✓                  | `width` option              | **EXPOSED**     |
+| output_height          | ✓    | ✓                  | `height` option             | **EXPOSED**     |
+| typ_idx                | ✓    | ✗                  | `method` option (MISSING)   | **NOT EXPOSED** |
+| premultiply            | ✓    | ✓                  | `premultiply` option        | **EXPOSED**     |
+| color_space_conversion | ✓    | ✓                  | `linearRGB` option          | **EXPOSED**     |
 
 **Current Parameter Mapping in Code (line 82-91 of resize.worker.ts):**
+
 ```typescript
 const result = wasmResize(
-  dataArray,                      // ← input_image
-  inputWidth,                     // ← input_width
-  inputHeight,                    // ← input_height
-  outputWidth,                    // ← output_width
-  outputHeight,                   // ← output_height
-  getResizeMethod(),              // ← typ_idx (CURRENTLY HARDCODED TO 0!)
-  options.premultiply ? 1 : 0,    // ← premultiply
-  options.linearRGB ? 1 : 0,      // ← color_space_conversion
+  dataArray, // ← input_image
+  inputWidth, // ← input_width
+  inputHeight, // ← input_height
+  outputWidth, // ← output_width
+  outputHeight, // ← output_height
+  getResizeMethod(), // ← typ_idx (CURRENTLY HARDCODED TO 0!)
+  options.premultiply ? 1 : 0, // ← premultiply
+  options.linearRGB ? 1 : 0 // ← color_space_conversion
 );
 ```
 
@@ -192,17 +199,17 @@ Update the function to accept options and map method names to WASM typ_idx value
  */
 function getResizeMethod(options?: ResizeOptions): number {
   const methodMap: Record<string, number> = {
-    'triangular': 0,
-    'catrom': 1,
-    'mitchell': 2,
-    'lanczos3': 3,
+    triangular: 0,
+    catrom: 1,
+    mitchell: 2,
+    lanczos3: 3,
   };
   // Default to mitchell (2) for sensible quality/performance balance
   return methodMap[options?.method ?? 'mitchell'] ?? 2;
 }
 ```
 
-### Step 3: Update _resizeCore() to Use Options
+### Step 3: Update \_resizeCore() to Use Options
 
 **File: `packages/resize/src/resize.worker.ts`**
 
@@ -211,7 +218,7 @@ Pass the options to getResizeMethod():
 ```typescript
 async function _resizeCore(
   image: ImageInput,
-  options: ResizeOptions,
+  options: ResizeOptions
 ): Promise<ImageInput> {
   await init();
   if (!wasmResize) {
@@ -234,9 +241,13 @@ async function _resizeCore(
   }
 
   const dataArray =
-    data instanceof Uint8ClampedArray 
-      ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length) 
-      : new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length);
+    data instanceof Uint8ClampedArray
+      ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.length)
+      : new Uint8Array(
+          data.buffer as ArrayBuffer,
+          data.byteOffset,
+          data.length
+        );
 
   const result = wasmResize(
     dataArray,
@@ -244,9 +255,9 @@ async function _resizeCore(
     inputHeight,
     outputWidth,
     outputHeight,
-    getResizeMethod(options),  // ← NOW PASSES OPTIONS!
+    getResizeMethod(options), // ← NOW PASSES OPTIONS!
     options.premultiply ? 1 : 0,
-    options.linearRGB ? 1 : 0,
+    options.linearRGB ? 1 : 0
   );
 
   return {
@@ -271,20 +282,20 @@ Control the quality/speed trade-off with the `method` option:
 \`\`\`typescript
 // Balanced quality and speed (default)
 const balanced = await resize(
-  imageData,
-  { width: 800, method: 'mitchell' }
+imageData,
+{ width: 800, method: 'mitchell' }
 );
 
 // Fast for real-time preview
 const fast = await resize(
-  imageData,
-  { width: 800, method: 'triangular' }
+imageData,
+{ width: 800, method: 'triangular' }
 );
 
 // Highest quality for production
 const highQuality = await resize(
-  imageData,
-  { width: 800, method: 'lanczos3' }
+imageData,
+{ width: 800, method: 'lanczos3' }
 );
 \`\`\`
 
@@ -302,21 +313,21 @@ All methods are provided by the Squoosh WASM codec:
 \`\`\`typescript
 // Color space control - use linear RGB for more accurate math
 const linearResize = await resize(
-  imageData,
-  { 
-    width: 800,
-    method: 'lanczos3',
-    linearRGB: true  // Proper color space conversion
-  }
+imageData,
+{
+width: 800,
+method: 'lanczos3',
+linearRGB: true // Proper color space conversion
+}
 );
 
 // Alpha channel handling - premultiply for better transparency
 const transparencyResize = await resize(
-  imageData,
-  {
-    width: 800,
-    premultiply: true  // Improves quality with transparent images
-  }
+imageData,
+{
+width: 800,
+premultiply: true // Improves quality with transparent images
+}
 );
 \`\`\`
 
@@ -324,13 +335,13 @@ const transparencyResize = await resize(
 
 All options map directly to the Squoosh WASM resize function:
 
-| Option | WASM Parameter | Type | Default | Description |
-|--------|---|---|---|---|
-| `width` | output_width | number? | original width | Target width (aspect ratio maintained if height omitted) |
-| `height` | output_height | number? | original height | Target height (aspect ratio maintained if width omitted) |
-| `method` | typ_idx | 'triangular' \| 'catrom' \| 'mitchell' \| 'lanczos3' | 'mitchell' | Resize algorithm selection |
-| `premultiply` | premultiply | boolean? | false | Pre-multiply alpha channel before resizing |
-| `linearRGB` | color_space_conversion | boolean? | false | Use linear RGB color space instead of sRGB |
+| Option        | WASM Parameter         | Type                                                 | Default         | Description                                              |
+| ------------- | ---------------------- | ---------------------------------------------------- | --------------- | -------------------------------------------------------- |
+| `width`       | output_width           | number?                                              | original width  | Target width (aspect ratio maintained if height omitted) |
+| `height`      | output_height          | number?                                              | original height | Target height (aspect ratio maintained if width omitted) |
+| `method`      | typ_idx                | 'triangular' \| 'catrom' \| 'mitchell' \| 'lanczos3' | 'mitchell'      | Resize algorithm selection                               |
+| `premultiply` | premultiply            | boolean?                                             | false           | Pre-multiply alpha channel before resizing               |
+| `linearRGB`   | color_space_conversion | boolean?                                             | false           | Use linear RGB color space instead of sRGB               |
 ```
 
 ### Step 5: Update JSDoc Comments
@@ -350,12 +361,9 @@ describe('Resize Methods', () => {
   it('should support all resize methods', async () => {
     const image = createTestImage(200, 200);
     const methods = ['triangular', 'catrom', 'mitchell', 'lanczos3'] as const;
-    
+
     for (const method of methods) {
-      const result = await resize(
-        image,
-        { width: 50, method }
-      );
+      const result = await resize(image, { width: 50, method });
       expect(result.width).toBe(50);
       expect(result.data).toHaveLength(50 * 50 * 4);
     }
@@ -363,7 +371,7 @@ describe('Resize Methods', () => {
 
   it('should default to mitchell when method is not specified', async () => {
     const image = createTestImage(200, 200);
-    
+
     const result = await resize(image, { width: 50 });
     expect(result.width).toBe(50);
     // Output should be valid (same as if method:'mitchell' was explicitly passed)
@@ -371,63 +379,54 @@ describe('Resize Methods', () => {
 
   it('should accept invalid method gracefully (fallback to default)', async () => {
     const image = createTestImage(200, 200);
-    
+
     // Invalid method should fallback to mitchell
-    const result = await resize(
-      image,
-      { width: 50, method: 'invalid' as any }
-    );
+    const result = await resize(image, { width: 50, method: 'invalid' as any });
     expect(result.width).toBe(50);
   });
 
   it('should work with premultiply option', async () => {
     const image = createTestImageWithAlpha(200, 200);
-    
-    const withPremultiply = await resize(
-      image,
-      { width: 50, premultiply: true }
-    );
-    
-    const withoutPremultiply = await resize(
-      image,
-      { width: 50, premultiply: false }
-    );
-    
+
+    const withPremultiply = await resize(image, {
+      width: 50,
+      premultiply: true,
+    });
+
+    const withoutPremultiply = await resize(image, {
+      width: 50,
+      premultiply: false,
+    });
+
     expect(withPremultiply.width).toBe(50);
     expect(withoutPremultiply.width).toBe(50);
   });
 
   it('should work with linearRGB option', async () => {
     const image = createTestImage(200, 200);
-    
-    const withLinearRGB = await resize(
-      image,
-      { width: 50, linearRGB: true }
-    );
-    
-    const withoutLinearRGB = await resize(
-      image,
-      { width: 50, linearRGB: false }
-    );
-    
+
+    const withLinearRGB = await resize(image, { width: 50, linearRGB: true });
+
+    const withoutLinearRGB = await resize(image, {
+      width: 50,
+      linearRGB: false,
+    });
+
     expect(withLinearRGB.width).toBe(50);
     expect(withoutLinearRGB.width).toBe(50);
   });
 
   it('should accept all options together', async () => {
     const image = createTestImageWithAlpha(200, 200);
-    
-    const result = await resize(
-      image,
-      {
-        width: 100,
-        height: 100,
-        method: 'lanczos3',
-        premultiply: true,
-        linearRGB: true
-      }
-    );
-    
+
+    const result = await resize(image, {
+      width: 100,
+      height: 100,
+      method: 'lanczos3',
+      premultiply: true,
+      linearRGB: true,
+    });
+
     expect(result.width).toBe(100);
     expect(result.height).toBe(100);
   });
@@ -435,29 +434,23 @@ describe('Resize Methods', () => {
   it('should work in factory pattern with method option', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(200, 200);
-    
-    const result = await resizer(
-      image,
-      { width: 50, method: 'lanczos3' }
-    );
-    
+
+    const result = await resizer(image, { width: 50, method: 'lanczos3' });
+
     expect(result.width).toBe(50);
   });
 
   it('should work in worker mode with all options', async () => {
     const resizer = createResizer('worker');
     const image = createTestImage(200, 200);
-    
-    const result = await resizer(
-      image,
-      {
-        width: 100,
-        method: 'mitchell',
-        premultiply: true,
-        linearRGB: true
-      }
-    );
-    
+
+    const result = await resizer(image, {
+      width: 100,
+      method: 'mitchell',
+      premultiply: true,
+      linearRGB: true,
+    });
+
     expect(result.width).toBe(100);
   });
 });
@@ -468,20 +461,23 @@ describe('Resize Methods', () => {
 **File: `../../README.md`**
 
 Update line 18 from:
+
 ```markdown
 || [`@squoosh-kit/resize`](./packages/resize) | High-quality Lanczos3 resizing | Thumbnails, responsive images, batch processing |
 ```
 
 To:
+
 ```markdown
 || [`@squoosh-kit/resize`](./packages/resize) | Flexible resizing with 4 algorithms | Thumbnails, responsive images, batch processing (triangular, catrom, mitchell, lanczos3) |
 ```
 
 Also update the Quick Example to show method usage:
+
 ```typescript
 const resized = await resize(
   imageData,
-  { width: 800, method: 'mitchell' }  // ← Show method option
+  { width: 800, method: 'mitchell' } // ← Show method option
 );
 ```
 
@@ -490,6 +486,7 @@ const resized = await resize(
 ## WASM Parameter Exposure: Summary
 
 ✅ **ALL WASM parameters are now fully exposed through ResizeOptions:**
+
 1. input_image → Derived from image.data ✓
 2. input_width → Derived from image.width ✓
 3. input_height → Derived from image.height ✓
@@ -579,6 +576,7 @@ After implementation, verify:
 ### WASM Parameter Exposure Summary
 
 ✅ **ALL 8 WASM parameters are now fully exposed:**
+
 1. input_image → Derived from image.data ✓
 2. input_width → Derived from image.width ✓
 3. input_height → Derived from image.height ✓

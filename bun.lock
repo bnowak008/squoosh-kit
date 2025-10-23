@@ -57,6 +57,9 @@
     "packages/runtime": {
       "name": "@squoosh-kit/runtime",
       "version": "0.0.4",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+      },
     },
     "packages/webp": {
       "name": "@squoosh-kit/webp",

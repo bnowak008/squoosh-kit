@@ -32,7 +32,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "bun run scripts/copy-assets.ts && tsc && bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts src/webp.worker.ts",
+    "build": "bun run scripts/copy-assets.ts && tsc && bun build --sourcemap --minify --format=esm --splitting --target=browser --outdir=dist src/index.ts src/webp.worker.ts",
     "clean:local": "rm -rf dist *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test"

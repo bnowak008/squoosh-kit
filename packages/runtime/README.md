@@ -9,16 +9,19 @@ While most users won't interact with this package directly (it's consumed intern
 ## What's Inside
 
 **Worker Bridge**
+
 - Seamless communication between main thread and Web Workers
 - Automatic worker lifecycle management
 - Graceful fallback for environments without worker support
 
 **Environment Detection**
+
 - Smart detection of execution context (worker vs main thread)
 - Platform-specific optimizations and polyfills
 - Consistent behavior across Bun, Node.js, and browsers
 
 **Communication Layer**
+
 - Type-safe request/response messaging
 - Built-in error handling and recovery
 - Support for operation cancellation and progress tracking

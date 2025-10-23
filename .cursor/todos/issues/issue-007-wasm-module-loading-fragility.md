@@ -14,13 +14,14 @@ WASM module loading uses `import.meta.resolve()` and `fetch()` with dynamic path
 ### Current Implementation
 
 **File: `packages/resize/src/resize.worker.ts` (lines 38-48)**
+
 ```typescript
 const modulePath = await import.meta.resolve(
-  `${wasmDirectory}/squoosh_resize.js`,  // ← Dynamic string
+  `${wasmDirectory}/squoosh_resize.js` // ← Dynamic string
 );
 const module = await import(modulePath);
 await module.default(
-  fetch(new URL(`${wasmDirectory}/squoosh_resize_bg.wasm`, import.meta.url)),
+  fetch(new URL(`${wasmDirectory}/squoosh_resize_bg.wasm`, import.meta.url))
   //    ↑ fetch() for local file
 );
 ```
@@ -55,14 +56,16 @@ async function init(): Promise<void> {
 
   initPromise = (async () => {
     let wasmModule;
-    
+
     // Strategy 1: Try static import (works everywhere)
     try {
       wasmModule = await import('./wasm/squoosh_resize.js');
     } catch (e1) {
       // Strategy 2: Try import.meta.resolve (Node 22+)
       try {
-        const modulePath = await import.meta.resolve('./wasm/squoosh_resize.js');
+        const modulePath = await import.meta.resolve(
+          './wasm/squoosh_resize.js'
+        );
         wasmModule = await import(modulePath);
       } catch (e2) {
         // Strategy 3: Fallback with clear error
@@ -71,13 +74,13 @@ async function init(): Promise<void> {
         );
       }
     }
-    
+
     // Load WASM binary
     const wasmBuffer = await loadWasmBinary('./wasm/squoosh_resize_bg.wasm');
     await wasmModule.default(wasmBuffer);
     wasmResize = wasmModule.resize;
   })();
-  
+
   return initPromise;
 }
 
@@ -88,7 +91,7 @@ async function loadWasmBinary(path: string): Promise<ArrayBuffer> {
     const filePath = new URL(path, import.meta.url);
     return await fs.readFile(filePath);
   }
-  
+
   // Browser/Worker
   const response = await fetch(new URL(path, import.meta.url));
   if (!response.ok) throw new Error(`Failed to load ${path}`);
@@ -108,7 +111,9 @@ async function loadWasmBinary(path: string): Promise<ArrayBuffer> {
 /**
  * Load WASM binary from various sources
  */
-export async function loadWasmBinary(relativePath: string): Promise<ArrayBuffer> {
+export async function loadWasmBinary(
+  relativePath: string
+): Promise<ArrayBuffer> {
   try {
     // Try Node.js fs first (more reliable)
     if (typeof process !== 'undefined' && process.versions?.node) {
@@ -117,17 +122,22 @@ export async function loadWasmBinary(relativePath: string): Promise<ArrayBuffer>
       const fileUrl = new URL(relativePath, import.meta.url);
       const filePath = fileUrl.pathname;
       const buffer = await fsModule.readFile(filePath);
-      return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+      return buffer.buffer.slice(
+        buffer.byteOffset,
+        buffer.byteOffset + buffer.byteLength
+      );
     }
   } catch (e) {
     // Fall through to fetch
   }
-  
+
   // Fallback: fetch
   const url = new URL(relativePath, import.meta.url);
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch WASM binary: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch WASM binary: ${response.status} ${response.statusText}`
+    );
   }
   return response.arrayBuffer();
 }
@@ -152,13 +162,13 @@ async function init(): Promise<void> {
       await module.default(buffer);
       wasmResize = module.resize;
     } catch (error) {
-      initPromise = null;  // Reset for retry
+      initPromise = null; // Reset for retry
       throw new Error(
         `Failed to initialize resize module: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   })();
-  
+
   return initPromise;
 }
 ```
@@ -177,8 +187,8 @@ describe('WASM Module Loading', () => {
     // Calling any resize function should trigger WASM init
     const image = createTestImage();
     const result = await resize(image, { width: 50 });
-    
-    expect(result.width).toBe(50);  // If WASM loaded, this works
+
+    expect(result.width).toBe(50); // If WASM loaded, this works
   });
 
   it('should handle missing WASM gracefully', async () => {
@@ -191,7 +201,7 @@ describe('WASM Module Loading', () => {
     const image = createTestImage();
     const result1 = await resize(image, { width: 50 });
     const result2 = await resize(image, { width: 75 });
-    
+
     expect(result1.width).toBe(50);
     expect(result2.width).toBe(75);
   });

@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, cpSync, rmSync } from 'fs';
 
 const PACKAGE_ROOT = join(import.meta.dir, '..');
 const SQUOOSH_ROOT = join(PACKAGE_ROOT, '..', '..', '.squoosh-temp');
-const DEST_DIR = join(PACKAGE_ROOT, 'dist', 'wasm');
+const DEST_DIR = join(PACKAGE_ROOT, 'wasm');
 
 async function main() {
   const resizeSrc = join(SQUOOSH_ROOT, 'codecs', 'resize', 'pkg');

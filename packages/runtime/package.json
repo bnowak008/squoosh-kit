@@ -29,9 +29,12 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc && bun build --sourcemap --minify --format=esm --splitting --target=bun --outdir=dist src/index.ts",
+    "build": "tsc && bun build --sourcemap --minify --format=esm --splitting --target=browser --outdir=dist src/index.ts",
     "clean:local": "rm -rf dist *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1"
   }
 }

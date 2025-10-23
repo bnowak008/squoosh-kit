@@ -1,10 +1,12 @@
 import type { ImageInput } from './types.js';
 
-export function validateArrayBuffer(buffer: unknown): asserts buffer is ArrayBuffer {
+export function validateArrayBuffer(
+  buffer: unknown
+): asserts buffer is ArrayBuffer {
   if (buffer instanceof SharedArrayBuffer) {
     throw new Error(
       'SharedArrayBuffer is not supported. ' +
-      'Use regular ArrayBuffer or Uint8Array instead.'
+        'Use regular ArrayBuffer or Uint8Array instead.'
     );
   }
 
@@ -13,7 +15,9 @@ export function validateArrayBuffer(buffer: unknown): asserts buffer is ArrayBuf
   }
 }
 
-export function validateImageInput(image: unknown): asserts image is ImageInput {
+export function validateImageInput(
+  image: unknown
+): asserts image is ImageInput {
   if (!image || typeof image !== 'object') {
     throw new TypeError('image must be an object');
   }
@@ -36,11 +40,15 @@ export function validateImageInput(image: unknown): asserts image is ImageInput 
   const { width, height } = imageObj;
 
   if (typeof width !== 'number' || !Number.isInteger(width) || width <= 0) {
-    throw new RangeError(`image.width must be a positive integer, got ${width}`);
+    throw new RangeError(
+      `image.width must be a positive integer, got ${width}`
+    );
   }
 
   if (typeof height !== 'number' || !Number.isInteger(height) || height <= 0) {
-    throw new RangeError(`image.height must be a positive integer, got ${height}`);
+    throw new RangeError(
+      `image.height must be a positive integer, got ${height}`
+    );
   }
 
   const expectedSize = width * height * 4;
@@ -51,7 +59,13 @@ export function validateImageInput(image: unknown): asserts image is ImageInput 
   }
 }
 
-export function validateResizeOptions(options: unknown): asserts options is { width?: number; height?: number; method?: 'triangular' | 'catrom' | 'mitchell' | 'lanczos3'; premultiply?: boolean; linearRGB?: boolean } {
+export function validateResizeOptions(options: unknown): asserts options is {
+  width?: number;
+  height?: number;
+  method?: 'triangular' | 'catrom' | 'mitchell' | 'lanczos3';
+  premultiply?: boolean;
+  linearRGB?: boolean;
+} {
   if (typeof options !== 'object' || options === null) {
     throw new TypeError('options must be an object');
   }
@@ -59,35 +73,60 @@ export function validateResizeOptions(options: unknown): asserts options is { wi
   const opts = options as Record<string, unknown>;
 
   if (opts.width !== undefined) {
-    if (typeof opts.width !== 'number' || !Number.isInteger(opts.width) || opts.width <= 0) {
-      throw new RangeError(`options.width must be a positive integer, got ${opts.width}`);
+    if (
+      typeof opts.width !== 'number' ||
+      !Number.isInteger(opts.width) ||
+      opts.width <= 0
+    ) {
+      throw new RangeError(
+        `options.width must be a positive integer, got ${opts.width}`
+      );
     }
   }
 
   if (opts.height !== undefined) {
-    if (typeof opts.height !== 'number' || !Number.isInteger(opts.height) || opts.height <= 0) {
-      throw new RangeError(`options.height must be a positive integer, got ${opts.height}`);
+    if (
+      typeof opts.height !== 'number' ||
+      !Number.isInteger(opts.height) ||
+      opts.height <= 0
+    ) {
+      throw new RangeError(
+        `options.height must be a positive integer, got ${opts.height}`
+      );
     }
   }
 
   if (opts.method !== undefined) {
     const validMethods = ['triangular', 'catrom', 'mitchell', 'lanczos3'];
     if (!validMethods.includes(opts.method as string)) {
-      throw new TypeError(`options.method must be one of: ${validMethods.join(', ')}, got ${opts.method}`);
+      throw new TypeError(
+        `options.method must be one of: ${validMethods.join(', ')}, got ${opts.method}`
+      );
     }
   }
 
   if (opts.premultiply !== undefined && typeof opts.premultiply !== 'boolean') {
-    throw new TypeError(`options.premultiply must be boolean, got ${typeof opts.premultiply}`);
+    throw new TypeError(
+      `options.premultiply must be boolean, got ${typeof opts.premultiply}`
+    );
   }
 
   if (opts.linearRGB !== undefined && typeof opts.linearRGB !== 'boolean') {
-    throw new TypeError(`options.linearRGB must be boolean, got ${typeof opts.linearRGB}`);
+    throw new TypeError(
+      `options.linearRGB must be boolean, got ${typeof opts.linearRGB}`
+    );
   }
 }
 
-export function validateWebpOptions(options: unknown): asserts options is { quality?: number; lossless?: boolean; nearLossless?: boolean } {
-  if (options !== undefined && (typeof options !== 'object' || options === null)) {
+export function validateWebpOptions(options: unknown): asserts options is {
+  quality?: number;
+  lossless?: boolean;
+  nearLossless?: boolean;
+} {
+  if (
+    options !== undefined &&
+    (typeof options !== 'object' || options === null)
+  ) {
     throw new TypeError('options must be an object or undefined');
   }
 
@@ -98,16 +137,30 @@ export function validateWebpOptions(options: unknown): asserts options is { qual
   const opts = options as Record<string, unknown>;
 
   if (opts.quality !== undefined) {
-    if (typeof opts.quality !== 'number' || !Number.isInteger(opts.quality) || opts.quality < 0 || opts.quality > 100) {
-      throw new RangeError(`options.quality must be an integer between 0 and 100, got ${opts.quality}`);
+    if (
+      typeof opts.quality !== 'number' ||
+      !Number.isInteger(opts.quality) ||
+      opts.quality < 0 ||
+      opts.quality > 100
+    ) {
+      throw new RangeError(
+        `options.quality must be an integer between 0 and 100, got ${opts.quality}`
+      );
     }
   }
 
   if (opts.lossless !== undefined && typeof opts.lossless !== 'boolean') {
-    throw new TypeError(`options.lossless must be boolean, got ${typeof opts.lossless}`);
+    throw new TypeError(
+      `options.lossless must be boolean, got ${typeof opts.lossless}`
+    );
   }
 
-  if (opts.nearLossless !== undefined && typeof opts.nearLossless !== 'boolean') {
-    throw new TypeError(`options.nearLossless must be boolean, got ${typeof opts.nearLossless}`);
+  if (
+    opts.nearLossless !== undefined &&
+    typeof opts.nearLossless !== 'boolean'
+  ) {
+    throw new TypeError(
+      `options.nearLossless must be boolean, got ${typeof opts.nearLossless}`
+    );
   }
 }

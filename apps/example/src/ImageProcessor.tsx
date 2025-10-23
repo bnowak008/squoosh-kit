@@ -109,7 +109,6 @@ export function ImageProcessor() {
       message: 'Analyzing your image...',
     });
 
-
     setTimeout(() => {
       setProcessingState({
         status: 'working',

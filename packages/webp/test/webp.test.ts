@@ -133,34 +133,34 @@ describe('ImageData Buffer Handling (Zero-Copy Optimization)', () => {
 describe('Input Validation', () => {
   it('should reject null image', async () => {
     const encoder = createWebpEncoder('client');
-    await expect(encoder(undefined as any))
-      .rejects.toThrow(TypeError);
+    // @ts-expect-error - we want to test the error case
+    await expect(encoder(undefined)).rejects.toThrow(TypeError);
   });
 
   it('should reject undefined image', async () => {
     const encoder = createWebpEncoder('client');
-    await expect(encoder(undefined as any))
-      .rejects.toThrow(TypeError);
+    // @ts-expect-error - we want to test the error case
+    await expect(encoder(undefined)).rejects.toThrow(TypeError);
   });
 
   it('should reject image without data property', async () => {
     const encoder = createWebpEncoder('client');
-    await expect(encoder({ width: 2, height: 2 } as any))
-      .rejects.toThrow(TypeError);
+    // @ts-expect-error - we want to test the error case
+    await expect(encoder({ width: 2, height: 2 })).rejects.toThrow(TypeError);
   });
 
   it('should reject image without width property', async () => {
     const encoder = createWebpEncoder('client');
-    const image = { data: new Uint8Array(16), height: 2 } as any;
-    await expect(encoder(image))
-      .rejects.toThrow(TypeError);
+    const image = { data: new Uint8Array(16), height: 2 };
+    // @ts-expect-error - we want to test the error case
+    await expect(encoder(image)).rejects.toThrow(TypeError);
   });
 
   it('should reject image without height property', async () => {
     const encoder = createWebpEncoder('client');
-    const image = { data: new Uint8Array(16), width: 2 } as any;
-    await expect(encoder(image))
-      .rejects.toThrow(TypeError);
+    const image = { data: new Uint8Array(16), width: 2 };
+    // @ts-expect-error - we want to test the error case
+    await expect(encoder(image)).rejects.toThrow(TypeError);
   });
 
   it('should reject image data that is not Uint8Array or Uint8ClampedArray', async () => {
@@ -169,72 +169,64 @@ describe('Input Validation', () => {
       data: new Float32Array(16),
       width: 2,
       height: 2,
-    } as any;
-    await expect(encoder(image))
-      .rejects.toThrow(TypeError);
+    };
+    // @ts-expect-error - we want to test the error case
+    await expect(encoder(image)).rejects.toThrow(TypeError);
   });
 
   it('should reject image data that is a regular array', async () => {
     const encoder = createWebpEncoder('client');
-    const image = { data: Array(16).fill(0), width: 2, height: 2 } as any;
-    await expect(encoder(image))
-      .rejects.toThrow(TypeError);
+    const image = { data: Array(16).fill(0), width: 2, height: 2 };
+    // @ts-expect-error - we want to test the error case
+    await expect(encoder(image)).rejects.toThrow(TypeError);
   });
 
   it('should reject image with NaN width', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: NaN, height: 2 };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with NaN height', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: 2, height: NaN };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with negative width', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: -2, height: 2 };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with negative height', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: 2, height: -2 };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with zero width', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: 0, height: 2 };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with zero height', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: 2, height: 0 };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with floating point width', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: 2.5, height: 2 };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with floating point height', async () => {
     const encoder = createWebpEncoder('client');
     const image = { data: new Uint8Array(16), width: 2, height: 2.5 };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should reject image with buffer too small', async () => {
@@ -244,8 +236,7 @@ describe('Input Validation', () => {
       width: 100,
       height: 100,
     };
-    await expect(encoder(image))
-      .rejects.toThrow(RangeError);
+    await expect(encoder(image)).rejects.toThrow(RangeError);
   });
 
   it('should provide clear error message for small buffer', async () => {
@@ -269,10 +260,7 @@ describe('Input Validation', () => {
   describe('WebpOptions validation', () => {
     const createTestImage = (): ImageInput => {
       const data = new Uint8Array([
-        255, 0, 0, 255,
-        255, 0, 0, 255,
-        255, 0, 0, 255,
-        255, 0, 0, 255,
+        255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
       ]);
       return { data, width: 2, height: 2 };
     };
@@ -280,65 +268,70 @@ describe('Input Validation', () => {
     it('should reject quality below 0', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      await expect(encoder(image, { quality: -1 }))
-        .rejects.toThrow(RangeError);
+      await expect(encoder(image, { quality: -1 })).rejects.toThrow(RangeError);
     });
 
     it('should reject quality above 100', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      await expect(encoder(image, { quality: 101 }))
-        .rejects.toThrow(RangeError);
+      await expect(encoder(image, { quality: 101 })).rejects.toThrow(
+        RangeError
+      );
     });
 
     it('should reject quality as floating point', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      await expect(encoder(image, { quality: 82.5 }))
-        .rejects.toThrow(RangeError);
+      await expect(encoder(image, { quality: 82.5 })).rejects.toThrow(
+        RangeError
+      );
     });
 
     it('should reject NaN quality', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      await expect(encoder(image, { quality: NaN }))
-        .rejects.toThrow(RangeError);
+      await expect(encoder(image, { quality: NaN })).rejects.toThrow(
+        RangeError
+      );
     });
 
     it('should accept valid quality values', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      const options: WebpOptions = { quality: 90 };
-      expect(options.quality).toBe(90);
+      const result = await encoder(image, { quality: 90 });
+      console.log(result);
+      expect(result).toBeInstanceOf(Uint8Array);
     });
 
     it('should reject lossless as non-boolean', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      await expect(encoder(image, { lossless: 1 as any }))
-        .rejects.toThrow(TypeError);
+      // @ts-expect-error - we want to test the error case
+      await expect(encoder(image, { lossless: 1 })).rejects.toThrow(TypeError);
     });
 
     it('should reject nearLossless as non-boolean', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      await expect(encoder(image, { nearLossless: 'true' as any }))
-        .rejects.toThrow(TypeError);
+      // @ts-expect-error - we want to test the error case
+      await expect(encoder(image, { nearLossless: 1 })).rejects.toThrow(
+        TypeError
+      );
     });
 
     it('should accept valid boolean options', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      const options: WebpOptions = { lossless: true, nearLossless: false };
-      expect(options.lossless).toBe(true);
-      expect(options.nearLossless).toBe(false);
+      expect(
+        await encoder(image, { lossless: true, nearLossless: false })
+      ).toBeInstanceOf(Uint8Array);
     });
 
     it('should provide clear error message for quality out of range', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
       try {
-        await encoder(image, { quality: 150 });
+        await await encoder(image, { quality: 150 });
         throw new Error('Should have thrown');
       } catch (e) {
         const message = (e as Error).message;
@@ -351,17 +344,15 @@ describe('Input Validation', () => {
     it('should handle empty options object', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      const options: WebpOptions = {};
-      expect(options.quality).toBeUndefined();
-      expect(options.lossless).toBeUndefined();
-      expect(options.nearLossless).toBeUndefined();
+      const result = await encoder(image, {});
+      console.log(result);
+      expect(result).toBeInstanceOf(Uint8Array);
     });
 
     it('should handle undefined options', async () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
-      // This should not throw
-      expect(true).toBe(true);
+      expect(await encoder(image, undefined)).toBeInstanceOf(Uint8Array);
     });
   });
 });
@@ -381,7 +372,9 @@ describe('Buffer Validation (Unsafe Type Cast Prevention)', () => {
   it('should reject SharedArrayBuffer', () => {
     if (typeof SharedArrayBuffer !== 'undefined') {
       const sharedBuffer = new SharedArrayBuffer(100);
-      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(/SharedArrayBuffer/);
+      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(
+        /SharedArrayBuffer/
+      );
     }
   });
 

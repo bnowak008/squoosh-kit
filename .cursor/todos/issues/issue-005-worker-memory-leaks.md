@@ -14,14 +14,15 @@ Worker instances are created and cached but **never terminated**. Each `createRe
 ### Current Implementation
 
 **File: `packages/resize/src/bridge.ts`**
+
 ```typescript
 class ResizeWorkerBridge implements ResizeBridge {
   private worker: Worker | null = null;
   private workerReady: Promise<Worker> | null = null;
-  
+
   private async getWorker(): Promise<Worker> {
     if (!this.worker) {
-      this.worker = await this.createWorker();  // ← Created, cached forever
+      this.worker = await this.createWorker(); // ← Created, cached forever
     }
     return this.worker;
   }
@@ -61,8 +62,12 @@ Add lifecycle management to allow cleanup:
 ```typescript
 // User-facing API
 interface ResizeFactory {
-  (imageData: ImageInput, options: ResizeOptions, signal?: AbortSignal): Promise<ImageInput>;
-  terminate(): Promise<void>;  // ← Allow cleanup
+  (
+    imageData: ImageInput,
+    options: ResizeOptions,
+    signal?: AbortSignal
+  ): Promise<ImageInput>;
+  terminate(): Promise<void>; // ← Allow cleanup
 }
 
 // Usage
@@ -70,7 +75,7 @@ const resizer = createResizer('worker');
 try {
   const result = await resizer(imageData, options);
 } finally {
-  await resizer.terminate();  // Cleanup
+  await resizer.terminate(); // Cleanup
 }
 ```
 
@@ -107,18 +112,22 @@ class ResizeWorkerBridge implements ResizeBridge {
 ```typescript
 export function createResizer(mode: 'worker' | 'client' = 'worker') {
   const bridge = createBridge(mode);
-  
-  const resizer = (imageData: ImageInput, options: ResizeOptions, signal?: AbortSignal) => {
+
+  const resizer = (
+    imageData: ImageInput,
+    options: ResizeOptions,
+    signal?: AbortSignal
+  ) => {
     return bridge.resize(signal, imageData, options);
   };
-  
+
   // Add termination method
   resizer.terminate = async () => {
     if ('terminate' in bridge && typeof bridge.terminate === 'function') {
       await bridge.terminate();
     }
   };
-  
+
   return resizer;
 }
 ```
@@ -134,7 +143,9 @@ export type ResizerFactory = ((
   terminate(): Promise<void>;
 };
 
-export function createResizer(mode: 'worker' | 'client' = 'worker'): ResizerFactory {
+export function createResizer(
+  mode: 'worker' | 'client' = 'worker'
+): ResizerFactory {
   // Implementation above
 }
 ```
@@ -152,32 +163,32 @@ describe('Worker Lifecycle', () => {
   it('should terminate worker', async () => {
     const resizer = createResizer('worker');
     const image = createTestImage();
-    
+
     const result = await resizer(image, { width: 50 });
     expect(result.width).toBe(50);
-    
+
     // Now terminate
     await resizer.terminate();
-    
+
     // Worker should be cleaned up (implementation-specific verification)
   });
 
   it('should handle multiple resizes then terminate', async () => {
     const resizer = createResizer('worker');
     const image = createTestImage();
-    
+
     const result1 = await resizer(image, { width: 50 });
     const result2 = await resizer(image, { width: 100 });
-    
+
     expect(result1.width).toBe(50);
     expect(result2.width).toBe(100);
-    
+
     await resizer.terminate();
   });
 
   it('client mode should have no-op terminate', async () => {
     const resizer = createResizer('client');
-    
+
     // Should not throw
     await resizer.terminate();
   });
@@ -199,9 +210,9 @@ When using worker mode, clean up the worker when done to avoid memory leaks:
 const resizer = createResizer('worker');
 
 try {
-  const result = await resizer(imageData, options);
+const result = await resizer(imageData, options);
 } finally {
-  await resizer.terminate();  // Clean up worker
+await resizer.terminate(); // Clean up worker
 }
 \`\`\`
 
@@ -211,11 +222,11 @@ For batch processing, keep the resizer alive:
 const resizer = createResizer('worker');
 
 try {
-  for (const image of images) {
-    const result = await resizer(image, options);
-  }
+for (const image of images) {
+const result = await resizer(image, options);
+}
 } finally {
-  await resizer.terminate();
+await resizer.terminate();
 }
 \`\`\`
 ```

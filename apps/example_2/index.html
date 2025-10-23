@@ -443,9 +443,9 @@
 
           const resizeStart = performance.now();
           const resized = await resize(
-            controller.signal,
             imageData,
-            resizeOptions
+            resizeOptions,
+            controller.signal
           );
           const resizeEnd = performance.now();
 

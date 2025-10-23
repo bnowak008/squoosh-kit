@@ -14,6 +14,7 @@ Unsafe type casts (`as ArrayBuffer`) bypass TypeScript checking for types that m
 ### Current Code
 
 **File: `packages/resize/src/bridge.ts` (line 76)**
+
 ```typescript
 const result = await callWorker(..., [
   buffer as ArrayBuffer,  // ← What if it's SharedArrayBuffer?
@@ -21,6 +22,7 @@ const result = await callWorker(..., [
 ```
 
 `image.data.buffer` can be:
+
 - `ArrayBuffer` (normal)
 - `SharedArrayBuffer` (worker contexts, if constructed with shared memory)
 - Other types in edge cases
@@ -61,11 +63,13 @@ const result = await callWorker(..., [buffer]);  // No cast needed!
 **File**: `packages/runtime/src/validators.ts`
 
 ```typescript
-export function validateArrayBuffer(buffer: unknown): asserts buffer is ArrayBuffer {
+export function validateArrayBuffer(
+  buffer: unknown
+): asserts buffer is ArrayBuffer {
   if (buffer instanceof SharedArrayBuffer) {
     throw new Error(
       'SharedArrayBuffer is not supported. ' +
-      'Use regular ArrayBuffer or Uint8Array instead.'
+        'Use regular ArrayBuffer or Uint8Array instead.'
     );
   }
 
@@ -86,7 +90,7 @@ class ResizeWorkerBridge {
   async resize(signal, image, options) {
     const buffer = image.data.buffer;
     validateArrayBuffer(buffer);  // ← Check before use
-    
+
     return callWorker(..., [buffer]);  // No cast!
   }
 }
@@ -99,6 +103,7 @@ class ResizeWorkerBridge {
 Comprehensive tests added across all packages:
 
 ### Runtime Tests (packages/runtime/test/unit.test.ts)
+
 - ✅ Accept normal ArrayBuffer
 - ✅ Accept Uint8Array backed by ArrayBuffer
 - ✅ Reject SharedArrayBuffer
@@ -109,12 +114,14 @@ Comprehensive tests added across all packages:
 - ✅ Reject numbers
 
 ### Resize Tests (packages/resize/test/resize.test.ts)
+
 - ✅ Buffer Validation suite (6 tests)
 - ✅ Validates with normal ArrayBuffer
 - ✅ Validates with Uint8Array backed by ArrayBuffer
 - ✅ Rejects SharedArrayBuffer
 
 ### WebP Tests (packages/webp/test/webp.test.ts)
+
 - ✅ Buffer Validation suite (6 tests)
 - ✅ Same coverage as resize tests
 
@@ -139,7 +146,7 @@ Comprehensive tests added across all packages:
 **Build Status**: ✅ 0 errors  
 **Test Results**: ✅ 106/106 passing (5 WASM tests skipped as expected)  
 **Linting Status**: ✅ 0 errors  
-**Type Safety**: ✅ All unsafe casts removed  
+**Type Safety**: ✅ All unsafe casts removed
 
 ---
 

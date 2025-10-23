@@ -153,34 +153,36 @@ describe('ImageData Buffer Handling (Zero-Copy Optimization)', () => {
 describe('Input Validation', () => {
   it('should reject null image', async () => {
     const resizer = createResizer('client');
-    await expect(resizer(undefined as any, { width: 800 }))
-      .rejects.toThrow(TypeError);
+    // @ts-expect-error - we want to test the error case
+    await expect(resizer(undefined, { width: 800 })).rejects.toThrow(TypeError);
   });
 
   it('should reject undefined image', async () => {
     const resizer = createResizer('client');
-    await expect(resizer(undefined as any, { width: 800 }))
-      .rejects.toThrow(TypeError);
+    // @ts-expect-error - we want to test the error case
+    await expect(resizer(undefined, { width: 800 })).rejects.toThrow(TypeError);
   });
 
   it('should reject image without data property', async () => {
     const resizer = createResizer('client');
-    await expect(resizer({ width: 4, height: 4 } as any, { width: 2 }))
-      .rejects.toThrow(TypeError);
+    await expect(
+      // @ts-expect-error - we want to test the error case
+      resizer({ width: 4, height: 4 }, { width: 2 })
+    ).rejects.toThrow(TypeError);
   });
 
   it('should reject image without width property', async () => {
     const resizer = createResizer('client');
-    const image = { data: new Uint8Array(64), height: 4 } as any;
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(TypeError);
+    const image = { data: new Uint8Array(64), height: 4 };
+    // @ts-expect-error - we want to test the error case
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(TypeError);
   });
 
   it('should reject image without height property', async () => {
     const resizer = createResizer('client');
-    const image = { data: new Uint8Array(64), width: 4 } as any;
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(TypeError);
+    const image = { data: new Uint8Array(64), width: 4 };
+    // @ts-expect-error - we want to test the error case
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(TypeError);
   });
 
   it('should reject image data that is not Uint8Array or Uint8ClampedArray', async () => {
@@ -189,72 +191,64 @@ describe('Input Validation', () => {
       data: new Float32Array(64),
       width: 4,
       height: 4,
-    } as any;
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(TypeError);
+    };
+    // @ts-expect-error - we want to test the error case
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(TypeError);
   });
 
   it('should reject image data that is a regular array', async () => {
     const resizer = createResizer('client');
-    const image = { data: Array(64).fill(0), width: 4, height: 4 } as any;
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(TypeError);
+    const image = { data: Array(64).fill(0), width: 4, height: 4 };
+    // @ts-expect-error - we want to test the error case
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(TypeError);
   });
 
   it('should reject image with NaN width', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: NaN, height: 4 };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with NaN height', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: 4, height: NaN };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with negative width', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: -4, height: 4 };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with negative height', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: 4, height: -4 };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with zero width', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: 0, height: 4 };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with zero height', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: 4, height: 0 };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with floating point width', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: 4.5, height: 4 };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with floating point height', async () => {
     const resizer = createResizer('client');
     const image = { data: new Uint8Array(64), width: 4, height: 4.5 };
-    await expect(resizer(image, { width: 2 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 2 })).rejects.toThrow(RangeError);
   });
 
   it('should reject image with buffer too small', async () => {
@@ -264,8 +258,7 @@ describe('Input Validation', () => {
       width: 100,
       height: 100,
     };
-    await expect(resizer(image, { width: 50 }))
-      .rejects.toThrow(RangeError);
+    await expect(resizer(image, { width: 50 })).rejects.toThrow(RangeError);
   });
 
   it('should provide clear error message for small buffer', async () => {
@@ -301,96 +294,107 @@ describe('Input Validation', () => {
     it('should reject options with NaN width', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { width: NaN }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { width: NaN })).rejects.toThrow(RangeError);
     });
 
     it('should reject options with NaN height', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { height: NaN }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { height: NaN })).rejects.toThrow(RangeError);
     });
 
     it('should reject options with negative width', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { width: -800 }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { width: -800 })).rejects.toThrow(RangeError);
     });
 
     it('should reject options with negative height', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { height: -600 }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { height: -600 })).rejects.toThrow(
+        RangeError
+      );
     });
 
     it('should reject options with zero width', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { width: 0 }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { width: 0 })).rejects.toThrow(RangeError);
     });
 
     it('should reject options with zero height', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { height: 0 }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { height: 0 })).rejects.toThrow(RangeError);
     });
 
     it('should reject options with floating point width', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { width: 800.5 }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { width: 800.5 })).rejects.toThrow(
+        RangeError
+      );
     });
 
     it('should reject options with floating point height', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { height: 600.5 }))
-        .rejects.toThrow(RangeError);
+      await expect(resizer(image, { height: 600.5 })).rejects.toThrow(
+        RangeError
+      );
     });
 
     it('should reject invalid resize method', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { width: 2, method: 'invalid' as any }))
-        .rejects.toThrow(TypeError);
+      await expect(
+        // @ts-expect-error - we want to test the error case
+        resizer(image, { width: 2, method: 'invalid' })
+      ).rejects.toThrow(TypeError);
     });
 
     it('should accept valid resize methods', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
       const methods = ['triangular', 'catrom', 'mitchell', 'lanczos3'] as const;
-      
+
       for (const method of methods) {
-        const options: ResizeOptions = { width: 2, method };
-        expect(options.method).toBe(method);
+        const result = await resizer(image, { width: 2, method });
+        expect(result).toHaveProperty('data');
+        expect(result).toHaveProperty('width');
+        expect(result).toHaveProperty('height');
+        expect(
+          result.data instanceof Uint8ClampedArray ||
+            result.data instanceof Uint8Array
+        ).toBe(true);
       }
     });
 
     it('should reject premultiply as non-boolean', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { width: 2, premultiply: 1 as any }))
-        .rejects.toThrow(TypeError);
+      await expect(
+        // @ts-expect-error - we want to test the error case
+        resizer(image, { width: 2, premultiply: 1 })
+      ).rejects.toThrow(TypeError);
     });
 
     it('should reject linearRGB as non-boolean', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
-      await expect(resizer(image, { width: 2, linearRGB: 'true' as any }))
-        .rejects.toThrow(TypeError);
+      await expect(
+        // @ts-expect-error - we want to test the error case
+        resizer(image, { width: 2, linearRGB: 'true' })
+      ).rejects.toThrow(TypeError);
     });
 
     it('should provide clear error message for invalid method', async () => {
       const resizer = createResizer('client');
       const image = createTestImage();
       try {
-        await resizer(image, { width: 2, method: 'invalid' as any });
+        // @ts-expect-error - we want to test the error case
+        await resizer(image, { width: 2, method: 'invalid' });
         throw new Error('Should have thrown');
       } catch (e) {
         const message = (e as Error).message;
@@ -419,7 +423,9 @@ describe('Buffer Validation (Unsafe Type Cast Prevention)', () => {
   it('should reject SharedArrayBuffer', () => {
     if (typeof SharedArrayBuffer !== 'undefined') {
       const sharedBuffer = new SharedArrayBuffer(100);
-      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(/SharedArrayBuffer/);
+      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(
+        /SharedArrayBuffer/
+      );
     }
   });
 
@@ -500,58 +506,55 @@ describe('Edge Cases in Resize Logic', () => {
   it('should reject zero width in options', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(100, 100);
-    
-    await expect(resizer(image, { width: 0 }))
-      .rejects.toThrow(RangeError);
+
+    await expect(resizer(image, { width: 0 })).rejects.toThrow(RangeError);
   });
 
   it('should reject zero height in options', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(100, 100);
-    
-    await expect(resizer(image, { height: 0 }))
-      .rejects.toThrow(RangeError);
+
+    await expect(resizer(image, { height: 0 })).rejects.toThrow(RangeError);
   });
 
   it('should reject negative width in options', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(100, 100);
-    
-    await expect(resizer(image, { width: -100 }))
-      .rejects.toThrow(RangeError);
+
+    await expect(resizer(image, { width: -100 })).rejects.toThrow(RangeError);
   });
 
   it('should reject negative height in options', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(100, 100);
-    
-    await expect(resizer(image, { height: -100 }))
-      .rejects.toThrow(RangeError);
+
+    await expect(resizer(image, { height: -100 })).rejects.toThrow(RangeError);
   });
 
   it('should reject floating point width in options', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(100, 100);
-    
-    await expect(resizer(image, { width: 50.5 }))
-      .rejects.toThrow(RangeError);
+
+    await expect(resizer(image, { width: 50.5 })).rejects.toThrow(RangeError);
   });
 
   it('should reject floating point height in options', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(100, 100);
-    
-    await expect(resizer(image, { height: 50.5 }))
-      .rejects.toThrow(RangeError);
+
+    await expect(resizer(image, { height: 50.5 })).rejects.toThrow(RangeError);
   });
 
   it('should handle dimension calculations safely', () => {
     const width = 1921;
     const height = 1080;
     const targetWidth = 1;
-    
-    const calculatedHeight = Math.max(1, Math.round((height * targetWidth) / width));
-    
+
+    const calculatedHeight = Math.max(
+      1,
+      Math.round((height * targetWidth) / width)
+    );
+
     expect(calculatedHeight).toBeGreaterThanOrEqual(1);
     expect(Number.isFinite(calculatedHeight)).toBe(true);
   });
@@ -560,9 +563,12 @@ describe('Edge Cases in Resize Logic', () => {
     const width = 1920;
     const height = 1;
     const targetHeight = 1;
-    
-    const calculatedWidth = Math.max(1, Math.round((width * targetHeight) / height));
-    
+
+    const calculatedWidth = Math.max(
+      1,
+      Math.round((width * targetHeight) / height)
+    );
+
     expect(calculatedWidth).toBeGreaterThanOrEqual(1);
     expect(Number.isFinite(calculatedWidth)).toBe(true);
   });
@@ -571,9 +577,12 @@ describe('Edge Cases in Resize Logic', () => {
     const width = 1920;
     const height = 1081;
     const targetWidth = 960;
-    
-    const calculatedHeight = Math.max(1, Math.round((height * targetWidth) / width));
-    
+
+    const calculatedHeight = Math.max(
+      1,
+      Math.round((height * targetWidth) / width)
+    );
+
     expect(Number.isFinite(calculatedHeight)).toBe(true);
     expect(calculatedHeight).toBeGreaterThanOrEqual(1);
   });
@@ -581,7 +590,7 @@ describe('Edge Cases in Resize Logic', () => {
   it('should provide clear error for invalid output dimensions', async () => {
     const resizer = createResizer('client');
     const image = createTestImage(100, 100);
-    
+
     try {
       await resizer(image, { width: 0 });
       throw new Error('Should have thrown');

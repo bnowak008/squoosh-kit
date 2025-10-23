@@ -29,9 +29,15 @@ After validation is in place, edge case handling has been added:
 
 ```typescript
 if (options.width && !options.height) {
-  outputHeight = Math.max(1, Math.round((inputHeight * options.width) / inputWidth));
+  outputHeight = Math.max(
+    1,
+    Math.round((inputHeight * options.width) / inputWidth)
+  );
 } else if (options.height && !options.width) {
-  outputWidth = Math.max(1, Math.round((inputWidth * options.height) / inputHeight));
+  outputWidth = Math.max(
+    1,
+    Math.round((inputWidth * options.height) / inputHeight)
+  );
 }
 
 if (outputWidth < 1 || outputHeight < 1) {
@@ -75,6 +81,7 @@ if (outputWidth < 1 || outputHeight < 1) {
 ### Test Coverage
 
 All 66 tests pass:
+
 - ✅ 48 existing tests still passing
 - ✅ 24 new edge case tests covering dimension calculations
 - ✅ All validation tests for options and image data
@@ -128,6 +135,7 @@ bun test packages/resize/test/resize.test.ts
 ## Performance Impact
 
 ✅ **Zero performance impact** - edge case handling uses:
+
 - Simple `Math.max(1, ...)` calls (O(1))
 - Same rounding algorithm
 - No additional WASM calls
@@ -137,6 +145,7 @@ bun test packages/resize/test/resize.test.ts
 ## Documentation
 
 The README now includes:
+
 - Real-world edge case examples
 - Explanation of why each safeguard matters
 - Clear guidance on minimum dimensions
@@ -154,6 +163,7 @@ The README now includes:
 ## Verification
 
 All changes verified by:
+
 1. ✅ Unit tests for edge cases
 2. ✅ Full test suite pass
 3. ✅ No linting errors

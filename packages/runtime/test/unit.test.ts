@@ -73,7 +73,9 @@ describe('Buffer Validation', () => {
   it('should reject SharedArrayBuffer', () => {
     if (typeof SharedArrayBuffer !== 'undefined') {
       const sharedBuffer = new SharedArrayBuffer(100);
-      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(/SharedArrayBuffer/);
+      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(
+        /SharedArrayBuffer/
+      );
     }
   });
 
