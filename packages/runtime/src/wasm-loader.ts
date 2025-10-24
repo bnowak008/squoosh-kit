@@ -12,7 +12,7 @@ export async function loadWasmBinary(
   try {
     // Strategy 1: Try Node.js fs first (most reliable)
     if (typeof process !== 'undefined' && process.versions?.node) {
-      const fsModule = await import('fs/promises');
+      const fsModule = await import(/* @vite-ignore */ 'fs/promises');
       const fileUrl = new URL(relativePath, import.meta.url);
       const filePath = fileUrl.pathname;
       const buffer = await fsModule.readFile(filePath);
@@ -27,7 +27,7 @@ export async function loadWasmBinary(
 
   // Strategy 2: Fallback to fetch (works in browsers and workers)
   try {
-    const url = new URL(relativePath, import.meta.url);
+    const url = new URL(/* @vite-ignore */ relativePath, import.meta.url);
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
@@ -54,7 +54,7 @@ export async function loadWasmModule(
 ): Promise<WebAssembly.Module> {
   // Strategy 1: Try direct static import
   try {
-    return await import(modulePath);
+    return await import(/* @vite-ignore */ modulePath);
   } catch (e1) {
     // Continue to next strategy
   }
@@ -62,15 +62,15 @@ export async function loadWasmModule(
   // Strategy 2: Try import.meta.resolve (Node.js 22+)
   try {
     const resolvedPath = await import.meta.resolve(modulePath);
-    return await import(resolvedPath);
+    return await import(/* @vite-ignore */ resolvedPath);
   } catch (e2) {
     // Continue to next strategy
   }
 
   // Strategy 3: Try URL-based import
   try {
-    const url = new URL(modulePath, import.meta.url);
-    return await import(url.href);
+    const url = new URL(/* @vite-ignore */ modulePath, import.meta.url);
+    return await import(/* @vite-ignore */ url.href);
   } catch (e3) {
     throw new Error(
       `Failed to load WASM module from "${modulePath}". ` +

@@ -1,77 +1,112 @@
 /**
  * Worker helper utilities for creating and managing Web Workers
  *
- * This module provides centralized logic for locating and creating worker files
- * in different environments (development, npm package, bundled, etc.)
+ * This module provides centralized logic for creating worker instances
+ * in different environments (browser, Node.js, Bun) using import.meta.resolve
+ * for server-side and package-relative paths for browsers.
  */
 
-/**
- * Get the URL for a worker file
- *
- * This helper abstracts away the complexity of locating worker files
- * in different environments (development, npm package, bundled, etc.)
- *
- * @param workerFilename - The name of the worker file (with or without .js extension)
- * @returns URL object pointing to the worker file
- */
-export function getWorkerURL(workerFilename: string): URL {
-  // Ensure filename has correct format
-  const normalizedName = workerFilename.endsWith('.js')
-    ? workerFilename
-    : `${workerFilename}.js`;
-
-  // In browser contexts, use absolute paths from the server root
-  // The server will route these to the correct locations
-  if (typeof window !== 'undefined') {
-    // Browser environment - use absolute paths
-    const workerPathMap: Record<string, string> = {
-      'webp.worker.js': '/dist/features/webp/webp.worker.js',
-      'resize.worker.js': '/dist/features/resize/resize.worker.js',
-    };
-
-    const browserPath = workerPathMap[normalizedName];
-    if (browserPath) {
-      return new URL(browserPath, window.location.href);
-    }
-  }
-
-  // Fallback for Node.js/Bun: use relative path from runtime package location
-  // This is used during testing and in Node.js environments
-  const nodePathMap: Record<string, string> = {
-    'webp.worker.js': '../../webp/dist/webp.worker.js',
-    'resize.worker.js': '../../resize/dist/resize.worker.js',
-  };
-
-  const nodePath = nodePathMap[normalizedName];
-  if (nodePath) {
-    return new URL(nodePath, import.meta.url);
-  }
-
-  // Fallback: assume worker is in same directory as this module
-  return new URL(normalizedName, import.meta.url);
-}
+import { isBun } from './env';
 
 /**
  * Create a Web Worker for a specific codec
  *
- * Handles environment-specific worker creation logic and provides
- * clear error messages when worker creation fails.
+ * In Node.js/Bun environments, uses import.meta.resolve to locate worker files.
+ * In browser environments, uses relative paths within node_modules that Vite can resolve.
  *
  * @param workerFilename - The name of the worker file (e.g., 'resize.worker' or 'webp.worker')
  * @returns Worker instance
  * @throws Error if worker creation fails with detailed error message
  */
 export function createCodecWorker(workerFilename: string): Worker {
-  const workerURL = getWorkerURL(workerFilename);
+  // Ensure filename has correct format
+  const normalizedName = workerFilename.endsWith('.js')
+    ? workerFilename
+    : `${workerFilename}.js`;
+
+  // Map worker filenames to their package and export
+  const workerMap: Record<string, { package: string; specifier: string }> = {
+    'resize.worker.js': {
+      package: '@squoosh-kit/resize',
+      specifier: 'resize.worker.js',
+    },
+    'webp.worker.js': {
+      package: '@squoosh-kit/webp',
+      specifier: 'webp.worker.js',
+    },
+  };
+
+  const workerConfig = workerMap[normalizedName];
+  if (!workerConfig) {
+    throw new Error(
+      `Unknown worker: ${normalizedName}. ` +
+        `Supported workers: ${Object.keys(workerMap).join(', ')}`
+    );
+  }
 
   try {
-    return new Worker(workerURL.href, { type: 'module' });
+    // In browser contexts, use relative paths within the installed packages
+    if (typeof window !== 'undefined') {
+      const packageName = workerConfig.package.split('/')[1]; // Extract 'resize' or 'webp'
+      const workerFile = normalizedName.replace('.js', '.browser.mjs');
+
+      // Try multiple path strategies to support both:
+      // 1. Monorepo development structure: ../../{package}/dist/{workerFile}
+      // 2. npm installed structure: ../../../{package}/dist/{workerFile}
+      const pathStrategies = [
+        // First try monorepo structure (when runtime is at packages/runtime/src)
+        `../../${packageName}/dist/${workerFile}`,
+        // Then try npm structure (when runtime is at node_modules/@squoosh-kit/runtime)
+        `../../../node_modules/@squoosh-kit/${packageName}/dist/${workerFile}`,
+        // Alternative npm structure for cases where packages are flattened
+        `../../../${packageName}/dist/${workerFile}`,
+      ];
+
+      let lastError: Error | null = null;
+
+      for (const relPath of pathStrategies) {
+        try {
+          const workerUrl = new URL(relPath, import.meta.url);
+          return new Worker(workerUrl, {
+            type: 'module',
+          });
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          // Continue to next strategy
+        }
+      }
+
+      // If all strategies failed, throw the last error
+      if (lastError) {
+        throw lastError;
+      }
+      throw new Error(
+        `Could not resolve worker ${normalizedName} using any available path strategy`
+      );
+    }
+
+    // Node.js/Bun: use import.meta.resolve if available
+    if (typeof import.meta.resolve === 'function') {
+      const resolved = import.meta.resolve(
+        `${workerConfig.package}/${workerConfig.specifier}`
+      );
+      return new Worker(resolved, { type: 'module' });
+    }
+
+    // Fallback for Bun: use relative path from this file's location
+    const platformExt = isBun() ? '.bun.js' : '.node.mjs';
+    const baseName = normalizedName.replace('.js', '');
+    const relPath = workerConfig.package.includes('resize')
+      ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
+      : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+
+    return new Worker(new URL(relPath, import.meta.url), { type: 'module' });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Failed to create worker from ${workerURL}: ${errorMessage}. ` +
-        `Ensure the worker file exists at the expected location. ` +
-        `Expected worker file: ${workerFilename}${workerFilename.endsWith('.js') ? '' : '.js'}`
+      `Failed to create worker from ${normalizedName}: ${errorMessage}. ` +
+        `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed. ` +
+        `If you're using Vite, ensure the worker files are not being optimized as dependencies.`
     );
   }
 }

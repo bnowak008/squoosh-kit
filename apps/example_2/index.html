@@ -315,9 +315,8 @@
     </div>
 
     <script async type="module">
-      // Import from individual packages to avoid WASM path issues
-      import { encode } from '/dist/features/webp/index.js';
-      import { resize } from '/dist/features/resize/index.js';
+      // Import from core package (which re-exports webp and resize)
+      import { encode, resize } from '/dist/index.browser.mjs';
 
       // DOM elements
       const fileInput = document.getElementById('fileInput');
@@ -473,9 +472,9 @@
 
           // The resized result should be in ImageData format, use it directly
           currentWebpData = await encode(
-            controller.signal,
             resized,
-            webpOptions
+            webpOptions,
+            controller.signal
           );
           const webpEnd = performance.now();
 

@@ -3,8 +3,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { resize, createResizer } from '../src/index.ts';
-import type { ResizeOptions } from '../src/types.ts';
+import { createResizer } from '../src/index.ts';
 import type { ImageInput } from '../../runtime/src/index.ts';
 
 // Test image data: 2x2 red square
@@ -31,32 +30,28 @@ const createTestImage = (): ImageInput => {
 };
 
 describe('Resize WASM Functionality', () => {
-  it.skip('should resize image to specified dimensions', async () => {
+  it('should resize image to specified dimensions', async () => {
     const image = createTestImage();
-    const signal = new AbortController().signal;
-    const options: ResizeOptions = {
-      width: 1,
-      height: 1,
-    };
-    const result = await resize(signal, image, options);
+    const resize = createResizer('client');
+    const result = await resize(image, { width: 1, height: 1 });
     console.log('--- RESIZE TEST RESULT ---');
     console.log(result);
     console.log('--------------------------');
-    expect(result).toBeDefined();
-    expect(result.width).toBe(1);
-    expect(result.height).toBe(1);
-    expect(result.data).toBeInstanceOf(Uint8Array);
-    expect(result.data.length).toBe(4); // 1x1x4 = 4 bytes
+    expect(result).toEqual({
+      data: new Uint8ClampedArray([254, 0, 0, 255]),
+      width: 1,
+      height: 1,
+    });
   });
 
-  it.skip('should work with factory functions', async () => {
+  it('should work with factory functions', async () => {
     const image = createTestImage();
-    const signal = new AbortController().signal;
 
     // Test resize factory
-    const resizer = createResizer('client');
-    const resizeResult = await resizer(signal, image, { width: 1, height: 1 });
-    expect(resizeResult.width).toBe(1);
-    expect(resizeResult.height).toBe(1);
+    const resize = createResizer('client');
+    const result = await resize(image, { width: 1, height: 1 });
+
+    expect(result.width).toBe(1);
+    expect(result.height).toBe(1);
   });
 });

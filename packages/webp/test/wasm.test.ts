@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { encode, createWebpEncoder } from '../src/index.ts';
+import { createWebpEncoder } from '../src/index.ts';
 import type { ImageInput } from '@squoosh-kit/runtime';
 import type { WebpOptions } from '../src/types.ts';
 
@@ -31,11 +31,11 @@ const createTestImage = (): ImageInput => {
 };
 
 describe('WebP WASM Functionality', () => {
-  it.skip('should encode image data to WebP format', async () => {
+  it('should encode image data to WebP format', async () => {
     const image = createTestImage();
-    const signal = new AbortController().signal;
 
-    const result = await encode(signal, image);
+    const encode = createWebpEncoder('client');
+    const result = await encode(image, { quality: 90 });
 
     expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBeGreaterThan(0);
@@ -46,27 +46,26 @@ describe('WebP WASM Functionality', () => {
     expect(header).toContain('WEBP');
   }, 30000); // 30 second timeout
 
-  it.skip('should encode with custom options', async () => {
+  it('should encode with custom options', async () => {
     const image = createTestImage();
-    const signal = new AbortController().signal;
     const options: WebpOptions = {
       quality: 90,
       lossless: false,
     };
 
-    const result = await encode(signal, image, options);
+    const encode = createWebpEncoder('client');
+    const result = await encode(image, options);
 
     expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBeGreaterThan(0);
   }, 30000);
 
-  it.skip('should work with factory functions', async () => {
+  it('should work with factory functions', async () => {
     const image = createTestImage();
-    const signal = new AbortController().signal;
 
-    // Test WebP encoder factory
-    const webpEncoder = createWebpEncoder('client');
-    const webpResult = await webpEncoder(signal, image);
-    expect(webpResult).toBeInstanceOf(Uint8Array);
+    const encode = createWebpEncoder('client');
+    const result = await encode(image);
+
+    expect(result).toBeInstanceOf(Uint8Array);
   }, 30000);
 });

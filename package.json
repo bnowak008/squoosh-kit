@@ -1,6 +1,6 @@
 {
   "name": "squoosh-kit",
-  "version": "0.0.4",
+  "version": "0.0.11",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
@@ -36,7 +36,6 @@
   },
   "sideEffects": false,
   "scripts": {
-    "sync-codecs": "bun run scripts/sync-squoosh-codecs.ts",
     "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
     "test": "bun test",
     "lint": "eslint . --ext .ts",
@@ -51,14 +50,19 @@
     "release:resize": "cd packages/resize && bun publish",
     "release:webp": "cd packages/webp && bun publish",
     "release:runtime": "cd packages/runtime && bun publish",
-    "release:publish": "bun run release:core && bun run release:runtime && bun run release:resize && bun run release:webp"
+    "release:publish": "bun run release:core && bun run release:runtime && bun run release:resize && bun run release:webp",
+    "sync-codecs": "bun run scripts/sync-squoosh-codecs.ts",
+    "sync-version": "bun run scripts/sync-version.ts",
+    "version:current": "bun run scripts/sync-version.ts current",
+    "version:major": "bun run scripts/sync-version.ts major",
+    "version:minor": "bun run scripts/sync-version.ts minor",
+    "version:patch": "bun run scripts/sync-version.ts patch"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.0",
-    "multi-semantic-release": "^3.0.2",
     "prettier": "^3.2.5",
     "typescript": "^5.6.3"
   },

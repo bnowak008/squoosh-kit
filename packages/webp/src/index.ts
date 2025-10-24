@@ -4,9 +4,9 @@
 
 import type { ImageInput } from '@squoosh-kit/runtime';
 import { createBridge } from './bridge';
-import type { WebpOptions } from './types';
+import type { EncodeOptions } from './types';
 
-export type { ImageInput, WebpOptions };
+export type { ImageInput, EncodeOptions };
 
 // Global bridge instance for reuse
 let globalClientBridge: ReturnType<typeof createBridge> | null = null;
@@ -17,7 +17,7 @@ let globalClientBridge: ReturnType<typeof createBridge> | null = null;
  */
 export type WebpEncoderFactory = ((
   imageData: ImageInput,
-  options?: WebpOptions,
+  options?: EncodeOptions,
   signal?: AbortSignal
 ) => Promise<Uint8Array>) & {
   /**
@@ -58,7 +58,7 @@ export type WebpEncoderFactory = ((
  */
 export async function encode(
   imageData: ImageInput,
-  options?: WebpOptions,
+  options?: EncodeOptions,
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   // Use worker mode for UI responsiveness - prevents blocking the main thread
@@ -84,7 +84,7 @@ export function createWebpEncoder(
 
   const encoder = (
     imageData: ImageInput,
-    options?: WebpOptions,
+    options?: EncodeOptions,
     signal?: AbortSignal
   ) => {
     return bridge.encode(imageData, options, signal);

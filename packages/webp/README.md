@@ -292,6 +292,22 @@ type WebpOptions = {
 - **Batch with persistent encoders** - More efficient than one-off calls
 - **Adjust quality strategically** - Often 80-90% quality looks identical to 100%
 
+## Encoding Quality & File Size
+
+The encoder uses quality-aware compression that automatically adjusts encoding parameters based on your quality setting:
+
+- **High quality (80-100%)** - Faster encoding, lower CPU overhead
+- **Medium quality (60-80%)** - Balanced compression and speed
+- **Low quality (0-60%)** - More aggressive compression, slower encoding
+
+This means that at 85% quality, you get smaller files than the original by applying targeted compression techniques like:
+- Adaptive filtering based on content
+- Spatial noise shaping for better detail preservation
+- Multiple encoding passes for optimal results
+- Sharp YUV conversion for better color handling
+
+**Result**: Your image at 85% quality WebP will typically be **30-70% smaller** than the original JPEG or PNG while maintaining near-identical visual quality.
+
 ## Works With
 
 - **Bun** - First-class support, fastest performance

@@ -9,12 +9,13 @@ import {
 } from '@squoosh-kit/runtime';
 import { validateArrayBuffer, validateImageInput } from '@squoosh-kit/runtime';
 import { webpEncodeClient } from './webp.worker.js';
-import type { WebpOptions } from './types.js';
+import type { EncodeOptions } from './types';
+
 
 interface WebPBridge {
   encode(
     image: ImageInput,
-    options?: WebpOptions,
+    options?: EncodeOptions,
     signal?: AbortSignal
   ): Promise<Uint8Array>;
   terminate(): Promise<void>;
@@ -23,7 +24,7 @@ interface WebPBridge {
 class WebpClientBridge implements WebPBridge {
   async encode(
     image: ImageInput,
-    options?: WebpOptions,
+    options?: EncodeOptions,
     signal?: AbortSignal
   ): Promise<Uint8Array> {
     return webpEncodeClient(image, options, signal);
@@ -55,7 +56,7 @@ class WebpWorkerBridge implements WebPBridge {
 
   async encode(
     image: ImageInput,
-    options?: WebpOptions,
+    options?: EncodeOptions,
     signal?: AbortSignal
   ): Promise<Uint8Array> {
     const worker = await this.getWorker();

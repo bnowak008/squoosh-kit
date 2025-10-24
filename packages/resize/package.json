@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/resize",
-  "version": "0.0.4",
+  "version": "0.0.11",
   "type": "module",
   "description": "Image resize module for squoosh-kit.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -20,10 +20,17 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "browser": "./dist/index.browser.mjs",
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs"
     },
     "./resize.worker.js": {
-      "import": "./dist/resize.worker.js"
+      "types": "./dist/resize.worker.d.ts",
+      "browser": "./dist/resize.worker.browser.mjs",
+      "bun": "./dist/resize.worker.bun.js",
+      "import": "./dist/resize.worker.node.mjs",
+      "require": "./dist/resize.worker.node.cjs"
     }
   },
   "files": [
@@ -32,8 +39,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "bun run scripts/copy-assets.ts && tsc && bun build --sourcemap --minify --format=esm --splitting --target=browser --outdir=dist src/index.ts src/resize.worker.ts",
-    "clean:local": "rm -rf dist *.tsbuildinfo",
+    "build": "bun run build.ts",
+    "clean:local": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test"
   },

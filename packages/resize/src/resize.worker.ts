@@ -10,53 +10,82 @@ import {
   validateImageInput,
   validateResizeOptions,
 } from '@squoosh-kit/runtime';
-import type { ResizeOptions } from './types';
-import * as squoosh_resize_module from '../wasm/squoosh_resize';
+import type { ResizeModule, ResizeOptions } from './types';
+import squoosh_resize_module from '../wasm/squoosh_resize';
 
-// Define the type locally to avoid module resolution issues with the linter
-type SquooshWasmResize = (
-  input_image: Uint8Array,
-  input_width: number,
-  input_height: number,
-  output_width: number,
-  output_height: number,
-  typ_idx: number,
-  premultiply: boolean,
-  color_space_conversion: boolean
-) => Uint8ClampedArray;
 
-let wasmResize: SquooshWasmResize | null = null;
-let initPromise: Promise<void> | null = null;
+let cachedModule: ResizeModule | null = null;
+let moduleLoadingPromise: Promise<ResizeModule> | null = null;
 
-async function init(): Promise<void> {
-  if (wasmResize) {
-    return;
+async function loadResizeModule(): Promise<ResizeModule> {
+  if (cachedModule) {
+    return cachedModule;
   }
 
-  if (initPromise) {
-    return initPromise;
+  if (moduleLoadingPromise) {
+    return moduleLoadingPromise;
   }
 
-  initPromise = (async () => {
+  moduleLoadingPromise = (async () => {
     try {
+      // Environment polyfills for Emscripten-generated code
+      // The WebP encoder WASM module expects browser-like globals (self, location)
+      // These polyfills ensure compatibility when running in Bun/Node.js environments
+      
+        // Polyfill 'self' global for Emscripten compatibility
+        if (typeof self === 'undefined') {
+          (global as { self?: typeof globalThis }).self = global;
+        }
+        
+        // Polyfill 'location' object for Emscripten module initialization
+        if (typeof self !== 'undefined' && !self.location) {
+          (self as { location?: { href: string } }).location = {
+            href: import.meta.url,
+          };
+        }
+  
+        // Polyfill SharedArrayBuffer for worker contexts without COOP/COEP headers
+        if (typeof SharedArrayBuffer === 'undefined' && typeof window === 'undefined') {
+          (globalThis as any).SharedArrayBuffer = ArrayBuffer;
+        }
+      
       // Load WASM binary with robust fallback strategies
-      const wasmBuffer = await loadWasmBinary(
-        new URL('../wasm/squoosh_resize_bg.wasm', import.meta.url).href
-      );
+      // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
+      let wasmBuffer: ArrayBuffer | null = null;
+      const pathsToTry = [
+        new URL(/* @vite-ignore */ './wasm/squoosh_resize_bg.wasm', import.meta.url).href,
+        new URL(/* @vite-ignore */ '../wasm/squoosh_resize_bg.wasm',import.meta.url).href,
+      ];
 
-      // Initialize WASM module with the binary buffer
-      await squoosh_resize_module.default(wasmBuffer);
-      // After initialization, the module's exported resize function is ready to use
-      wasmResize = squoosh_resize_module.resize as unknown as SquooshWasmResize;
+      let lastError: Error | null = null;
+      for (const path of pathsToTry) {
+        try {
+          wasmBuffer = await loadWasmBinary(path);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          // Continue to next path
+        }
+      }
+
+      if (!wasmBuffer) {
+        throw (
+          lastError || new Error('Could not load WASM binary from any path')
+        );
+      }
+
+      // Initialize WASM module by passing buffer as wasmBinary
+      // The Emscripten-compiled module will use this instead of trying to fetch
+      const module = await squoosh_resize_module({ wasmBinary: wasmBuffer });
+      cachedModule = module! as unknown as ResizeModule;
+      return cachedModule!;
     } catch (error) {
-      initPromise = null;
-      throw new Error(
-        `Failed to initialize resize WASM module: ${error instanceof Error ? error.message : String(error)}`
-      );
+      moduleLoadingPromise = null;
+      throw new Error(`Failed to load WASM module: ${error instanceof Error ? error.message : String(error)}`);
     }
   })();
 
-  return initPromise;
+  return moduleLoadingPromise;
 }
 
 async function _resizeCore(
@@ -66,10 +95,7 @@ async function _resizeCore(
   validateImageInput(image);
   validateResizeOptions(options);
 
-  await init();
-  if (!wasmResize) {
-    throw new Error('Resize module not initialized');
-  }
+  const module = await loadResizeModule();
 
   const { data, width: inputWidth, height: inputHeight } = image;
 
@@ -105,7 +131,7 @@ async function _resizeCore(
           data.length
         );
 
-  const result = wasmResize(
+  const result = module.resize(
     dataArray,
     inputWidth,
     inputHeight,

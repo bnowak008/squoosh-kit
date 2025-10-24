@@ -10,48 +10,10 @@ import {
   validateImageInput,
   validateWebpOptions,
 } from '@squoosh-kit/runtime';
-import type { WebpOptions } from './types';
-import webp_enc from '../wasm/webp/webp_enc';
 
-// Types from webp_enc.d.ts
-interface EncodeOptions {
-  quality: number;
-  target_size: number;
-  target_PSNR: number;
-  method: number;
-  sns_strength: number;
-  filter_strength: number;
-  filter_sharpness: number;
-  filter_type: number;
-  partitions: number;
-  segments: number;
-  pass: number;
-  show_compressed: number;
-  preprocessing: number;
-  autofilter: number;
-  partition_limit: number;
-  alpha_compression: number;
-  alpha_filtering: number;
-  alpha_quality: number;
-  lossless: number;
-  exact: number;
-  image_hint: number;
-  emulate_jpeg_size: number;
-  thread_level: number;
-  low_memory: number;
-  near_lossless: number;
-  use_delta_palette: number;
-  use_sharp_yuv: number;
-}
+import webp_enc, { type WebPModule } from '../wasm/webp/webp_enc';
 
-interface WebPModule {
-  encode(
-    data: BufferSource,
-    width: number,
-    height: number,
-    options: EncodeOptions
-  ): Uint8Array | null;
-}
+import type { EncodeOptions } from './types';
 
 let cachedModule: WebPModule | null = null;
 let moduleLoadingPromise: Promise<WebPModule> | null = null;
@@ -70,28 +32,55 @@ async function loadWebPModule(): Promise<WebPModule> {
       // Environment polyfills for Emscripten-generated code
       // The WebP encoder WASM module expects browser-like globals (self, location)
       // These polyfills ensure compatibility when running in Bun/Node.js environments
-      if (typeof self === 'undefined') {
+
         // Polyfill 'self' global for Emscripten compatibility
+      if (typeof self === 'undefined') {
         (global as { self?: typeof globalThis }).self = global;
       }
+      
+      // Polyfill 'location' object for Emscripten module initialization
       if (typeof self !== 'undefined' && !self.location) {
-        // Polyfill 'location' object for Emscripten module initialization
         (self as { location?: { href: string } }).location = {
           href: import.meta.url,
         };
       }
 
+      // Polyfill SharedArrayBuffer for worker contexts without COOP/COEP headers
+      if (typeof SharedArrayBuffer === 'undefined' && typeof window === 'undefined') {
+        (globalThis as any).SharedArrayBuffer = ArrayBuffer;
+      }
+
       // Load WASM binary with robust fallback strategies
-      const wasmBuffer = await loadWasmBinary(
-        new URL('../wasm/webp/webp_enc.wasm', import.meta.url).href
-      );
+      // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
+      let wasmBuffer: ArrayBuffer | null = null;
+      const pathsToTry = [
+        new URL(/* @vite-ignore */ './wasm/webp/webp_enc.wasm', import.meta.url).href,
+        new URL(/* @vite-ignore */ '../wasm/webp/webp_enc.wasm',import.meta.url).href,
+      ];
+
+      let lastError: Error | null = null;
+      for (const path of pathsToTry) {
+        try {
+          wasmBuffer = await loadWasmBinary(path);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          // Continue to next path
+        }
+      }
+
+      if (!wasmBuffer) {
+        throw (
+          lastError || new Error('Could not load WASM binary from any path')
+        );
+      }
 
       // Initialize WASM module by passing buffer as wasmBinary
       // The Emscripten-compiled module will use this instead of trying to fetch
       const module = await webp_enc({ wasmBinary: wasmBuffer });
-
       cachedModule = module;
-      return module;
+
+      return cachedModule!;
     } catch (error) {
       moduleLoadingPromise = null;
       throw new Error(
@@ -105,42 +94,49 @@ async function loadWebPModule(): Promise<WebPModule> {
 
 /**
  * Convert our simplified options to full EncodeOptions
- * Ultra-optimized for maximum performance
+ * Balanced for quality and file size
  */
-function createEncodeOptions(options?: WebpOptions): EncodeOptions {
+function createEncodeOptions(options?: EncodeOptions): EncodeOptions {
   const quality = Math.max(0, Math.min(100, options?.quality ?? 82));
   const lossless = options?.lossless ?? false;
-  const nearLossless = options?.nearLossless ?? false;
+  const nearLossless = options?.near_lossless ?? false;
 
-  // Ultra-optimized encode options for maximum speed
+  // Select method based on quality: faster for high quality, more thorough for lower quality
+  const method = options?.method ?? quality >= 80 ? 3 : quality >= 60 ? 4 : 5;
+  
+  // Scale compression parameters with quality
+  const filterStrength = quality >= 80 ? 0 : quality >= 60 ? 30 : 50;
+  const snsStrength = quality >= 80 ? 50 : 75;
+  const passes = quality >= 80 ? 2 : 3;
+
   return {
     quality,
     target_size: 0,
     target_PSNR: 0,
-    method: 0, // Fastest method (0 = fastest, 6 = slowest)
-    sns_strength: 0, // Disable spatial noise shaping
-    filter_strength: 0, // Disable filtering
+    method,
+    sns_strength: snsStrength,
+    filter_strength: filterStrength,
     filter_sharpness: 0,
-    filter_type: 0, // No filtering
-    partitions: 0, // No partitioning
-    segments: 1, // Single segment
-    pass: 1, // Single pass
+    filter_type: 1,
+    partitions: 0,
+    segments: 4,
+    pass: passes,
     show_compressed: 0,
-    preprocessing: 0, // No preprocessing
-    autofilter: 0, // No auto filtering
+    preprocessing: lossless ? 0 : 1,
+    autofilter: 1,
     partition_limit: 0,
-    alpha_compression: 0, // Disable alpha compression for speed
-    alpha_filtering: 0, // Disable alpha filtering
-    alpha_quality: 0, // Lowest alpha quality for speed
+    alpha_compression: 1,
+    alpha_filtering: 1,
+    alpha_quality: quality >= 80 ? 100 : 88,
     lossless: lossless ? 1 : 0,
     exact: 0,
     image_hint: 0,
     emulate_jpeg_size: 0,
     thread_level: 0,
-    low_memory: 1, // Enable low memory mode
+    low_memory: 0,
     near_lossless: nearLossless ? quality : 100,
     use_delta_palette: 0,
-    use_sharp_yuv: 0,
+    use_sharp_yuv: 1,
   };
 }
 
@@ -149,7 +145,7 @@ function createEncodeOptions(options?: WebpOptions): EncodeOptions {
  */
 export async function webpEncodeClient(
   image: ImageInput,
-  options?: WebpOptions,
+  options?: EncodeOptions,
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   // Validate inputs before starting
@@ -219,7 +215,7 @@ if (typeof self !== 'undefined') {
 
     const request = data as WorkerRequest<{
       image: ImageInput;
-      options?: WebpOptions;
+      options?: EncodeOptions;
     }>;
 
     const response: WorkerResponse<Uint8Array> = {

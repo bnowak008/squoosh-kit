@@ -29,12 +29,13 @@ describe('WebP Integration Tests', () => {
   });
 
   it('should correctly encode an image to WebP in worker mode', async () => {
-    const image = createTestImage(32, 32);
+    const image = createTestImage(16, 16);
     const encoder = createWebpEncoder('worker');
     const encodedImage = await encoder(image, { quality: 90 });
 
     expect(encodedImage).toBeInstanceOf(Uint8Array);
     expect(encodedImage.length).toBeGreaterThan(0);
+    // A simple check for the WebP RIFF header
     const header = new TextDecoder().decode(encodedImage.slice(0, 4));
     expect(header).toBe('RIFF');
   });

@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/webp",
-  "version": "0.0.4",
+  "version": "0.0.11",
   "type": "module",
   "description": "WebP codec for squoosh-kit, providing encoding functionality.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -20,10 +20,17 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "browser": "./dist/index.browser.mjs",
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs"
     },
     "./webp.worker.js": {
-      "import": "./dist/webp.worker.js"
+      "types": "./dist/webp.worker.d.ts",
+      "browser": "./dist/webp.worker.browser.mjs",
+      "bun": "./dist/webp.worker.bun.js",
+      "import": "./dist/webp.worker.node.mjs",
+      "require": "./dist/webp.worker.node.cjs"
     }
   },
   "files": [
@@ -32,8 +39,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "bun run scripts/copy-assets.ts && tsc && bun build --sourcemap --minify --format=esm --splitting --target=browser --outdir=dist src/index.ts src/webp.worker.ts",
-    "clean:local": "rm -rf dist *.tsbuildinfo",
+    "build": "bun run build.ts",
+    "clean:local": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test"
   },

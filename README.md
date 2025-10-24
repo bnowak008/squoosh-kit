@@ -108,6 +108,37 @@ Each package has its own comprehensive documentation:
 - [Image Resizing](./packages/resize/README.md) - Resize algorithms and configuration
 - [Core Package](./packages/core/README.md) - Meta-package documentation
 
+## Vite Configuration for Workers
+
+If you're using Vite and encounter worker loading issues, add this to your `vite.config.ts`:
+
+```typescript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  optimizeDeps: {
+    // Exclude squoosh worker files from pre-bundling
+    // This allows them to be loaded as regular ES modules
+    exclude: [
+      '@squoosh-kit/resize/resize.worker.js',
+      '@squoosh-kit/webp/webp.worker.js',
+    ],
+  },
+});
+```
+
+This configuration tells Vite not to pre-bundle the worker files, allowing them to be loaded directly from `node_modules`.
+
+### Without Vite (Other Bundlers)
+
+For Webpack, Rollup, or other bundlers, ensure that:
+
+1. ES module imports are supported
+2. `import.meta.url` is preserved
+3. The `node_modules` directory is accessible at runtime
+
 ## Production Readiness
 
 ✅ **All 13 critical production readiness issues have been resolved:**

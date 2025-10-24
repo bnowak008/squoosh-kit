@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/core",
-  "version": "0.0.4",
+  "version": "0.0.11",
   "type": "module",
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -42,15 +42,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./webp": {
-      "types": "./dist/features/webp/index.d.ts",
-      "import": "./dist/features/webp/index.js"
-    },
-    "./resize": {
-      "types": "./dist/features/resize/index.d.ts",
-      "import": "./dist/features/resize/index.js"
+      "browser": "./dist/index.browser.mjs",
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs"
     }
   },
   "files": [
@@ -60,9 +55,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "copy:assets": "bun run scripts/copy-assets.ts",
-    "build": "tsc && bun build --sourcemap --minify --format=esm --splitting --target=browser --outdir=dist src/index.ts",
-    "clean:local": "rm -rf dist *.tsbuildinfo",
+    "build": "bun scripts/build.ts",
+    "clean:local": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
