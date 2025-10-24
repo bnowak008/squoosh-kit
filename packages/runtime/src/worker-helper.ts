@@ -87,10 +87,14 @@ export function createCodecWorker(workerFilename: string): Worker {
 
     // Node.js/Bun: use import.meta.resolve if available
     if (typeof import.meta.resolve === 'function') {
-      const resolved = import.meta.resolve(
-        `${workerConfig.package}/${workerConfig.specifier}`
-      );
-      return new Worker(resolved, { type: 'module' });
+      try {
+        const resolved = import.meta.resolve(
+          `${workerConfig.package}/${workerConfig.specifier}`
+        );
+        return new Worker(resolved, { type: 'module' });
+      } catch {
+        // Fallback if resolve fails - use relative path as last resort
+      }
     }
 
     // Fallback for Bun: use relative path from this file's location

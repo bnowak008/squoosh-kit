@@ -1,8 +1,8 @@
 import { resize } from '../wasm/squoosh_resize';
 
 export type ResizeModule = {
-  resize: typeof resize,
-}
+  resize: typeof resize;
+};
 
 export type ResizeOptions = {
   width?: number;

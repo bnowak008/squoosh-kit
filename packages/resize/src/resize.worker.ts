@@ -13,7 +13,6 @@ import {
 import type { ResizeModule, ResizeOptions } from './types';
 import squoosh_resize_module from '../wasm/squoosh_resize';
 
-
 let cachedModule: ResizeModule | null = null;
 let moduleLoadingPromise: Promise<ResizeModule> | null = null;
 
@@ -31,30 +30,41 @@ async function loadResizeModule(): Promise<ResizeModule> {
       // Environment polyfills for Emscripten-generated code
       // The WebP encoder WASM module expects browser-like globals (self, location)
       // These polyfills ensure compatibility when running in Bun/Node.js environments
-      
-        // Polyfill 'self' global for Emscripten compatibility
-        if (typeof self === 'undefined') {
-          (global as { self?: typeof globalThis }).self = global;
-        }
-        
-        // Polyfill 'location' object for Emscripten module initialization
-        if (typeof self !== 'undefined' && !self.location) {
-          (self as { location?: { href: string } }).location = {
-            href: import.meta.url,
-          };
-        }
-  
-        // Polyfill SharedArrayBuffer for worker contexts without COOP/COEP headers
-        if (typeof SharedArrayBuffer === 'undefined' && typeof window === 'undefined') {
-          (globalThis as any).SharedArrayBuffer = ArrayBuffer;
-        }
-      
+
+      // Polyfill 'self' global for Emscripten compatibility
+      if (typeof self === 'undefined') {
+        (global as { self?: typeof globalThis }).self = global;
+      }
+
+      // Polyfill 'location' object for Emscripten module initialization
+      if (typeof self !== 'undefined' && !self.location) {
+        (self as { location?: { href: string } }).location = {
+          href: import.meta.url,
+        };
+      }
+
+      // Polyfill SharedArrayBuffer for worker contexts without COOP/COEP headers
+      if (
+        typeof SharedArrayBuffer === 'undefined' &&
+        typeof window === 'undefined'
+      ) {
+        (
+          globalThis as unknown as Record<string, typeof ArrayBuffer>
+        ).SharedArrayBuffer = ArrayBuffer;
+      }
+
       // Load WASM binary with robust fallback strategies
       // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
       let wasmBuffer: ArrayBuffer | null = null;
       const pathsToTry = [
-        new URL(/* @vite-ignore */ './wasm/squoosh_resize_bg.wasm', import.meta.url).href,
-        new URL(/* @vite-ignore */ '../wasm/squoosh_resize_bg.wasm',import.meta.url).href,
+        new URL(
+          /* @vite-ignore */ './wasm/squoosh_resize_bg.wasm',
+          import.meta.url
+        ).href,
+        new URL(
+          /* @vite-ignore */ '../wasm/squoosh_resize_bg.wasm',
+          import.meta.url
+        ).href,
       ];
 
       let lastError: Error | null = null;
@@ -74,29 +84,40 @@ async function loadResizeModule(): Promise<ResizeModule> {
         );
       }
 
-      // Initialize WASM module by passing buffer as wasmBinary
-      // The Emscripten-compiled module will use this instead of trying to fetch
-      const module = await squoosh_resize_module({ wasmBinary: wasmBuffer });
-      cachedModule = module! as unknown as ResizeModule;
-      return cachedModule!;
+      // Initialize WASM module by passing buffer as a Promise
+      // The wasm-bindgen-compiled module expects either undefined or a Promise/URL that resolves to the buffer
+      const module = await squoosh_resize_module(Promise.resolve(wasmBuffer));
+      cachedModule = module as unknown as ResizeModule;
+
+      if (!cachedModule) {
+        throw new Error('Failed to load WASM module');
+      }
+
+      return cachedModule;
     } catch (error) {
       moduleLoadingPromise = null;
-      throw new Error(`Failed to load WASM module: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to load WASM module: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   })();
 
   return moduleLoadingPromise;
 }
 
-async function _resizeCore(
+export async function resizeClient(
   image: ImageInput,
-  options: ResizeOptions
+  options: ResizeOptions,
+  signal?: AbortSignal
 ): Promise<ImageInput> {
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
+
   validateImageInput(image);
   validateResizeOptions(options);
 
   const module = await loadResizeModule();
-
   const { data, width: inputWidth, height: inputHeight } = image;
 
   let outputWidth = options.width ?? inputWidth;
@@ -149,17 +170,6 @@ async function _resizeCore(
   };
 }
 
-export async function resizeClient(
-  image: ImageInput,
-  options: ResizeOptions,
-  signal?: AbortSignal
-): Promise<ImageInput> {
-  if (signal?.aborted) {
-    throw new DOMException('Aborted', 'AbortError');
-  }
-  return _resizeCore(image, options);
-}
-
 /**
  * Map ResizeOptions method to WASM typ_idx parameter
  * typ_idx values (from Squoosh):
@@ -199,19 +209,25 @@ if (typeof self !== 'undefined') {
     const response: WorkerResponse<ImageInput> = { id, ok: false };
 
     try {
-      if (type !== 'resize:run') {
-        throw new Error(`Unknown message type: ${type}`);
-      }
+      if (type === 'resize:run') {
+        const controller = new AbortController();
+        const resultImage = await resizeClient(
+          payload.image,
+          payload.options,
+          controller.signal
+        );
 
-      const resultImage = await _resizeCore(payload.image, payload.options);
+        response.ok = true;
+        response.data = resultImage;
 
-      response.ok = true;
-      response.data = resultImage;
-
-      const transferable = resultImage.data.buffer;
-      if (transferable) {
-        self.postMessage(response, [transferable as ArrayBuffer]);
+        const transferable = resultImage.data.buffer;
+        if (transferable) {
+          self.postMessage(response, [transferable as ArrayBuffer]);
+        } else {
+          self.postMessage(response);
+        }
       } else {
+        response.error = `Unknown message type: ${type}`;
         self.postMessage(response);
       }
     } catch (error) {

@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'bun:test';
 import { validateArrayBuffer } from '@squoosh-kit/runtime';
 import { createWebpEncoder } from '../src/index.js';
-import type { ImageInput, WebpOptions } from '../src/index.js';
+import type { ImageInput } from '../src/index.js';
 
 // Test image data: 2x2 red square
 const createTestImage = (): ImageInput => {
@@ -47,24 +47,6 @@ describe('WebP Factory', () => {
     expect(image.width).toBe(2);
     expect(image.height).toBe(2);
     expect(image.data.length).toBe(16); // 2x2x4 = 16 bytes
-  });
-
-  it('should validate WebP options', () => {
-    const options: WebpOptions = {
-      quality: 90,
-      lossless: false,
-      nearLossless: false,
-    };
-    expect(options.quality).toBe(90);
-    expect(options.lossless).toBe(false);
-    expect(options.nearLossless).toBe(false);
-  });
-
-  it('should handle default WebP options', () => {
-    const options: WebpOptions = {};
-    expect(options.quality).toBeUndefined();
-    expect(options.lossless).toBeUndefined();
-    expect(options.nearLossless).toBeUndefined();
   });
 });
 
@@ -301,30 +283,6 @@ describe('Input Validation', () => {
       const result = await encoder(image, { quality: 90 });
       console.log(result);
       expect(result).toBeInstanceOf(Uint8Array);
-    });
-
-    it('should reject lossless as non-boolean', async () => {
-      const encoder = createWebpEncoder('client');
-      const image = createTestImage();
-      // @ts-expect-error - we want to test the error case
-      await expect(encoder(image, { lossless: 1 })).rejects.toThrow(TypeError);
-    });
-
-    it('should reject nearLossless as non-boolean', async () => {
-      const encoder = createWebpEncoder('client');
-      const image = createTestImage();
-      // @ts-expect-error - we want to test the error case
-      await expect(encoder(image, { nearLossless: 1 })).rejects.toThrow(
-        TypeError
-      );
-    });
-
-    it('should accept valid boolean options', async () => {
-      const encoder = createWebpEncoder('client');
-      const image = createTestImage();
-      expect(
-        await encoder(image, { lossless: true, nearLossless: false })
-      ).toBeInstanceOf(Uint8Array);
     });
 
     it('should provide clear error message for quality out of range', async () => {

@@ -301,6 +301,7 @@ The encoder uses quality-aware compression that automatically adjusts encoding p
 - **Low quality (0-60%)** - More aggressive compression, slower encoding
 
 This means that at 85% quality, you get smaller files than the original by applying targeted compression techniques like:
+
 - Adaptive filtering based on content
 - Spatial noise shaping for better detail preservation
 - Multiple encoding passes for optimal results

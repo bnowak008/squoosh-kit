@@ -10,10 +10,8 @@ import {
   validateImageInput,
   validateWebpOptions,
 } from '@squoosh-kit/runtime';
-
 import webp_enc, { type WebPModule } from '../wasm/webp/webp_enc';
-
-import type { EncodeOptions } from './types';
+import type { EncodeInputOptions, EncodeOptions } from './types';
 
 let cachedModule: WebPModule | null = null;
 let moduleLoadingPromise: Promise<WebPModule> | null = null;
@@ -33,11 +31,11 @@ async function loadWebPModule(): Promise<WebPModule> {
       // The WebP encoder WASM module expects browser-like globals (self, location)
       // These polyfills ensure compatibility when running in Bun/Node.js environments
 
-        // Polyfill 'self' global for Emscripten compatibility
+      // Polyfill 'self' global for Emscripten compatibility
       if (typeof self === 'undefined') {
         (global as { self?: typeof globalThis }).self = global;
       }
-      
+
       // Polyfill 'location' object for Emscripten module initialization
       if (typeof self !== 'undefined' && !self.location) {
         (self as { location?: { href: string } }).location = {
@@ -46,16 +44,25 @@ async function loadWebPModule(): Promise<WebPModule> {
       }
 
       // Polyfill SharedArrayBuffer for worker contexts without COOP/COEP headers
-      if (typeof SharedArrayBuffer === 'undefined' && typeof window === 'undefined') {
-        (globalThis as any).SharedArrayBuffer = ArrayBuffer;
+      if (
+        typeof SharedArrayBuffer === 'undefined' &&
+        typeof window === 'undefined'
+      ) {
+        (
+          globalThis as unknown as Record<string, typeof ArrayBuffer>
+        ).SharedArrayBuffer = ArrayBuffer;
       }
 
       // Load WASM binary with robust fallback strategies
       // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
       let wasmBuffer: ArrayBuffer | null = null;
       const pathsToTry = [
-        new URL(/* @vite-ignore */ './wasm/webp/webp_enc.wasm', import.meta.url).href,
-        new URL(/* @vite-ignore */ '../wasm/webp/webp_enc.wasm',import.meta.url).href,
+        new URL(/* @vite-ignore */ './wasm/webp/webp_enc.wasm', import.meta.url)
+          .href,
+        new URL(
+          /* @vite-ignore */ '../wasm/webp/webp_enc.wasm',
+          import.meta.url
+        ).href,
       ];
 
       let lastError: Error | null = null;
@@ -80,7 +87,11 @@ async function loadWebPModule(): Promise<WebPModule> {
       const module = await webp_enc({ wasmBinary: wasmBuffer });
       cachedModule = module;
 
-      return cachedModule!;
+      if (!cachedModule) {
+        throw new Error('Failed to load WASM module');
+      }
+
+      return cachedModule;
     } catch (error) {
       moduleLoadingPromise = null;
       throw new Error(
@@ -96,14 +107,14 @@ async function loadWebPModule(): Promise<WebPModule> {
  * Convert our simplified options to full EncodeOptions
  * Balanced for quality and file size
  */
-function createEncodeOptions(options?: EncodeOptions): EncodeOptions {
+function createEncodeOptions(options?: EncodeInputOptions): EncodeOptions {
   const quality = Math.max(0, Math.min(100, options?.quality ?? 82));
   const lossless = options?.lossless ?? false;
   const nearLossless = options?.near_lossless ?? false;
 
   // Select method based on quality: faster for high quality, more thorough for lower quality
-  const method = options?.method ?? quality >= 80 ? 3 : quality >= 60 ? 4 : 5;
-  
+  const method = (options?.method ?? quality >= 80) ? 3 : quality >= 60 ? 4 : 5;
+
   // Scale compression parameters with quality
   const filterStrength = quality >= 80 ? 0 : quality >= 60 ? 30 : 50;
   const snsStrength = quality >= 80 ? 50 : 75;
@@ -145,7 +156,7 @@ function createEncodeOptions(options?: EncodeOptions): EncodeOptions {
  */
 export async function webpEncodeClient(
   image: ImageInput,
-  options?: EncodeOptions,
+  options?: EncodeInputOptions,
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   // Validate inputs before starting
@@ -215,7 +226,7 @@ if (typeof self !== 'undefined') {
 
     const request = data as WorkerRequest<{
       image: ImageInput;
-      options?: EncodeOptions;
+      options?: EncodeInputOptions;
     }>;
 
     const response: WorkerResponse<Uint8Array> = {
@@ -227,9 +238,7 @@ if (typeof self !== 'undefined') {
       if (request.type === 'webp:encode') {
         const { image, options } = request.payload;
 
-        // Create an AbortController for this request
         const controller = new AbortController();
-
         const result = await webpEncodeClient(
           image,
           options,

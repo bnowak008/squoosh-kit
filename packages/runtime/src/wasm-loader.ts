@@ -34,7 +34,7 @@ export async function loadWasmBinary(
         `Failed to fetch WASM binary: ${response.status} ${response.statusText}`
       );
     }
-    return response.arrayBuffer();
+    return await response.arrayBuffer();
   } catch (error) {
     throw new Error(
       `Failed to load WASM binary from "${relativePath}": ${error instanceof Error ? error.message : String(error)}`

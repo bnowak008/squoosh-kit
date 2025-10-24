@@ -8,7 +8,6 @@ import {
   type ImageInput,
 } from '@squoosh-kit/runtime';
 import { validateArrayBuffer, validateImageInput } from '@squoosh-kit/runtime';
-import { resizeClient } from './resize.worker.ts';
 import type { ResizeOptions } from './types.ts';
 
 interface ResizeBridge {
@@ -26,6 +25,13 @@ class ResizeClientBridge implements ResizeBridge {
     options: ResizeOptions,
     signal?: AbortSignal
   ): Promise<ImageInput> {
+    // Dynamically import the client resizer to avoid module loading issues in Vite
+    const module = await import('./resize.worker.ts');
+    const resizeClient = module.resizeClient as (
+      image: ImageInput,
+      options: ResizeOptions,
+      signal?: AbortSignal
+    ) => Promise<ImageInput>;
     return resizeClient(image, options, signal);
   }
 
@@ -60,36 +66,15 @@ class ResizeWorkerBridge implements ResizeBridge {
   ): Promise<ImageInput> {
     const worker = await this.getWorker();
 
-    // Validate and normalize image - ensure all required properties exist
-    if (!image || typeof image !== 'object') {
-      throw new TypeError('image must be an object');
-    }
-
-    const imageRecord = image as Record<string, unknown>;
-    if (!imageRecord.data) {
-      throw new TypeError('image.data is required');
-    }
-    if (imageRecord.width === undefined || imageRecord.height === undefined) {
-      throw new TypeError('image.width and image.height are required');
-    }
-
-    const normalizedImage: ImageInput = {
-      data: imageRecord.data as Uint8Array | Uint8ClampedArray,
-      width: imageRecord.width as number,
-      height: imageRecord.height as number,
-    };
-
-    validateImageInput(normalizedImage);
-    const buffer = normalizedImage.data.buffer;
+    validateImageInput(image);
+    const buffer = image.data.buffer;
     validateArrayBuffer(buffer);
 
     try {
       const result = await callWorker<
         { image: ImageInput; options: ResizeOptions },
         ImageInput
-      >(worker, 'resize:run', { image: normalizedImage, options }, signal, [
-        buffer,
-      ]);
+      >(worker, 'resize:run', { image, options }, signal, [buffer]);
 
       return result;
     } catch (error) {

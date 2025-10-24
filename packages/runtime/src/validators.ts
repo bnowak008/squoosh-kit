@@ -149,7 +149,7 @@ export function validateWebpOptions(options: unknown): asserts options is {
     }
   }
 
-  if (opts.lossless !== undefined && typeof opts.lossless !== 'boolean') {
+  if (opts.lossless !== undefined && typeof opts.lossless !== 'number') {
     throw new TypeError(
       `options.lossless must be boolean, got ${typeof opts.lossless}`
     );

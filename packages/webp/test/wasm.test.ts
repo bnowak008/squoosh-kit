@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'bun:test';
 import { createWebpEncoder } from '../src/index.ts';
 import type { ImageInput } from '@squoosh-kit/runtime';
-import type { WebpOptions } from '../src/types.ts';
+import type { EncodeInputOptions } from '../src/types.ts';
 
 // Test image data: 2x2 red square
 const createTestImage = (): ImageInput => {
@@ -48,9 +48,9 @@ describe('WebP WASM Functionality', () => {
 
   it('should encode with custom options', async () => {
     const image = createTestImage();
-    const options: WebpOptions = {
+    const options: EncodeInputOptions = {
       quality: 90,
-      lossless: false,
+      lossless: 0,
     };
 
     const encode = createWebpEncoder('client');
