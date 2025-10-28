@@ -9,6 +9,7 @@ import {
   loadWasmBinary,
   validateImageInput,
   validateWebpOptions,
+  detectSimd,
 } from '@squoosh-kit/runtime';
 import webp_enc, { type WebPModule } from '../wasm/webp/webp_enc';
 import type { EncodeInputOptions, EncodeOptions } from './types';
@@ -25,7 +26,7 @@ async function loadWebPModule(): Promise<WebPModule> {
     return moduleLoadingPromise;
   }
 
-  moduleLoadingPromise = (async () => {
+  moduleLoadingPromise = (async (): Promise<WebPModule> => {
     try {
       // Environment polyfills for Emscripten-generated code
       // The WebP encoder WASM module expects browser-like globals (self, location)
@@ -53,42 +54,80 @@ async function loadWebPModule(): Promise<WebPModule> {
         ).SharedArrayBuffer = ArrayBuffer;
       }
 
-      // Load WASM binary with robust fallback strategies
-      // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
-      let wasmBuffer: ArrayBuffer | null = null;
-      const pathsToTry = [
-        new URL(/* @vite-ignore */ './wasm/webp/webp_enc.wasm', import.meta.url)
-          .href,
-        new URL(
-          /* @vite-ignore */ '../wasm/webp/webp_enc.wasm',
-          import.meta.url
-        ).href,
-      ];
-
-      let lastError: Error | null = null;
-      for (const path of pathsToTry) {
+      // Helper function to load WASM and initialize with explicit binary
+      const initModuleWithBinary = async (
+        moduleFactory: (config: {
+          noInitialRun: boolean;
+          wasmBinary?: ArrayBuffer;
+        }) => Promise<WebPModule>,
+        wasmPath: string
+      ): Promise<WebPModule> => {
         try {
-          wasmBuffer = await loadWasmBinary(path);
-          break;
+          // Try to load WASM binary
+          const wasmBuffer = await loadWasmBinary(wasmPath);
+          if (typeof console !== 'undefined' && console.log) {
+            console.log(
+              `[WebP] Loaded WASM binary from ${wasmPath} (${(wasmBuffer.byteLength / 1024).toFixed(1)}KB)`
+            );
+          }
+          return moduleFactory({ noInitialRun: true, wasmBinary: wasmBuffer });
         } catch (error) {
-          lastError = error instanceof Error ? error : new Error(String(error));
-          // Continue to next path
+          // Fallback: try without explicit binary
+          if (typeof console !== 'undefined' && console.warn) {
+            console.warn(
+              '[WebP] Failed to load WASM binary explicitly, trying module initialization without it:',
+              error
+            );
+          }
+          return moduleFactory({ noInitialRun: true });
+        }
+      };
+
+      // Detect SIMD support and load appropriate module
+      const simdSupported = await detectSimd();
+
+      if (simdSupported) {
+        if (typeof console !== 'undefined' && console.log) {
+          console.log('[WebP] SIMD support detected, loading SIMD encoder');
+        }
+        try {
+          // Try to load SIMD-optimized encoder dynamically
+          // Import the precompiled SIMD module - it's a standalone Emscripten module factory
+          const simdModuleFactory = await import(
+            /* @vite-ignore */ '../wasm/webp/webp_enc_simd.js'
+          );
+          cachedModule = await initModuleWithBinary(
+            simdModuleFactory.default as (config: {
+              noInitialRun: boolean;
+              wasmBinary?: ArrayBuffer;
+            }) => Promise<WebPModule>,
+            /* @vite-ignore */ './wasm/webp/webp_enc_simd.wasm'
+          );
+          if (cachedModule) {
+            return cachedModule;
+          }
+        } catch (simdError) {
+          if (typeof console !== 'undefined' && console.warn) {
+            console.warn(
+              '[WebP] Failed to load SIMD encoder, falling back to standard:',
+              simdError
+            );
+          }
+          // Fall through to standard encoder
         }
       }
 
-      if (!wasmBuffer) {
-        throw (
-          lastError || new Error('Could not load WASM binary from any path')
-        );
-      }
-
-      // Initialize WASM module by passing buffer as wasmBinary
-      // The Emscripten-compiled module will use this instead of trying to fetch
-      const module = await webp_enc({ wasmBinary: wasmBuffer });
-      cachedModule = module;
+      // Load standard (non-SIMD) encoder as fallback
+      cachedModule = await initModuleWithBinary(
+        webp_enc as (config: {
+          noInitialRun: boolean;
+          wasmBinary?: ArrayBuffer;
+        }) => Promise<WebPModule>,
+        /* @vite-ignore */ './wasm/webp/webp_enc.wasm'
+      );
 
       if (!cachedModule) {
-        throw new Error('Failed to load WASM module');
+        throw new Error('Failed to load WebP module');
       }
 
       return cachedModule;
@@ -105,49 +144,38 @@ async function loadWebPModule(): Promise<WebPModule> {
 
 /**
  * Convert our simplified options to full EncodeOptions
- * Balanced for quality and file size
+ * Uses Squoosh defaults for optimal performance and file size
  */
 function createEncodeOptions(options?: EncodeInputOptions): EncodeOptions {
-  const quality = Math.max(0, Math.min(100, options?.quality ?? 82));
-  const lossless = options?.lossless ?? false;
-  const nearLossless = options?.near_lossless ?? false;
-
-  // Select method based on quality: faster for high quality, more thorough for lower quality
-  const method = (options?.method ?? quality >= 80) ? 3 : quality >= 60 ? 4 : 5;
-
-  // Scale compression parameters with quality
-  const filterStrength = quality >= 80 ? 0 : quality >= 60 ? 30 : 50;
-  const snsStrength = quality >= 80 ? 50 : 75;
-  const passes = quality >= 80 ? 2 : 3;
-
+  // Squoosh defaults from their defaultOptions in meta.ts
   return {
-    quality,
+    quality: options?.quality ?? 75,
     target_size: 0,
     target_PSNR: 0,
-    method,
-    sns_strength: snsStrength,
-    filter_strength: filterStrength,
-    filter_sharpness: 0,
-    filter_type: 1,
-    partitions: 0,
-    segments: 4,
-    pass: passes,
+    method: options?.method ?? 4,
+    sns_strength: options?.sns_strength ?? 50,
+    filter_strength: options?.filter_strength ?? 60,
+    filter_sharpness: options?.filter_sharpness ?? 0,
+    filter_type: options?.filter_type ?? 1,
+    partitions: options?.partitions ?? 0,
+    segments: options?.segments ?? 4,
+    pass: options?.pass ?? 1,
     show_compressed: 0,
-    preprocessing: lossless ? 0 : 1,
-    autofilter: 1,
+    preprocessing: options?.preprocessing ?? 0,
+    autofilter: options?.autofilter ?? 0,
     partition_limit: 0,
-    alpha_compression: 1,
-    alpha_filtering: 1,
-    alpha_quality: quality >= 80 ? 100 : 88,
-    lossless: lossless ? 1 : 0,
-    exact: 0,
-    image_hint: 0,
+    alpha_compression: options?.alpha_compression ?? 1,
+    alpha_filtering: options?.alpha_filtering ?? 1,
+    alpha_quality: options?.alpha_quality ?? options?.quality ?? 75,
+    lossless: options?.lossless ? 1 : 0,
+    exact: options?.exact ?? 0,
+    image_hint: options?.image_hint ?? 0,
     emulate_jpeg_size: 0,
     thread_level: 0,
     low_memory: 0,
-    near_lossless: nearLossless ? quality : 100,
+    near_lossless: options?.near_lossless ?? options?.quality ?? 75,
     use_delta_palette: 0,
-    use_sharp_yuv: 1,
+    use_sharp_yuv: options?.use_sharp_yuv ?? 0,
   };
 }
 
@@ -177,7 +205,16 @@ export async function webpEncodeClient(
     throw new Error('Image data must be Uint8Array or Uint8ClampedArray');
   }
 
+  const t0 = performance.now();
   const module = await loadWebPModule();
+  const t1 = performance.now();
+
+  if (typeof console !== 'undefined' && console.log) {
+    console.log(`[WebP] module loading took ${(t1 - t0).toFixed(2)}ms`);
+    console.log(
+      `[WebP] Module type: ${cachedModule && 'encode' in cachedModule ? 'Ready' : 'Unknown'}`
+    );
+  }
 
   // Check abort after async operation
   if (signal?.aborted) {
@@ -197,7 +234,17 @@ export async function webpEncodeClient(
           data.length
         );
 
+  if (typeof console !== 'undefined' && console.log) {
+    console.log(`[WebP] encode options:`, encodeOptions);
+  }
+
+  const t2 = performance.now();
   const result = module.encode(dataArray, width, height, encodeOptions);
+  const t3 = performance.now();
+
+  if (typeof console !== 'undefined' && console.log) {
+    console.log(`[WebP] actual encoding took ${(t3 - t2).toFixed(2)}ms`);
+  }
 
   if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -238,19 +285,25 @@ if (typeof self !== 'undefined') {
       if (request.type === 'webp:encode') {
         const { image, options } = request.payload;
 
+        const t0 = performance.now();
         const controller = new AbortController();
         const result = await webpEncodeClient(
           image,
           options,
           controller.signal
         );
+        const t1 = performance.now();
+
+        if (typeof console !== 'undefined' && console.log) {
+          console.log(`[WebP Worker] encode took ${(t1 - t0).toFixed(2)}ms`);
+        }
 
         response.ok = true;
         response.data = result;
 
-        // Transfer the result buffer back directly from the response data
-        const resultBuffer: ArrayBuffer = response.data.buffer as ArrayBuffer;
-        self.postMessage(response, [resultBuffer]);
+        // Post the response without transferring - the Uint8Array will be cloned
+        // Transfer is only used for incoming requests (image.data buffer from client)
+        self.postMessage(response);
       } else {
         response.error = `Unknown message type: ${request.type}`;
         self.postMessage(response);

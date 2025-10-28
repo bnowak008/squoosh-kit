@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/runtime",
-  "version": "0.0.11",
+  "version": "0.0.15",
   "type": "module",
   "description": "Core runtime logic for squoosh-kit, including the worker bridge and environment utilities.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -36,6 +36,9 @@
     "clean:local": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
     "prepack": "bun run build && bun test",
     "test": "bun test"
+  },
+  "dependencies": {
+    "wasm-feature-detect": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.9.1"

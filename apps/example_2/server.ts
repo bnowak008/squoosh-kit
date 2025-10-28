@@ -70,6 +70,35 @@ const server = Bun.serve({
           filename
         );
       }
+    } else if (filePath.startsWith('/dist/wasm/')) {
+      console.log(`/dist/wasm/: ${filePath}`);
+      const filename = filePath.replace('/dist/wasm/', '');
+      // Route to the correct package based on filename for client mode WASM loading
+      if (filename.includes('resize')) {
+        filePath = path.join(
+          projectRoot,
+          'packages/resize/dist/wasm',
+          filename
+        );
+      } else if (
+        filename.startsWith('webp/') ||
+        filename.startsWith('webp-dec/')
+      ) {
+        filePath = path.join(projectRoot, 'packages/webp/dist/wasm', filename);
+      } else if (
+        filename.includes('webp') ||
+        filename.includes('enc') ||
+        filename.includes('dec')
+      ) {
+        filePath = path.join(projectRoot, 'packages/webp/dist/wasm', filename);
+      } else {
+        // Default to resize if unclear
+        filePath = path.join(
+          projectRoot,
+          'packages/resize/dist/wasm',
+          filename
+        );
+      }
     } else if (filePath.startsWith('/dist/')) {
       console.log(`/dist/: ${filePath}`);
       const filename = filePath.replace('/dist/', '');

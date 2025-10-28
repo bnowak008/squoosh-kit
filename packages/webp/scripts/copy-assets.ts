@@ -37,8 +37,32 @@ async function main() {
   console.log('Copying WebP codec artifacts...');
 
   const filesToCopy = {
-    [webpEncSrc]: ['webp_enc.wasm', 'webp_enc.js', 'webp_enc.d.ts'],
-    [webpDecSrc]: ['webp_dec.wasm', 'webp_dec.js', 'webp_dec.d.ts'],
+    [webpEncSrc]: [
+      // Standard encoder
+      'webp_enc.wasm',
+      'webp_enc.js',
+      'webp_enc.d.ts',
+      // SIMD-optimized encoder
+      'webp_enc_simd.wasm',
+      'webp_enc_simd.js',
+      'webp_enc_simd.d.ts',
+      // Node.js-specific encoder
+      'webp_node_enc.wasm',
+      'webp_node_enc.js',
+    ],
+    [webpDecSrc]: [
+      // Standard decoder
+      'webp_dec.wasm',
+      'webp_dec.js',
+      'webp_dec.d.ts',
+      // SIMD-optimized decoder
+      'webp_dec_simd.wasm',
+      'webp_dec_simd.js',
+      'webp_dec_simd.d.ts',
+      // Node.js-specific decoder
+      'webp_node_dec.wasm',
+      'webp_node_dec.js',
+    ],
   };
 
   let copiedCount = 0;

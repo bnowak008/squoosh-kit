@@ -40,7 +40,7 @@
     },
     "packages/core": {
       "name": "@squoosh-kit/core",
-      "version": "0.0.11",
+      "version": "0.0.14",
       "dependencies": {
         "@squoosh-kit/resize": "workspace:*",
         "@squoosh-kit/webp": "workspace:*",
@@ -48,21 +48,24 @@
     },
     "packages/resize": {
       "name": "@squoosh-kit/resize",
-      "version": "0.0.11",
+      "version": "0.0.14",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/runtime": {
       "name": "@squoosh-kit/runtime",
-      "version": "0.0.11",
+      "version": "0.0.14",
+      "dependencies": {
+        "wasm-feature-detect": "^1.0.0",
+      },
       "devDependencies": {
         "@types/node": "^24.9.1",
       },
     },
     "packages/webp": {
       "name": "@squoosh-kit/webp",
-      "version": "0.0.11",
+      "version": "0.0.14",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
@@ -368,6 +371,8 @@
     "undici-types": ["undici-types@7.16.0", "", {}, "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw=="],
 
     "uri-js": ["uri-js@4.4.1", "", { "dependencies": { "punycode": "^2.1.0" } }, "sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg=="],
+
+    "wasm-feature-detect": ["wasm-feature-detect@1.8.0", "", {}, "sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ=="],
 
     "which": ["which@2.0.2", "", { "dependencies": { "isexe": "^2.0.0" }, "bin": { "node-which": "./bin/node-which" } }, "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA=="],
 

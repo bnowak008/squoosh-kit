@@ -3,7 +3,11 @@ import type { ImageInput } from './types.js';
 export function validateArrayBuffer(
   buffer: unknown
 ): asserts buffer is ArrayBuffer {
-  if (buffer instanceof SharedArrayBuffer) {
+  // Check if SharedArrayBuffer is defined in the current environment before using it
+  if (
+    typeof SharedArrayBuffer !== 'undefined' &&
+    buffer instanceof SharedArrayBuffer
+  ) {
     throw new Error(
       'SharedArrayBuffer is not supported. ' +
         'Use regular ArrayBuffer or Uint8Array instead.'
@@ -118,49 +122,42 @@ export function validateResizeOptions(options: unknown): asserts options is {
   }
 }
 
-export function validateWebpOptions(options: unknown): asserts options is {
-  quality?: number;
-  lossless?: boolean;
-  nearLossless?: boolean;
-} {
-  if (
-    options !== undefined &&
-    (typeof options !== 'object' || options === null)
-  ) {
-    throw new TypeError('options must be an object or undefined');
-  }
-
+export function validateWebpOptions(
+  options: unknown
+): asserts options is Record<string, unknown> | undefined {
   if (options === undefined) {
     return;
   }
 
+  if (typeof options !== 'object' || options === null) {
+    throw new TypeError('options must be an object or undefined');
+  }
+
   const opts = options as Record<string, unknown>;
 
-  if (opts.quality !== undefined) {
-    if (
-      typeof opts.quality !== 'number' ||
-      !Number.isInteger(opts.quality) ||
-      opts.quality < 0 ||
-      opts.quality > 100
-    ) {
+  if ('quality' in opts && opts.quality !== undefined) {
+    const quality = opts.quality;
+
+    if (Number.isNaN(quality)) {
       throw new RangeError(
-        `options.quality must be an integer between 0 and 100, got ${opts.quality}`
+        'quality must be a valid number in the range 0-100, got NaN'
       );
     }
-  }
 
-  if (opts.lossless !== undefined && typeof opts.lossless !== 'number') {
-    throw new TypeError(
-      `options.lossless must be boolean, got ${typeof opts.lossless}`
-    );
-  }
+    if (typeof quality !== 'number') {
+      throw new TypeError('quality must be a number');
+    }
 
-  if (
-    opts.nearLossless !== undefined &&
-    typeof opts.nearLossless !== 'boolean'
-  ) {
-    throw new TypeError(
-      `options.nearLossless must be boolean, got ${typeof opts.nearLossless}`
-    );
+    if (!Number.isInteger(quality)) {
+      throw new RangeError(
+        'quality must be an integer in the range 0-100, got floating point'
+      );
+    }
+
+    if (quality < 0 || quality > 100) {
+      throw new RangeError(
+        `quality must be in the range 0-100, got ${quality}`
+      );
+    }
   }
 }

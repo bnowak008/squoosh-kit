@@ -293,7 +293,7 @@ describe('Input Validation', () => {
         throw new Error('Should have thrown');
       } catch (e) {
         const message = (e as Error).message;
-        expect(message).toContain('quality');
+        expect(message).toContain('range');
         expect(message).toContain('0');
         expect(message).toContain('100');
       }

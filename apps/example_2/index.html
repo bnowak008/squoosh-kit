@@ -316,7 +316,10 @@
 
     <script async type="module">
       // Import from core package (which re-exports webp and resize)
-      import { encode, resize } from '/dist/index.browser.mjs';
+      import {
+        createWebpEncoder,
+        createResizer,
+      } from '/dist/index.browser.mjs';
 
       // DOM elements
       const fileInput = document.getElementById('fileInput');
@@ -424,6 +427,13 @@
         showStatus('Processing image...', 'loading');
 
         try {
+          // Get the selected mode
+          const mode = getCurrentMode();
+
+          // Create instances with the selected mode
+          const resizer = createResizer(mode);
+          const encoder = createWebpEncoder(mode);
+
           // Load image data
           const img = await loadImage(currentFile);
           const { canvas, ctx } = createCanvas(img);
@@ -441,11 +451,26 @@
           };
 
           const resizeStart = performance.now();
-          const resized = await resize(
-            imageData,
-            resizeOptions,
-            controller.signal
-          );
+          const resizeWidth = resizeOptions.width;
+          const resizeHeight = resizeOptions.height;
+
+          // Intelligent resize skip: if output dimensions match input dimensions,
+          // skip the resize operation entirely to match Squoosh behavior
+          let resized;
+          if (
+            resizeWidth === imageData.width &&
+            resizeHeight === imageData.height
+          ) {
+            // Dimensions unchanged - skip resize, use original image data
+            resized = imageData;
+          } else {
+            // Dimensions changed - apply resize with specified options
+            resized = await resizer(
+              imageData,
+              resizeOptions,
+              controller.signal
+            );
+          }
           const resizeEnd = performance.now();
 
           // Create resized image for display
@@ -471,7 +496,7 @@
           };
 
           // The resized result should be in ImageData format, use it directly
-          currentWebpData = await encode(
+          currentWebpData = await encoder(
             resized,
             webpOptions,
             controller.signal
@@ -483,7 +508,9 @@
           webpImage.src = URL.createObjectURL(webpBlob);
 
           // Update info
-          resizedInfo.textContent = `${resized.width}x${resized.height} (${(resized.data.length / 1024).toFixed(2)} KB)`;
+          resizedInfo.textContent = `${resized.width}x${resized.height} (${(resized.data.length / 1024).toFixed(2)} KB)${
+            resized === imageData ? ' - No resize applied' : ''
+          }`;
           webpInfo.textContent = `${(currentWebpData.length / 1024).toFixed(2)} KB WebP`;
 
           const originalSize = currentFile.size;
@@ -500,6 +527,10 @@
           // Show results
           results.style.display = 'grid';
           showStatus('Processing completed successfully!', 'success');
+
+          // Clean up resources
+          await resizer.terminate();
+          await encoder.terminate();
         } catch (error) {
           if (error.name === 'AbortError') {
             showStatus('Operation was cancelled.', 'error');

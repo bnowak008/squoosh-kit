@@ -7,7 +7,7 @@ import {
   createReadyWorker,
   type ImageInput,
 } from '@squoosh-kit/runtime';
-import { validateArrayBuffer, validateImageInput } from '@squoosh-kit/runtime';
+import { validateImageInput } from '@squoosh-kit/runtime';
 import type { ResizeOptions } from './types.ts';
 
 interface ResizeBridge {
@@ -67,14 +67,12 @@ class ResizeWorkerBridge implements ResizeBridge {
     const worker = await this.getWorker();
 
     validateImageInput(image);
-    const buffer = image.data.buffer;
-    validateArrayBuffer(buffer);
 
     try {
       const result = await callWorker<
         { image: ImageInput; options: ResizeOptions },
         ImageInput
-      >(worker, 'resize:run', { image, options }, signal, [buffer]);
+      >(worker, 'resize:run', { image, options }, signal);
 
       return result;
     } catch (error) {

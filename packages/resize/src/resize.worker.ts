@@ -10,49 +10,35 @@ import {
   validateImageInput,
   validateResizeOptions,
 } from '@squoosh-kit/runtime';
-import type { ResizeModule, ResizeOptions } from './types';
-import squoosh_resize_module from '../wasm/squoosh_resize';
+import type { ResizeOptions } from './types';
+import * as squoosh_resize_module from '../wasm/squoosh_resize';
 
-let cachedModule: ResizeModule | null = null;
-let moduleLoadingPromise: Promise<ResizeModule> | null = null;
+// Define the type locally to avoid module resolution issues with the linter
+type SquooshWasmResize = (
+  input_image: Uint8Array,
+  input_width: number,
+  input_height: number,
+  output_width: number,
+  output_height: number,
+  typ_idx: number,
+  premultiply: boolean,
+  color_space_conversion: boolean
+) => Uint8ClampedArray;
 
-async function loadResizeModule(): Promise<ResizeModule> {
-  if (cachedModule) {
-    return cachedModule;
+let wasmResize: SquooshWasmResize | null = null;
+let initPromise: Promise<void> | null = null;
+
+async function init(): Promise<void> {
+  if (wasmResize) {
+    return;
   }
 
-  if (moduleLoadingPromise) {
-    return moduleLoadingPromise;
+  if (initPromise) {
+    return initPromise;
   }
 
-  moduleLoadingPromise = (async () => {
+  initPromise = (async () => {
     try {
-      // Environment polyfills for Emscripten-generated code
-      // The WebP encoder WASM module expects browser-like globals (self, location)
-      // These polyfills ensure compatibility when running in Bun/Node.js environments
-
-      // Polyfill 'self' global for Emscripten compatibility
-      if (typeof self === 'undefined') {
-        (global as { self?: typeof globalThis }).self = global;
-      }
-
-      // Polyfill 'location' object for Emscripten module initialization
-      if (typeof self !== 'undefined' && !self.location) {
-        (self as { location?: { href: string } }).location = {
-          href: import.meta.url,
-        };
-      }
-
-      // Polyfill SharedArrayBuffer for worker contexts without COOP/COEP headers
-      if (
-        typeof SharedArrayBuffer === 'undefined' &&
-        typeof window === 'undefined'
-      ) {
-        (
-          globalThis as unknown as Record<string, typeof ArrayBuffer>
-        ).SharedArrayBuffer = ArrayBuffer;
-      }
-
       // Load WASM binary with robust fallback strategies
       // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
       let wasmBuffer: ArrayBuffer | null = null;
@@ -84,40 +70,59 @@ async function loadResizeModule(): Promise<ResizeModule> {
         );
       }
 
-      // Initialize WASM module by passing buffer as a Promise
-      // The wasm-bindgen-compiled module expects either undefined or a Promise/URL that resolves to the buffer
-      const module = await squoosh_resize_module(Promise.resolve(wasmBuffer));
-      cachedModule = module as unknown as ResizeModule;
-
-      if (!cachedModule) {
-        throw new Error('Failed to load WASM module');
+      // Initialize WASM module with the binary buffer
+      try {
+        await squoosh_resize_module.default(wasmBuffer);
+      } catch (initError: unknown) {
+        // If initialization fails due to SharedArrayBuffer issues, try with polyfill
+        if (
+          initError instanceof Error &&
+          (initError.message.includes('SharedArrayBuffer') ||
+            initError.message.includes('first argument must be'))
+        ) {
+          // Apply polyfill and retry
+          if (typeof SharedArrayBuffer === 'undefined') {
+            (
+              globalThis as unknown as Record<string, typeof ArrayBuffer>
+            ).SharedArrayBuffer = ArrayBuffer;
+          }
+          // Reload the module with polyfill in place
+          try {
+            await squoosh_resize_module.default(wasmBuffer);
+          } catch (retryError) {
+            throw new Error(
+              `WASM module initialization failed even with polyfill: ${retryError instanceof Error ? retryError.message : String(retryError)}`
+            );
+          }
+        } else {
+          throw initError;
+        }
       }
-
-      return cachedModule;
+      // After initialization, the module's exported resize function is ready to use
+      wasmResize = squoosh_resize_module.resize as unknown as SquooshWasmResize;
     } catch (error) {
-      moduleLoadingPromise = null;
+      initPromise = null;
       throw new Error(
-        `Failed to load WASM module: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to initialize resize WASM module: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   })();
 
-  return moduleLoadingPromise;
+  return initPromise;
 }
 
-export async function resizeClient(
+async function _resizeCore(
   image: ImageInput,
-  options: ResizeOptions,
-  signal?: AbortSignal
+  options: ResizeOptions
 ): Promise<ImageInput> {
-  if (signal?.aborted) {
-    throw new DOMException('Aborted', 'AbortError');
-  }
-
   validateImageInput(image);
   validateResizeOptions(options);
 
-  const module = await loadResizeModule();
+  await init();
+  if (!wasmResize) {
+    throw new Error('Resize module not initialized');
+  }
+
   const { data, width: inputWidth, height: inputHeight } = image;
 
   let outputWidth = options.width ?? inputWidth;
@@ -152,7 +157,7 @@ export async function resizeClient(
           data.length
         );
 
-  const result = module.resize(
+  const result = wasmResize(
     dataArray,
     inputWidth,
     inputHeight,
@@ -170,6 +175,17 @@ export async function resizeClient(
   };
 }
 
+export async function resizeClient(
+  image: ImageInput,
+  options: ResizeOptions,
+  signal?: AbortSignal
+): Promise<ImageInput> {
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
+  return _resizeCore(image, options);
+}
+
 /**
  * Map ResizeOptions method to WASM typ_idx parameter
  * typ_idx values (from Squoosh):
@@ -185,7 +201,7 @@ function getResizeMethod(options?: ResizeOptions): number {
     mitchell: 2,
     lanczos3: 3,
   };
-  return methodMap[options?.method ?? 'mitchell'] ?? 2;
+  return methodMap[options?.method ?? 'lanczos3'] ?? 3;
 }
 
 /**
@@ -209,27 +225,18 @@ if (typeof self !== 'undefined') {
     const response: WorkerResponse<ImageInput> = { id, ok: false };
 
     try {
-      if (type === 'resize:run') {
-        const controller = new AbortController();
-        const resultImage = await resizeClient(
-          payload.image,
-          payload.options,
-          controller.signal
-        );
-
-        response.ok = true;
-        response.data = resultImage;
-
-        const transferable = resultImage.data.buffer;
-        if (transferable) {
-          self.postMessage(response, [transferable as ArrayBuffer]);
-        } else {
-          self.postMessage(response);
-        }
-      } else {
-        response.error = `Unknown message type: ${type}`;
-        self.postMessage(response);
+      if (type !== 'resize:run') {
+        throw new Error(`Unknown message type: ${type}`);
       }
+
+      const resultImage = await _resizeCore(payload.image, payload.options);
+
+      response.ok = true;
+      response.data = resultImage;
+
+      // Post the response without transferring - the ImageInput with data will be cloned
+      // Transfer is only used for incoming requests (image.data buffer from client)
+      self.postMessage(response);
     } catch (error) {
       response.error = error instanceof Error ? error.message : String(error);
       self.postMessage(response);

@@ -362,9 +362,13 @@ describe('Input Validation', () => {
       for (const method of methods) {
         console.log('--- METHOD ---');
         console.log(method);
-        await resizer(image, { width: 2, method })
+        await resizer(image, { width: 2, method });
         console.log('----------------');
-        const result = { data: new Uint8ClampedArray([254, 0, 0, 255]), width: 1, height: 1 };
+        const result = {
+          data: new Uint8ClampedArray([254, 0, 0, 255]),
+          width: 1,
+          height: 1,
+        };
         expect(result).toEqual({
           data: new Uint8ClampedArray([254, 0, 0, 255]),
           width: 1,

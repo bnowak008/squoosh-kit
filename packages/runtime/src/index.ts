@@ -11,3 +11,4 @@ export * from './types.js';
 export * from './worker-helper.js';
 export * from './wasm-loader.js';
 export * from './validators.js';
+export * from './simd-detector.js';

@@ -7,7 +7,7 @@ import {
   createReadyWorker,
   type ImageInput,
 } from '@squoosh-kit/runtime';
-import { validateArrayBuffer, validateImageInput } from '@squoosh-kit/runtime';
+import { validateImageInput } from '@squoosh-kit/runtime';
 import type { EncodeInputOptions } from './types';
 
 interface WebPBridge {
@@ -67,11 +67,7 @@ class WebpWorkerBridge implements WebPBridge {
     const worker = await this.getWorker();
 
     validateImageInput(image);
-    const buffer = image.data.buffer;
-    validateArrayBuffer(buffer);
-    return callWorker(worker, 'webp:encode', { image, options }, signal, [
-      buffer,
-    ]);
+    return callWorker(worker, 'webp:encode', { image, options }, signal);
   }
 
   async terminate(): Promise<void> {
