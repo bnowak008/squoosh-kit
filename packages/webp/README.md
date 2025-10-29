@@ -1,6 +1,6 @@
 # @squoosh-kit/webp
 
-![Squoosh Kit](https://raw.githubusercontent.com/bnowak008/squoosh-kit/main/squoosh-kit-banner.webp)
+![Squoosh Kit](../../squoosh-kit-banner.webp)
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fwebp.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fwebp)
 
