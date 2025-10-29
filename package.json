@@ -1,6 +1,6 @@
 {
   "name": "squoosh-kit",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
