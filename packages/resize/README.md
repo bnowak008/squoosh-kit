@@ -5,6 +5,7 @@
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fresize.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fresize)
 
 ## Squoosh Kit
+
 Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package (`@squoosh-kit/resize`) is one of those modules.
 
 **Directly from the Source**

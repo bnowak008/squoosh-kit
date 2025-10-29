@@ -40,7 +40,7 @@
     },
     "packages/core": {
       "name": "@squoosh-kit/core",
-      "version": "0.0.15",
+      "version": "0.0.18",
       "dependencies": {
         "@squoosh-kit/resize": "workspace:*",
         "@squoosh-kit/webp": "workspace:*",
@@ -48,14 +48,14 @@
     },
     "packages/resize": {
       "name": "@squoosh-kit/resize",
-      "version": "0.0.15",
+      "version": "0.0.18",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/runtime": {
       "name": "@squoosh-kit/runtime",
-      "version": "0.0.15",
+      "version": "0.0.18",
       "dependencies": {
         "wasm-feature-detect": "^1.0.0",
       },
@@ -65,7 +65,7 @@
     },
     "packages/webp": {
       "name": "@squoosh-kit/webp",
-      "version": "0.0.15",
+      "version": "0.0.18",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },

@@ -5,6 +5,7 @@
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fwebp.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fwebp)
 
 ## Squoosh Kit
+
 Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package facilitates the creation of the worker in the correct runtime.
 
 **Directly from the Source**
