@@ -1,12 +1,20 @@
 # @squoosh-kit/webp
 
+![Squoosh Kit](https://raw.githubusercontent.com/bnowak008/squoosh-kit/main/squoosh-kit-banner.webp)
+
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fwebp.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fwebp)
 
-**Professional WebP encoding that doesn't get in your way**
+## Squoosh Kit
+Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package (`@squoosh-kit/webp`) is one of those modules.
 
-Transform your images into the modern WebP format with the same technology that powers Google's Squoosh. Built on WebAssembly for incredible speed, this package handles the heavy lifting while keeping your application responsive through intelligent worker management.
+**Directly from the Source**
+We don't modify the core WebP codec. The WebAssembly (`.wasm`) binary is taken directly from the official Squoosh repository builds. This means you get the exact same performance, quality, and reliability you'd expect from Squoosh.
 
-Perfect for optimizing images in web applications, processing user uploads, or building image conversion services. Whether you're working with Bun, Node.js, or the browser, WebP encoding has never been this straightforward.
+**A Thin, Modern Wrapper**
+Our goal is to provide a minimal, modern JavaScript wrapper around the codec. We handle the tricky parts—like loading WASM, managing web workers, and providing a clean, type-safe API—so you can focus on your application. The library is designed to be a thin bridge, not a heavy framework.
+
+**Modular by Design**
+We believe you should only install what you need. As a standalone package, `@squoosh-kit/webp` allows you to add professional WebP encoding to your project without pulling in other unrelated image processing tools.
 
 ## Installation
 
@@ -17,8 +25,6 @@ npm install @squoosh-kit/webp
 ```
 
 ## Quick Start
-
-Get started with minimal fuss:
 
 ```typescript
 import { encode, createWebpEncoder } from '@squoosh-kit/webp';
@@ -58,12 +64,6 @@ Only the following exports are part of the public API and guaranteed to be stabl
 - `WebpEncoderFactory` type - Type for reusable encoder functions
 
 Internal implementation details (such as `webpEncodeClient`) are not part of the public API and may change without notice.
-
-## How It Works
-
-Under the hood, this package leverages Google's Squoosh WebP encoder compiled to WebAssembly. The heavy processing happens in a Web Worker by default, so your main thread stays free for user interactions.
-
-You get the same quality and performance as the original Squoosh tool, but wrapped in a clean JavaScript API that fits naturally into modern applications.
 
 ## Real-World Examples
 

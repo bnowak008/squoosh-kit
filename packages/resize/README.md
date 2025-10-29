@@ -1,12 +1,20 @@
 # @squoosh-kit/resize
 
+![Squoosh Kit](https://raw.githubusercontent.com/bnowak008/squoosh-kit/main/squoosh-kit-banner.webp)
+
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fresize.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fresize)
 
-**Professional image resizing with uncompromising quality**
+## Squoosh Kit
+Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package (`@squoosh-kit/resize`) is one of those modules.
 
-Transform your images with flexible resizing algorithms that balance quality and performance. Using the proven Squoosh WASM codecs with support for Triangular, Catrom, Mitchell, and Lanczos3 methods, this package delivers crisp results at any size.
+**Directly from the Source**
+We don't modify the core resize codec. The WebAssembly (`.wasm`) binary is taken directly from the official Squoosh repository builds. This means you get the exact same performance, quality, and reliability you'd expect from Squoosh.
 
-Whether you need fast thumbnails for a gallery, responsive images for the web, or high-quality output for production, this package handles resizing with the algorithm your users deserve, all while keeping your application smooth and responsive.
+**A Thin, Modern Wrapper**
+Our goal is to provide a minimal, modern JavaScript wrapper around the codec. We handle the tricky parts—like loading WASM, managing web workers, and providing a clean, type-safe API—so you can focus on your application. The library is designed to be a thin bridge, not a heavy framework.
+
+**Modular by Design**
+We believe you should only install what you need. As a standalone package, `@squoosh-kit/resize` allows you to add high-quality image resizing to your project without pulling in other unrelated image processing tools.
 
 ## Installation
 

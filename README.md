@@ -1,5 +1,7 @@
 # Squoosh Kit
 
+![Squoosh Kit](https://raw.githubusercontent.com/bnowak008/squoosh-kit/main/squoosh-kit-banner.webp)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
@@ -9,6 +11,14 @@
 Squoosh Kit brings Google's Squoosh image optimization technology directly to your JavaScript projects. Built from the ground up for Bun with full TypeScript support, it offers lightning-fast image encoding and resizing through WebAssembly, all while keeping your main thread responsive with intelligent worker management.
 
 Whether you're building a web application, a Node.js service, or a desktop app with Bun, Squoosh Kit gives you the power of professional image processing without the complexity.
+
+## The Squoosh Kit Approach
+
+- **Blazing Fast**: WebAssembly codecs from Google Squoosh
+- **Non-blocking**: Web Workers keep your UI responsive
+- **Type Safe**: Full TypeScript support with detailed APIs
+- **Bun Native**: Optimized for Bun, works great in Node.js and browsers
+- **Zero Config**: Works out of the box with sensible defaults
 
 ## What You Get
 

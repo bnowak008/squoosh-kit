@@ -82,17 +82,18 @@ export function createWebpEncoder(
 ): WebpEncoderFactory {
   const bridge = createBridge(mode);
 
-  const encoder = (
-    imageData: ImageInput,
-    options?: EncodeInputOptions,
-    signal?: AbortSignal
-  ) => {
-    return bridge.encode(imageData, options, signal);
-  };
-
-  encoder.terminate = async () => {
-    await bridge.terminate();
-  };
-
-  return encoder as WebpEncoderFactory;
+  return Object.assign(
+    (
+      imageData: ImageInput,
+      options?: EncodeInputOptions,
+      signal?: AbortSignal
+    ) => {
+      return bridge.encode(imageData, options, signal);
+    },
+    {
+      terminate: async () => {
+        await bridge.terminate();
+      },
+    }
+  );
 }

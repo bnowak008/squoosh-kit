@@ -1,12 +1,20 @@
 # @squoosh-kit/core
 
+![Squoosh Kit](https://raw.githubusercontent.com/bnowak008/squoosh-kit/main/squoosh-kit-banner.webp)
+
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fcore.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fcore)
 
-**The complete Squoosh Kit experience in a single package**
+## Squoosh Kit
+Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project.
 
-`@squoosh-kit/core` brings together all the image processing power of Squoosh Kit in one convenient package. Perfect for when you want everything at your fingertips without worrying about which specific package to install.
+**Directly from the Source**
+We don't modify the core codecs. The WebAssembly (`.wasm`) binaries for WebP encoding and image resizing are taken directly from the official Squoosh repository builds. This means you get the exact same performance, quality, and reliability you'd expect from Squoosh.
 
-This meta-package re-exports all functionality from the individual Squoosh Kit packages, so you get WebP encoding, high-quality resizing, and all the underlying runtime utilities in one place.
+**A Thin, Modern Wrapper**
+Our goal is to provide a minimal, modern JavaScript wrapper around these codecs. We handle the tricky parts—like loading WASM, managing web workers, and providing a clean, type-safe API—so you can focus on your application. The library is designed to be a thin bridge, not a heavy framework.
+
+**Modular by Design**
+While this `core` package bundles everything for convenience, the Squoosh Kit philosophy is to provide small, focused packages (e.g., `@squoosh-kit/webp`, `@squoosh-kit/resize`) so you only install what you need.
 
 ## Installation
 
@@ -68,34 +76,6 @@ This package bundles together:
 - You only need one specific feature (like just WebP encoding)
 - Bundle size is critical and you want to minimize dependencies (install `@squoosh-kit/resize` or `@squoosh-kit/webp` directly)
 - You need fine-grained control over versions
-
-## How It Works
-
-`@squoosh-kit/core` automatically:
-
-1. **Resolves worker files** from installed `@squoosh-kit/resize` and `@squoosh-kit/webp` packages
-2. **Loads WASM codecs** from the package's `dist/wasm/` directory
-3. **Manages workers** across browser and Node.js/Bun environments
-
-### Browser Support
-
-In browser environments, `@squoosh-kit/core` uses:
-
-- **Web Workers** to keep the main thread responsive
-- **Module workers** for ES module support
-- **Automatic path resolution** to find worker and WASM files in node_modules
-
-The package automatically detects:
-
-- Monorepo development structures
-- Npm-installed flat node_modules
-- Flat vs nested node_modules hierarchies
-
-## Performance Characteristics
-
-- **Worker mode** (default): Non-blocking, keeps UI responsive
-- **Client mode**: Direct execution on main thread, slightly faster but blocks UI
-- **WASM**: Near-native performance for image processing
 
 ## API Reference
 

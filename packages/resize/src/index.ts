@@ -80,17 +80,14 @@ export function createResizer(
 ): ResizerFactory {
   const bridge = createBridge(mode);
 
-  const resizer = (
-    imageData: ImageInput,
-    options: ResizeOptions,
-    signal?: AbortSignal
-  ) => {
-    return bridge.resize(imageData, options, signal);
-  };
-
-  resizer.terminate = async () => {
-    await bridge.terminate();
-  };
-
-  return resizer as ResizerFactory;
+  return Object.assign(
+    (imageData: ImageInput, options: ResizeOptions, signal?: AbortSignal) => {
+      return bridge.resize(imageData, options, signal);
+    },
+    {
+      terminate: async () => {
+        await bridge.terminate();
+      },
+    }
+  );
 }

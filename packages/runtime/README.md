@@ -1,10 +1,17 @@
 # @squoosh-kit/runtime
 
-**The engine that makes Squoosh Kit tick**
+![Squoosh Kit](https://raw.githubusercontent.com/bnowak008/squoosh-kit/main/squoosh-kit-banner.webp)
 
-This package provides the foundational runtime utilities that power all Squoosh Kit functionality. It handles the complex orchestration between your main application thread and the high-performance WebAssembly workers that do the actual image processing.
+[![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fwebp.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fwebp)
 
-While most users won't interact with this package directly (it's consumed internally by the other Squoosh Kit packages), it contains the clever bits that make everything work smoothly across different JavaScript environments.
+## Squoosh Kit
+Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package facilitates the creation of the worker in the correct runtime.
+
+**Directly from the Source**
+We don't modify the core WebP codec. The WebAssembly (`.wasm`) binary is taken directly from the official Squoosh repository builds. This means you get the exact same performance, quality, and reliability you'd expect from Squoosh.
+
+**A Thin, Modern Wrapper**
+Our goal is to provide a minimal, modern JavaScript wrapper around the codec. We handle the tricky parts—like loading WASM, managing web workers, and providing a clean, type-safe API—so you can focus on your application. The library is designed to be a thin bridge, not a heavy framework.
 
 ## What's Inside
 
@@ -25,15 +32,6 @@ While most users won't interact with this package directly (it's consumed intern
 - Type-safe request/response messaging
 - Built-in error handling and recovery
 - Support for operation cancellation and progress tracking
-
-## How It Works
-
-When you call a function like `encode()` or `resize()`, this runtime package:
-
-1. **Chooses the right execution mode** - Web Worker for UI responsiveness or direct execution for maximum speed
-2. **Manages the worker lifecycle** - Spins up workers when needed, reuses them efficiently
-3. **Handles the heavy lifting** - Coordinates between your code and the WebAssembly codecs
-4. **Keeps things responsive** - Ensures your main thread stays free for user interactions
 
 ## For Developers
 
