@@ -51,7 +51,8 @@
   "files": [
     "dist/**",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "../../squoosh-kit-banner.webp"
   ],
   "sideEffects": false,
   "scripts": {
