@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fcore.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fcore)
 
-![Squoosh Kit](https://github.com/user-attachments/assets/05ee874f-4f53-4070-9383-77bb083b5d2d)
+![Squoosh Kit](./squoosh-kit-banner.webp)
 
 ## Squoosh Kit
 
