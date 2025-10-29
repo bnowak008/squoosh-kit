@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/resize",
-  "version": "0.0.21",
+  "version": "0.0.20",
   "type": "module",
   "description": "Image resize module for squoosh-kit.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -35,8 +35,7 @@
   },
   "files": [
     "dist/**",
-    "README.md",
-    "squoosh-kit-banner.webp"
+    "README.md"
   ],
   "sideEffects": false,
   "scripts": {

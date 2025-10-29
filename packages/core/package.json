@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/core",
-  "version": "0.0.21",
+  "version": "0.0.20",
   "type": "module",
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -51,8 +51,7 @@
   "files": [
     "dist/**",
     "README.md",
-    "LICENSE",
-    "squoosh-kit-banner.webp"
+    "LICENSE"
   ],
   "sideEffects": false,
   "scripts": {

@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-Apache%202-blue)](https://opensource.org/license/apache-2-0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-<img width="2560" height="688" alt="image" src="https://github.com/user-attachments/assets/05ee874f-4f53-4070-9383-77bb083b5d2d" />
+![Alt](./squoosh-kit-banner.webp)
 
 **High-performance image processing for modern JavaScript applications**
 
