@@ -85,38 +85,48 @@ export function createCodecWorker(workerFilename: string): Worker {
       );
     }
 
-    // Node.js/Bun: prefer import.meta.resolve to package export
-    if (typeof import.meta.resolve === 'function') {
-      try {
-        const resolved = import.meta.resolve(
-          `${workerConfig.package}/${workerConfig.specifier}`
-        );
-        return new Worker(resolved, { type: 'module' });
-      } catch {
-        // Continue to fallbacks below
-      }
-    }
-
     // Fallbacks for monorepo/dev without build artifacts
-    // 1) Try dist output (if already built)
     const platformExt = isBun() ? '.bun.js' : '.node.mjs';
     const baseName = normalizedName.replace('.js', '');
-    const distRelPath = workerConfig.package.includes('resize')
-      ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
-      : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+
+    // 1) Try TypeScript source first (Bun can transpile TS, works in dev)
+    const srcRelPath = workerConfig.package.includes('resize')
+      ? `../../resize/src/${baseName}.ts`
+      : `../../webp/src/${baseName}.ts`;
     try {
-      return new Worker(new URL(distRelPath, import.meta.url), {
-        type: 'module',
-      });
-    } catch {
-      // 2) Try TypeScript source directly (Bun can transpile TS)
-      const srcRelPath = workerConfig.package.includes('resize')
-        ? `../../resize/src/${baseName}.ts`
-        : `../../webp/src/${baseName}.ts`;
       return new Worker(new URL(srcRelPath, import.meta.url), {
         type: 'module',
       });
+    } catch {
+      // 2) Try dist output (if already built)
+      const distRelPath = workerConfig.package.includes('resize')
+        ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
+        : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+      try {
+        return new Worker(new URL(distRelPath, import.meta.url), {
+          type: 'module',
+        });
+      } catch {
+        // 3) Try import.meta.resolve as last resort
+        if (typeof import.meta.resolve === 'function') {
+          try {
+            const resolved = import.meta.resolve(
+              `${workerConfig.package}/${workerConfig.specifier}`
+            );
+            return new Worker(resolved, { type: 'module' });
+          } catch {
+            // Continue to error below
+          }
+        }
+      }
     }
+
+    // If we get here, all fallbacks failed
+    throw new Error(
+      `Failed to create worker from ${normalizedName}. ` +
+        `Tried TypeScript source, dist output, and import.meta.resolve. ` +
+        `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed.`
+    );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
