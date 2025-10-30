@@ -175,7 +175,11 @@ export function createReadyWorker(
       worker.removeEventListener('message', handleMessage);
       worker.removeEventListener('error', handleError);
       worker.removeEventListener('messageerror', handleMessageError);
-      reject(new Error(`Worker message error during initialization. Worker file: ${workerFilename}`));
+      reject(
+        new Error(
+          `Worker message error during initialization. Worker file: ${workerFilename}`
+        )
+      );
     };
 
     worker.addEventListener('message', handleMessage);
