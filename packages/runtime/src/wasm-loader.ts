@@ -13,8 +13,16 @@ export async function loadWasmBinary(
     // Strategy 1: Try Node.js fs first (most reliable)
     if (typeof process !== 'undefined' && process.versions?.node) {
       const fsModule = await import(/* @vite-ignore */ 'fs/promises');
-      const fileUrl = new URL(relativePath, import.meta.url);
-      const filePath = fileUrl.pathname;
+      // If caller provided an absolute URL, respect it; otherwise resolve relative to this module
+      const isAbsoluteUrl = /^(file:|https?:)/.test(relativePath);
+      const fileUrl = isAbsoluteUrl
+        ? new URL(relativePath)
+        : new URL(relativePath, import.meta.url);
+      // Node fs expects a file path; convert only for file: URLs
+      const filePath =
+        fileUrl.protocol === 'file:'
+          ? (await import('url')).fileURLToPath(fileUrl)
+          : fileUrl.pathname;
       const buffer = await fsModule.readFile(filePath);
 
       return buffer.buffer.slice(
@@ -29,7 +37,9 @@ export async function loadWasmBinary(
 
   // Strategy 2: Fallback to fetch (works in browsers and workers)
   try {
-    const url = new URL(/* @vite-ignore */ relativePath, import.meta.url);
+    const url = /^(file:|https?:)/.test(relativePath)
+      ? new URL(/* @vite-ignore */ relativePath)
+      : new URL(/* @vite-ignore */ relativePath, import.meta.url);
     const response = await fetch(url);
 
     if (!response.ok) {

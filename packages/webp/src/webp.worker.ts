@@ -101,7 +101,10 @@ async function loadWebPModule(): Promise<WebPModule> {
               noInitialRun: boolean;
               wasmBinary?: ArrayBuffer;
             }) => Promise<WebPModule>,
-            /* @vite-ignore */ './wasm/webp/webp_enc_simd.wasm'
+            /* @vite-ignore */ new URL(
+              '../wasm/webp/webp_enc_simd.wasm',
+              import.meta.url
+            ).href
           );
           if (cachedModule) {
             return cachedModule;
@@ -123,7 +126,10 @@ async function loadWebPModule(): Promise<WebPModule> {
           noInitialRun: boolean;
           wasmBinary?: ArrayBuffer;
         }) => Promise<WebPModule>,
-        /* @vite-ignore */ './wasm/webp/webp_enc.wasm'
+        /* @vite-ignore */ new URL(
+          '../wasm/webp/webp_enc.wasm',
+          import.meta.url
+        ).href
       );
 
       if (!cachedModule) {
