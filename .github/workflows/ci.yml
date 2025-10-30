@@ -41,7 +41,7 @@ jobs:
         run: bun run test
 
       - name: Build
-        run: bun run build
+        run: bun run ci:build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5
