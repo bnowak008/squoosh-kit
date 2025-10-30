@@ -43,12 +43,12 @@ jobs:
       - name: Build
         run: bun run ci:build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v5
-        with:
-          name: dist
-          path: packages/core/dist/
-          retention-days: 1
+      # - name: Upload build artifacts
+      #   uses: actions/upload-artifact@v5
+      #   with:
+      #     name: dist
+      #     path: packages/core/dist/
+      #     retention-days: 1
 
   security:
     name: Security Audit

@@ -29,11 +29,3 @@ jobs:
 
       - name: Test
         run: bun run test
-
-      - name: Semantic Release
-        run: |
-          bun add -D semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/npm
-          bun run semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
