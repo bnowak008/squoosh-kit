@@ -103,12 +103,7 @@ const encoder = createWebpEncoder('worker'); // ❌ WASM files missing
 
 ### Future Plans
 
-For v1.0+, we may offer separate packages:
-
-- `@squoosh-kit/resize-core` (client mode only, ~10KB)
-- `@squoosh-kit/resize` (with WASM, ~50KB)
-
-This would give users the choice without manual file removal.
+For v1.0, we will have all functionality and codecs available
 
 ## Learn More
 
@@ -148,26 +143,6 @@ For Webpack, Rollup, or other bundlers, ensure that:
 1. ES module imports are supported
 2. `import.meta.url` is preserved
 3. The `node_modules` directory is accessible at runtime
-
-## Production Readiness
-
-✅ **All 13 critical production readiness issues have been resolved:**
-
-- ✅ API Parameter Order Consistency - Stable API across all packages
-- ✅ Worker Path Resolution - Reliable worker initialization
-- ✅ AbortSignal Handling - Proper cancellation support
-- ✅ ImageData Copy Performance - Zero-copy Uint8Array views
-- ✅ Worker Memory Leaks - Proper cleanup and resource management
-- ✅ Lanczos3 vs Triangular - Flexible resize algorithms with honest documentation
-- ✅ WASM Module Loading - Robust codec loading with fallbacks
-- ✅ Input Validation - Comprehensive validation with clear error messages
-- ✅ Unsafe Type Casts - Eliminated `as ArrayBuffer` casts with proper type checking
-- ✅ Parameter Order Between Functions - Consistent parameter ordering
-- ✅ WASM Binary Bundling - Clear documentation and optimization paths
-- ✅ Edge Cases in Resize Logic - Safe dimension calculations
-- ✅ Internal Exports - Clean public API surface
-
-See [Production Readiness Issues](/.cursor/todos/issues/README.md) for detailed information on each resolution.
 
 ## Development
 
