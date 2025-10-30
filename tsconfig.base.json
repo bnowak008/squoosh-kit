@@ -14,5 +14,6 @@
     "paths": {
       "@squoosh-kit/*": ["packages/*/src"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "wasm", ".squoosh-temp"]
 }

@@ -85,26 +85,48 @@ export function createCodecWorker(workerFilename: string): Worker {
       );
     }
 
-    // Node.js/Bun: use import.meta.resolve if available
-    if (typeof import.meta.resolve === 'function') {
+    // Fallbacks for monorepo/dev without build artifacts
+    const platformExt = isBun() ? '.bun.js' : '.node.mjs';
+    const baseName = normalizedName.replace('.js', '');
+
+    // 1) Try TypeScript source first (Bun can transpile TS, works in dev)
+    const srcRelPath = workerConfig.package.includes('resize')
+      ? `../../resize/src/${baseName}.ts`
+      : `../../webp/src/${baseName}.ts`;
+    try {
+      return new Worker(new URL(srcRelPath, import.meta.url), {
+        type: 'module',
+      });
+    } catch {
+      // 2) Try dist output (if already built)
+      const distRelPath = workerConfig.package.includes('resize')
+        ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
+        : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
       try {
-        const resolved = import.meta.resolve(
-          `${workerConfig.package}/${workerConfig.specifier}`
-        );
-        return new Worker(resolved, { type: 'module' });
+        return new Worker(new URL(distRelPath, import.meta.url), {
+          type: 'module',
+        });
       } catch {
-        // Fallback if resolve fails - use relative path as last resort
+        // 3) Try import.meta.resolve as last resort
+        if (typeof import.meta.resolve === 'function') {
+          try {
+            const resolved = import.meta.resolve(
+              `${workerConfig.package}/${workerConfig.specifier}`
+            );
+            return new Worker(resolved, { type: 'module' });
+          } catch {
+            // Continue to error below
+          }
+        }
       }
     }
 
-    // Fallback for Bun: use relative path from this file's location
-    const platformExt = isBun() ? '.bun.js' : '.node.mjs';
-    const baseName = normalizedName.replace('.js', '');
-    const relPath = workerConfig.package.includes('resize')
-      ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
-      : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
-
-    return new Worker(new URL(relPath, import.meta.url), { type: 'module' });
+    // If we get here, all fallbacks failed
+    throw new Error(
+      `Failed to create worker from ${normalizedName}. ` +
+        `Tried TypeScript source, dist output, and import.meta.resolve. ` +
+        `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed.`
+    );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
@@ -152,11 +174,39 @@ export function createReadyWorker(
       if (event.data?.type === 'worker:ready') {
         clearTimeout(timeout);
         worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        worker.removeEventListener('messageerror', handleMessageError);
         resolve(worker);
       }
     };
 
+    const handleError = (event: ErrorEvent) => {
+      clearTimeout(timeout);
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      worker.removeEventListener('messageerror', handleMessageError);
+      reject(
+        new Error(
+          `Worker failed to start: ${event?.message || 'Unknown error'}. Worker file: ${workerFilename}`
+        )
+      );
+    };
+
+    const handleMessageError = () => {
+      clearTimeout(timeout);
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      worker.removeEventListener('messageerror', handleMessageError);
+      reject(
+        new Error(
+          `Worker message error during initialization. Worker file: ${workerFilename}`
+        )
+      );
+    };
+
     worker.addEventListener('message', handleMessage);
+    worker.addEventListener('error', handleError);
+    worker.addEventListener('messageerror', handleMessageError);
     worker.postMessage({ type: 'worker:ping' });
   });
 }

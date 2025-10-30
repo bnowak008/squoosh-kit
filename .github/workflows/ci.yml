@@ -10,7 +10,6 @@ on:
 
 env:
   NODE_VERSION: '20'
-  BUN_VERSION: '1.1.0'
 
 jobs:
   test:
@@ -19,15 +18,15 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
-          bun-version: ${{ env.BUN_VERSION }}
+          bun-version: latest
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --linker=hoisted
 
       - name: Type check
         run: bun run check-types
@@ -42,14 +41,14 @@ jobs:
         run: bun run test
 
       - name: Build
-        run: bun run build
+        run: bun run ci:build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: packages/core/dist/
-          retention-days: 1
+      # - name: Upload build artifacts
+      #   uses: actions/upload-artifact@v5
+      #   with:
+      #     name: dist
+      #     path: packages/core/dist/
+      #     retention-days: 1
 
   security:
     name: Security Audit
@@ -57,73 +56,73 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
-          bun-version: ${{ env.BUN_VERSION }}
+          bun-version: latest
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --linker=hoisted
 
       - name: Security audit
         run: bun audit
 
-  publish:
-    name: Publish to NPM
-    runs-on: ubuntu-latest
-    needs: [test, security]
-    if: github.event_name == 'release' && github.event.action == 'published'
+  # publish:
+  #   name: Publish to NPM
+  #   runs-on: ubuntu-latest
+  #   needs: [test, security]
+  #   if: github.event_name == 'release' && github.event.action == 'published'
     
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v5
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
+  #     - name: Setup Bun
+  #       uses: oven-sh/setup-bun@v2
+  #       with:
+  #         bun-version: latest
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+  #     - name: Install dependencies
+  #       run: bun install --frozen-lockfile --linker=hoisted
 
-      - name: Build
-        run: bun run build
+  #     - name: Build
+  #       run: bun run build
 
-      - name: Publish to NPM
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: Publish to NPM
+  #       run: bun run release:publish
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    needs: [publish]
-    if: github.event_name == 'release' && github.event.action == 'published'
+  # release:
+  #   name: Create Release
+  #   runs-on: ubuntu-latest
+  #   needs: [publish]
+  #   if: github.event_name == 'release' && github.event.action == 'published'
     
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v5
 
-      - name: Generate changelog
-        run: |
-          echo "## What's Changed" > CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          git log --oneline --no-merges ${{ github.event.release.tag_name }}^..HEAD >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ github.event.release.prerelease }}...${{ github.event.release.tag_name }}" >> CHANGELOG.md
+  #     - name: Generate changelog
+  #       run: |
+  #         echo "## What's Changed" > CHANGELOG.md
+  #         echo "" >> CHANGELOG.md
+  #         git log --oneline --no-merges ${{ github.event.release.tag_name }}^..HEAD >> CHANGELOG.md
+  #         echo "" >> CHANGELOG.md
+  #         echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ github.event.release.prerelease }}...${{ github.event.release.tag_name }}" >> CHANGELOG.md
 
-      - name: Update release notes
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+  #     - name: Update release notes
+  #       uses: actions/github-script@v8
+  #       with:
+  #         script: |
+  #           const fs = require('fs');
+  #           const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
             
-            github.rest.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: context.payload.release.id,
-              body: changelog
-            });
+  #           github.rest.repos.updateRelease({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             release_id: context.payload.release.id,
+  #             body: changelog
+  #           });

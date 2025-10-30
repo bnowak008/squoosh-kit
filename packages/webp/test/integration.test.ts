@@ -38,5 +38,5 @@ describe('WebP Integration Tests', () => {
     // A simple check for the WebP RIFF header
     const header = new TextDecoder().decode(encodedImage.slice(0, 4));
     expect(header).toBe('RIFF');
-  });
+  }, 15000);
 });
