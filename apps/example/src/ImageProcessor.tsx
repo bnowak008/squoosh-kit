@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { AnimatedCharacter } from './AnimatedCharacter';
-import { encode, resize, ImageInput } from '@squoosh-kit/core';
+import { type ImageInput } from '@squoosh-kit/core';
 
-type SquooshImageData = ImageInput['data'];
+export type SquooshImageData = ImageInput['data'];
 
 interface ProcessingState {
   status: 'idle' | 'thinking' | 'working' | 'success' | 'error';
