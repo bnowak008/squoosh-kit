@@ -8,8 +8,8 @@ import {
   type ImageInput,
   loadWasmBinary,
   validateImageInput,
-  validateResizeOptions,
 } from '@squoosh-kit/runtime';
+import { validateResizeOptions } from './validators';
 import type { ResizeOptions } from './types';
 import * as squoosh_resize_module from '../wasm/squoosh_resize';
 

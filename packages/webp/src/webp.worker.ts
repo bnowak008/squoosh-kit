@@ -8,9 +8,9 @@ import {
   type ImageInput,
   loadWasmBinary,
   validateImageInput,
-  validateWebpOptions,
   detectSimd,
 } from '@squoosh-kit/runtime';
+import { validateWebpOptions } from './validators';
 import webp_enc, { type WebPModule } from '../wasm/webp/webp_enc';
 import type { EncodeInputOptions, EncodeOptions } from './types';
 
