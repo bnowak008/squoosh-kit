@@ -16,11 +16,13 @@ export async function loadWasmBinary(
       const fileUrl = new URL(relativePath, import.meta.url);
       const filePath = fileUrl.pathname;
       const buffer = await fsModule.readFile(filePath);
+
       return buffer.buffer.slice(
         buffer.byteOffset,
         buffer.byteOffset + buffer.byteLength
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // Fall through to fetch strategy
   }
@@ -29,11 +31,13 @@ export async function loadWasmBinary(
   try {
     const url = new URL(/* @vite-ignore */ relativePath, import.meta.url);
     const response = await fetch(url);
+
     if (!response.ok) {
       throw new Error(
         `Failed to fetch WASM binary: ${response.status} ${response.statusText}`
       );
     }
+
     return await response.arrayBuffer();
   } catch (error) {
     throw new Error(
@@ -55,6 +59,8 @@ export async function loadWasmModule(
   // Strategy 1: Try direct static import
   try {
     return await import(/* @vite-ignore */ modulePath);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e1) {
     // Continue to next strategy
   }
@@ -62,7 +68,10 @@ export async function loadWasmModule(
   // Strategy 2: Try import.meta.resolve (Node.js 22+)
   try {
     const resolvedPath = await import.meta.resolve(modulePath);
+
     return await import(/* @vite-ignore */ resolvedPath);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e2) {
     // Continue to next strategy
   }
@@ -70,7 +79,10 @@ export async function loadWasmModule(
   // Strategy 3: Try URL-based import
   try {
     const url = new URL(/* @vite-ignore */ modulePath, import.meta.url);
+
     return await import(/* @vite-ignore */ url.href);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e3) {
     throw new Error(
       `Failed to load WASM module from "${modulePath}". ` +
