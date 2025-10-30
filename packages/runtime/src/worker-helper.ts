@@ -152,11 +152,35 @@ export function createReadyWorker(
       if (event.data?.type === 'worker:ready') {
         clearTimeout(timeout);
         worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        worker.removeEventListener('messageerror', handleMessageError);
         resolve(worker);
       }
     };
 
+    const handleError = (event: ErrorEvent) => {
+      clearTimeout(timeout);
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      worker.removeEventListener('messageerror', handleMessageError);
+      reject(
+        new Error(
+          `Worker failed to start: ${event?.message || 'Unknown error'}. Worker file: ${workerFilename}`
+        )
+      );
+    };
+
+    const handleMessageError = () => {
+      clearTimeout(timeout);
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      worker.removeEventListener('messageerror', handleMessageError);
+      reject(new Error(`Worker message error during initialization. Worker file: ${workerFilename}`));
+    };
+
     worker.addEventListener('message', handleMessage);
+    worker.addEventListener('error', handleError);
+    worker.addEventListener('messageerror', handleMessageError);
     worker.postMessage({ type: 'worker:ping' });
   });
 }
