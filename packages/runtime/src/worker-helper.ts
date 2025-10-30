@@ -85,7 +85,7 @@ export function createCodecWorker(workerFilename: string): Worker {
       );
     }
 
-    // Node.js/Bun: use import.meta.resolve if available
+    // Node.js/Bun: prefer import.meta.resolve to package export
     if (typeof import.meta.resolve === 'function') {
       try {
         const resolved = import.meta.resolve(
@@ -93,18 +93,30 @@ export function createCodecWorker(workerFilename: string): Worker {
         );
         return new Worker(resolved, { type: 'module' });
       } catch {
-        // Fallback if resolve fails - use relative path as last resort
+        // Continue to fallbacks below
       }
     }
 
-    // Fallback for Bun: use relative path from this file's location
+    // Fallbacks for monorepo/dev without build artifacts
+    // 1) Try dist output (if already built)
     const platformExt = isBun() ? '.bun.js' : '.node.mjs';
     const baseName = normalizedName.replace('.js', '');
-    const relPath = workerConfig.package.includes('resize')
+    const distRelPath = workerConfig.package.includes('resize')
       ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
       : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
-
-    return new Worker(new URL(relPath, import.meta.url), { type: 'module' });
+    try {
+      return new Worker(new URL(distRelPath, import.meta.url), {
+        type: 'module',
+      });
+    } catch {
+      // 2) Try TypeScript source directly (Bun can transpile TS)
+      const srcRelPath = workerConfig.package.includes('resize')
+        ? `../../resize/src/${baseName}.ts`
+        : `../../webp/src/${baseName}.ts`;
+      return new Worker(new URL(srcRelPath, import.meta.url), {
+        type: 'module',
+      });
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
