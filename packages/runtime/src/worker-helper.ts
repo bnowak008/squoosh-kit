@@ -34,6 +34,18 @@ export function createCodecWorker(workerFilename: string): Worker {
       package: '@squoosh-kit/webp',
       specifier: 'webp.worker.js',
     },
+    'avif.worker.js': {
+      package: '@squoosh-kit/avif',
+      specifier: 'avif.worker.js',
+    },
+    'mozjpeg.worker.js': {
+      package: '@squoosh-kit/mozjpeg',
+      specifier: 'mozjpeg.worker.js',
+    },
+    'jxl.worker.js': {
+      package: '@squoosh-kit/jxl',
+      specifier: 'jxl.worker.js',
+    },
   };
 
   const workerConfig = workerMap[normalizedName];
@@ -51,10 +63,14 @@ export function createCodecWorker(workerFilename: string): Worker {
       const workerFile = normalizedName.replace('.js', '.browser.mjs');
 
       // Try multiple path strategies to support both:
-      // 1. Monorepo development structure: ../../{package}/dist/{workerFile}
-      // 2. npm installed structure: ../../../{package}/dist/{workerFile}
+      // 1. Root-relative paths for served applications (e.g., /webp/dist/)
+      // 2. Monorepo development structure: ../../{package}/dist/{workerFile}
+      // 3. npm installed structure: ../../../node_modules/@squoosh-kit/{package}/dist/{workerFile}
+      // 4. Alternative npm structure for cases where packages are flattened
       const pathStrategies = [
-        // First try monorepo structure (when runtime is at packages/runtime/src)
+        // First try root-relative paths for served applications
+        `/${packageName}/dist/${workerFile}`,
+        // Then try monorepo structure (when runtime is at packages/runtime/src)
         `../../${packageName}/dist/${workerFile}`,
         // Then try npm structure (when runtime is at node_modules/@squoosh-kit/runtime)
         `../../../node_modules/@squoosh-kit/${packageName}/dist/${workerFile}`,
@@ -90,34 +106,62 @@ export function createCodecWorker(workerFilename: string): Worker {
     const baseName = normalizedName.replace('.js', '');
 
     // 1) Try TypeScript source first (Bun can transpile TS, works in dev)
-    const srcRelPath = workerConfig.package.includes('resize')
-      ? `../../resize/src/${baseName}.ts`
-      : `../../webp/src/${baseName}.ts`;
-    try {
-      return new Worker(new URL(srcRelPath, import.meta.url), {
-        type: 'module',
-      });
-    } catch {
-      // 2) Try dist output (if already built)
-      const distRelPath = workerConfig.package.includes('resize')
-        ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
-        : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+    let srcRelPath = '';
+    if (workerConfig.package.includes('resize')) {
+      srcRelPath = `../../resize/src/${baseName}.ts`;
+    } else if (workerConfig.package.includes('webp')) {
+      srcRelPath = `../../webp/src/${baseName}.ts`;
+    } else if (workerConfig.package.includes('avif')) {
+      srcRelPath = `../../avif/src/${baseName}.ts`;
+    } else if (workerConfig.package.includes('mozjpeg')) {
+      srcRelPath = `../../mozjpeg/src/${baseName}.ts`;
+    } else if (workerConfig.package.includes('jxl')) {
+      srcRelPath = `../../jxl/src/${baseName}.ts`;
+    }
+
+    if (srcRelPath) {
+      try {
+        return new Worker(new URL(srcRelPath, import.meta.url), {
+          type: 'module',
+        });
+      } catch {
+        // Continue to next fallback
+      }
+    }
+
+    // 2) Try dist output (if already built)
+    let distRelPath = '';
+    if (workerConfig.package.includes('resize')) {
+      distRelPath = `../../resize/dist/${baseName}.${platformExt.slice(1)}`;
+    } else if (workerConfig.package.includes('webp')) {
+      distRelPath = `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+    } else if (workerConfig.package.includes('avif')) {
+      distRelPath = `../../avif/dist/${baseName}.${platformExt.slice(1)}`;
+    } else if (workerConfig.package.includes('mozjpeg')) {
+      distRelPath = `../../mozjpeg/dist/${baseName}.${platformExt.slice(1)}`;
+    } else if (workerConfig.package.includes('jxl')) {
+      distRelPath = `../../jxl/dist/${baseName}.${platformExt.slice(1)}`;
+    }
+
+    if (distRelPath) {
       try {
         return new Worker(new URL(distRelPath, import.meta.url), {
           type: 'module',
         });
       } catch {
-        // 3) Try import.meta.resolve as last resort
-        if (typeof import.meta.resolve === 'function') {
-          try {
-            const resolved = import.meta.resolve(
-              `${workerConfig.package}/${workerConfig.specifier}`
-            );
-            return new Worker(resolved, { type: 'module' });
-          } catch {
-            // Continue to error below
-          }
-        }
+        // Continue to next fallback
+      }
+    }
+
+    // 3) Try import.meta.resolve as last resort
+    if (typeof import.meta.resolve === 'function') {
+      try {
+        const resolved = import.meta.resolve(
+          `${workerConfig.package}/${workerConfig.specifier}`
+        );
+        return new Worker(resolved, { type: 'module' });
+      } catch {
+        // Continue to error below
       }
     }
 

@@ -212,3 +212,59 @@ This distinction is critical for defining the correct types in `src/types.ts` an
 - [ ] **Update Root `README.md`**: Add the new packages to the list of available modules.
 - [ ] **Update Example App**: Add examples for the new codecs to `apps/example/src/ImageProcessor.tsx` to provide a live demonstration.
 - [ ] **Review `@squoosh-kit/runtime`**: Ensure the runtime's utilities are generic enough for all codec operations (encode, decode, optimize).
+
+### 5.1. Detailed Review of `@squoosh-kit/runtime`
+
+To support `decode` and `optimize` operations, the `@squoosh-kit/runtime` package requires the following enhancements to its shared utilities:
+
+- **[ ] `packages/runtime/src/types.ts`**: Add a type alias for buffer inputs to standardize the API for decoders and optimizers.
+
+  ```typescript
+  /**
+   * Represents a buffer that can be processed by squoosh-kit decoders and optimizers.
+   * It is an alias for the built-in BufferSource type.
+   */
+  export type InputBuffer = BufferSource;
+  ```
+
+- **[ ] `packages/runtime/src/validators.ts`**: Add a new validation function for `InputBuffer` to ensure that decoders and optimizers receive valid, non-shared buffers.
+
+  ```typescript
+  export function validateBufferSource(
+    buffer: unknown
+  ): asserts buffer is BufferSource {
+    if (!buffer) {
+      throw new TypeError('Input buffer is required');
+    }
+
+    if (ArrayBuffer.isView(buffer)) {
+      validateArrayBuffer(buffer.buffer);
+    } else if (buffer instanceof ArrayBuffer) {
+      validateArrayBuffer(buffer);
+    } else {
+      throw new TypeError(
+        'Input must be an ArrayBuffer or a view (e.g., Uint8Array)'
+      );
+    }
+  }
+  ```
+
+- **[ ] `packages/runtime/src/worker-helper.ts`**: The `workerMap` inside the `createCodecWorker` function acts as a registry for all codec workers. For each new codec package, this map must be updated with a new entry.
+
+  _Example entry for the AVIF codec:_
+
+  ```typescript
+  const workerMap: Record<string, { package: string; specifier: string }> = {
+    'resize.worker.js': {
+      /* ... */
+    },
+    'webp.worker.js': {
+      /* ... */
+    },
+    'avif.worker.js': {
+      package: '@squoosh-kit/avif',
+      specifier: 'avif.worker.js',
+    },
+    // ... other codecs
+  };
+  ```

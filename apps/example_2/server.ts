@@ -28,10 +28,6 @@ const server = Bun.serve({
       console.log(`/dist/features/webp/: ${filePath}`);
       const filename = filePath.replace('/dist/features/webp/', '');
       filePath = path.join(projectRoot, 'packages/webp/dist', filename);
-    } else if (filePath.startsWith('/dist/features/resize/')) {
-      console.log(`/dist/features/resize/: ${filePath}`);
-      const filename = filePath.replace('/dist/features/resize/', '');
-      filePath = path.join(projectRoot, 'packages/resize/dist', filename);
     } else if (filePath.startsWith('/webp/dist/')) {
       console.log(`/webp/dist/: ${filePath}`);
       const filename = filePath.replace('/webp/dist/', '');
@@ -39,6 +35,22 @@ const server = Bun.serve({
     } else if (filePath.startsWith('/resize/dist/')) {
       console.log(`/resize/dist/: ${filePath}`);
       const filename = filePath.replace('/resize/dist/', '');
+      filePath = path.join(projectRoot, 'packages/resize/dist', filename);
+    } else if (filePath.startsWith('/avif/dist/')) {
+      console.log(`/avif/dist/: ${filePath}`);
+      const filename = filePath.replace('/avif/dist/', '');
+      filePath = path.join(projectRoot, 'packages/avif/dist', filename);
+    } else if (filePath.startsWith('/mozjpeg/dist/')) {
+      console.log(`/mozjpeg/dist/: ${filePath}`);
+      const filename = filePath.replace('/mozjpeg/dist/', '');
+      filePath = path.join(projectRoot, 'packages/mozjpeg/dist', filename);
+    } else if (filePath.startsWith('/jxl/dist/')) {
+      console.log(`/jxl/dist/: ${filePath}`);
+      const filename = filePath.replace('/jxl/dist/', '');
+      filePath = path.join(projectRoot, 'packages/jxl/dist', filename);
+    } else if (filePath.startsWith('/dist/features/resize/')) {
+      console.log(`/dist/features/resize/: ${filePath}`);
+      const filename = filePath.replace('/dist/features/resize/', '');
       filePath = path.join(projectRoot, 'packages/resize/dist', filename);
     } else if (filePath.startsWith('/dist/features/wasm/')) {
       console.log(`/dist/features/wasm/: ${filePath}`);
@@ -85,6 +97,21 @@ const server = Bun.serve({
         filename.startsWith('webp-dec/')
       ) {
         filePath = path.join(projectRoot, 'packages/webp/dist/wasm', filename);
+      } else if (
+        filename.startsWith('avif/') ||
+        filename.startsWith('avif-dec/')
+      ) {
+        filePath = path.join(projectRoot, 'packages/avif/dist/wasm', filename);
+      } else if (
+        filename.startsWith('mozjpeg/') ||
+        filename.startsWith('mozjpeg-dec/')
+      ) {
+        filePath = path.join(projectRoot, 'packages/mozjpeg/dist/wasm', filename);
+      } else if (
+        filename.startsWith('jxl/') ||
+        filename.startsWith('jxl-dec/')
+      ) {
+        filePath = path.join(projectRoot, 'packages/jxl/dist/wasm', filename);
       } else if (
         filename.includes('webp') ||
         filename.includes('enc') ||

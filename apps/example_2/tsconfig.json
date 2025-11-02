@@ -23,7 +23,10 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@squoosh-kit/avif": ["../../packages/avif/src"],
+      "@squoosh-kit/mozjpeg": ["../../packages/mozjpeg/src"],
+      "@squoosh-kit/jxl": ["../../packages/jxl/src"],
     },
 
     // Some stricter flags (disabled by default)
@@ -31,6 +34,12 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
   },
-  "references": [{ "path": "../../packages/core" }],
+  "references": [
+    { "path": "../../packages/core" },
+    { "path": "../../packages/avif" },
+    { "path": "../../packages/mozjpeg" },
+    { "path": "../../packages/jxl" },
+  ],
+  "include": ["src", "build.ts", "index.html"],
   "exclude": ["dist", "node_modules"]
 }

@@ -317,9 +317,12 @@
     <script async type="module">
       // Import from core package (which re-exports webp and resize)
       import {
+        encode,
         createWebpEncoder,
         createResizer,
       } from '/dist/index.browser.mjs';
+
+      // import { createAvifEncoder } from '/dist_2/index.browser.mjs';
 
       // DOM elements
       const fileInput = document.getElementById('fileInput');
@@ -433,6 +436,7 @@
           // Create instances with the selected mode
           const resizer = createResizer(mode);
           const encoder = createWebpEncoder(mode);
+          // const avifEncoder = createAvifEncoder(mode);
 
           // Load image data
           const img = await loadImage(currentFile);

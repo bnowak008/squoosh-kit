@@ -1,0 +1,50 @@
+{
+  "name": "@squoosh-kit/avif",
+  "version": "0.0.26",
+  "type": "module",
+  "description": "AVIF codec for squoosh-kit, providing encoding and decoding functionality.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/avif"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/avif#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.mjs",
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs"
+    },
+    "./avif.worker.js": {
+      "types": "./dist/avif.worker.d.ts",
+      "browser": "./dist/avif.worker.browser.mjs",
+      "bun": "./dist/avif.worker.bun.js",
+      "import": "./dist/avif.worker.node.mjs",
+      "require": "./dist/avif.worker.node.cjs"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun run build.ts",
+    "clean:local": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
+    "prepack": "bun run build && bun test",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@squoosh-kit/runtime": "workspace:*"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/validators.ts"],
+  "sourcesContent": [
+    "import type { AvifEncodeInputOptions } from './types';\n\nexport function validateAvifEncodeOptions(\n  options: unknown\n): asserts options is AvifEncodeInputOptions {\n  if (options !== undefined && typeof options !== 'object') {\n    throw new TypeError('AVIF encode options must be an object');\n  }\n\n  if (!options) {\n    return;\n  }\n\n  const opts = options as Record<string, unknown>;\n\n  if (opts.quality !== undefined) {\n    if (typeof opts.quality !== 'number') {\n      throw new TypeError('quality must be a number');\n    }\n    if (opts.quality < 0 || opts.quality > 100) {\n      throw new RangeError('quality must be between 0 and 100');\n    }\n  }\n\n  if (opts.qualityAlpha !== undefined) {\n    if (typeof opts.qualityAlpha !== 'number') {\n      throw new TypeError('qualityAlpha must be a number');\n    }\n    if (opts.qualityAlpha < 0 || opts.qualityAlpha > 100) {\n      throw new RangeError('qualityAlpha must be between 0 and 100');\n    }\n  }\n\n  if (opts.speed !== undefined) {\n    if (typeof opts.speed !== 'number') {\n      throw new TypeError('speed must be a number');\n    }\n    if (opts.speed < 0 || opts.speed > 10) {\n      throw new RangeError('speed must be between 0 and 10');\n    }\n  }\n\n  if (opts.tune !== undefined) {\n    if (typeof opts.tune !== 'number') {\n      throw new TypeError('tune must be a number');\n    }\n  }\n}\n"
+  ],
+  "mappings": "4BAEO,SAAS,CAAyB,CACvC,EAC2C,CAC3C,GAAI,IAAY,QAAa,OAAO,IAAY,SAC9C,MAAU,UAAU,uCAAuC,EAG7D,GAAI,CAAC,EACH,OAGF,IAAM,EAAO,EAEb,GAAI,EAAK,UAAY,OAAW,CAC9B,GAAI,OAAO,EAAK,UAAY,SAC1B,MAAU,UAAU,0BAA0B,EAEhD,GAAI,EAAK,QAAU,GAAK,EAAK,QAAU,IACrC,MAAU,WAAW,mCAAmC,EAI5D,GAAI,EAAK,eAAiB,OAAW,CACnC,GAAI,OAAO,EAAK,eAAiB,SAC/B,MAAU,UAAU,+BAA+B,EAErD,GAAI,EAAK,aAAe,GAAK,EAAK,aAAe,IAC/C,MAAU,WAAW,wCAAwC,EAIjE,GAAI,EAAK,QAAU,OAAW,CAC5B,GAAI,OAAO,EAAK,QAAU,SACxB,MAAU,UAAU,wBAAwB,EAE9C,GAAI,EAAK,MAAQ,GAAK,EAAK,MAAQ,GACjC,MAAU,WAAW,gCAAgC,EAIzD,GAAI,EAAK,OAAS,QAChB,GAAI,OAAO,EAAK,OAAS,SACvB,MAAU,UAAU,uBAAuB",
+  "debugId": "470921D4D319718864756E2164756E21",
+  "names": []
+}

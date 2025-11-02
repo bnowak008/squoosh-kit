@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter @squoosh-kit/* --filter '!@squoosh-kit/{example_2, example, core, runtime}' build && bun --filter @squoosh-kit/core build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
     "lint": "eslint . --ext .ts",

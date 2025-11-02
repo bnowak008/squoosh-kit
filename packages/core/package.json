@@ -63,6 +63,9 @@
   },
   "dependencies": {
     "@squoosh-kit/webp": "workspace:*",
-    "@squoosh-kit/resize": "workspace:*"
+    "@squoosh-kit/resize": "workspace:*",
+    "@squoosh-kit/avif": "workspace:*",
+    "@squoosh-kit/mozjpeg": "workspace:*",
+    "@squoosh-kit/jxl": "workspace:*"
   }
 }

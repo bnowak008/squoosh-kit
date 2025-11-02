@@ -1,0 +1,2 @@
+[bundle]
+external = ["@squoosh-kit/runtime"]

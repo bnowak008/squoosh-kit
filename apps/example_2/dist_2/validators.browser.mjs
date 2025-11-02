@@ -1,0 +1,4 @@
+import"./chunk-bhj61bkd.js";function t(n){if(n!==void 0&&typeof n!=="object")throw TypeError("AVIF encode options must be an object");if(!n)return;let e=n;if(e.quality!==void 0){if(typeof e.quality!=="number")throw TypeError("quality must be a number");if(e.quality<0||e.quality>100)throw RangeError("quality must be between 0 and 100")}if(e.qualityAlpha!==void 0){if(typeof e.qualityAlpha!=="number")throw TypeError("qualityAlpha must be a number");if(e.qualityAlpha<0||e.qualityAlpha>100)throw RangeError("qualityAlpha must be between 0 and 100")}if(e.speed!==void 0){if(typeof e.speed!=="number")throw TypeError("speed must be a number");if(e.speed<0||e.speed>10)throw RangeError("speed must be between 0 and 10")}if(e.tune!==void 0){if(typeof e.tune!=="number")throw TypeError("tune must be a number")}}export{t as validateAvifEncodeOptions};
+export{t as c};
+
+//# debugId=470921D4D319718864756E2164756E21

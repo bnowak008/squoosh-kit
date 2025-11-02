@@ -10,6 +10,9 @@
   "references": [
     { "path": "../runtime" },
     { "path": "../webp" },
-    { "path": "../resize" }
+    { "path": "../resize" },
+    { "path": "../avif" },
+    { "path": "../mozjpeg" },
+    { "path": "../jxl" }
   ]
 }

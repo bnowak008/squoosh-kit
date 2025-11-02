@@ -34,19 +34,46 @@
     "apps/example_2": {
       "name": "@squoosh-kit/examples",
       "dependencies": {
+        "@squoosh-kit/avif": "workspace:*",
         "@squoosh-kit/core": "workspace:*",
+        "@squoosh-kit/jxl": "workspace:*",
+        "@squoosh-kit/mozjpeg": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5",
       },
     },
+    "packages/avif": {
+      "name": "@squoosh-kit/avif",
+      "version": "0.0.26",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
     "packages/core": {
       "name": "@squoosh-kit/core",
       "version": "0.0.26",
       "dependencies": {
+        "@squoosh-kit/avif": "workspace:*",
+        "@squoosh-kit/jxl": "workspace:*",
+        "@squoosh-kit/mozjpeg": "workspace:*",
         "@squoosh-kit/resize": "workspace:*",
         "@squoosh-kit/webp": "workspace:*",
+      },
+    },
+    "packages/jxl": {
+      "name": "@squoosh-kit/jxl",
+      "version": "0.0.26",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/mozjpeg": {
+      "name": "@squoosh-kit/mozjpeg",
+      "version": "0.0.26",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/resize": {
@@ -129,11 +156,17 @@
 
     "@oven/bun-windows-x64-baseline": ["@oven/bun-windows-x64-baseline@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-dcA+Kj7hGFrY3G8NWyYf3Lj3/GMViknpttWUf5pI6p6RphltZaoDu0lY5Lr71PkMdRZTwL2NnZopa/x/NWCdKA=="],
 
+    "@squoosh-kit/avif": ["@squoosh-kit/avif@workspace:packages/avif"],
+
     "@squoosh-kit/core": ["@squoosh-kit/core@workspace:packages/core"],
 
     "@squoosh-kit/example": ["@squoosh-kit/example@workspace:apps/example"],
 
     "@squoosh-kit/examples": ["@squoosh-kit/examples@workspace:apps/example_2"],
+
+    "@squoosh-kit/jxl": ["@squoosh-kit/jxl@workspace:packages/jxl"],
+
+    "@squoosh-kit/mozjpeg": ["@squoosh-kit/mozjpeg@workspace:packages/mozjpeg"],
 
     "@squoosh-kit/resize": ["@squoosh-kit/resize@workspace:packages/resize"],
 

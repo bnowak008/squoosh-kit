@@ -8,7 +8,10 @@
     "clean:local": "rm -rf dist bundle node_modules bun.lock bun.lockb *.tsbuildinfo && echo 'Cleaned examples app artifacts'"
   },
   "dependencies": {
-    "@squoosh-kit/core": "workspace:*"
+    "@squoosh-kit/core": "workspace:*",
+    "@squoosh-kit/avif": "workspace:*",
+    "@squoosh-kit/mozjpeg": "workspace:*",
+    "@squoosh-kit/jxl": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
