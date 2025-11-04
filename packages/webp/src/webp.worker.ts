@@ -94,7 +94,7 @@ async function loadWebPModule(): Promise<WebPModule> {
           // Try to load SIMD-optimized encoder dynamically
           // Import the precompiled SIMD module - it's a standalone Emscripten module factory
           const simdModuleFactory = await import(
-            /* @vite-ignore */ '../wasm/webp/webp_enc_simd.js'
+            /* @vite-ignore */ '../dist/wasm/webp/webp_enc_simd.js'
           );
           cachedModule = await initModuleWithBinary(
             simdModuleFactory.default as (config: {
@@ -102,7 +102,7 @@ async function loadWebPModule(): Promise<WebPModule> {
               wasmBinary?: ArrayBuffer;
             }) => Promise<WebPModule>,
             /* @vite-ignore */ new URL(
-              '../wasm/webp/webp_enc_simd.wasm',
+              '../dist/wasm/webp/webp_enc_simd.wasm',
               import.meta.url
             ).href
           );
@@ -127,7 +127,7 @@ async function loadWebPModule(): Promise<WebPModule> {
           wasmBinary?: ArrayBuffer;
         }) => Promise<WebPModule>,
         /* @vite-ignore */ new URL(
-          '../wasm/webp/webp_enc.wasm',
+          '../dist/wasm/webp/webp_enc.wasm',
           import.meta.url
         ).href
       );

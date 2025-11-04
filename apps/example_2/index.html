@@ -233,7 +233,7 @@
           <div class="options-title">WebP Options:</div>
           <label
             >Quality:
-            <input type="range" id="quality" min="1" max="100" value="85" />
+            <input type="range" id="quality" min="0" max="100" value="85" />
             <span id="qualityValue">85</span></label
           >
           <label><input type="checkbox" id="lossless" /> Lossless</label>
@@ -358,6 +358,8 @@
       let currentWebpData = null;
       let controller = null;
 
+      let originalAspectRatio = null;
+
       // Get current mode
       function getCurrentMode() {
         return document.querySelector('input[name="mode"]:checked').value;
@@ -389,6 +391,23 @@
         });
       });
 
+      // Handle aspect ratio locking
+      resizeWidthInput.addEventListener('change', () => {
+        if (originalAspectRatio && resizeWidthInput.value) {
+          const newWidth = parseInt(resizeWidthInput.value);
+          const newHeight = Math.round(newWidth / originalAspectRatio);
+          resizeHeightInput.value = newHeight;
+        }
+      });
+
+      resizeHeightInput.addEventListener('change', () => {
+        if (originalAspectRatio && resizeHeightInput.value) {
+          const newHeight = parseInt(resizeHeightInput.value);
+          const newWidth = Math.round(newHeight * originalAspectRatio);
+          resizeWidthInput.value = newWidth;
+        }
+      });
+
       // Handle file selection
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -407,6 +426,7 @@
               resizeWidthInput.value = naturalWidth;
               resizeHeightInput.value = naturalHeight;
               originalImage.onload = null; // Prevent re-triggering
+              originalAspectRatio = naturalWidth / naturalHeight;
             };
           };
           reader.readAsDataURL(file);
