@@ -8,6 +8,10 @@
 
 import { isBun } from './env';
 
+export type CreateWorkerOptions = {
+  assetPath?: string;
+};
+
 /**
  * Create a Web Worker for a specific codec
  *
@@ -18,7 +22,10 @@ import { isBun } from './env';
  * @returns Worker instance
  * @throws Error if worker creation fails with detailed error message
  */
-export function createCodecWorker(workerFilename: string): Worker {
+export function createCodecWorker(
+  workerFilename: string,
+  options?: CreateWorkerOptions
+): Worker {
   // Ensure filename has correct format
   const normalizedName = workerFilename.endsWith('.js')
     ? workerFilename
@@ -50,6 +57,47 @@ export function createCodecWorker(workerFilename: string): Worker {
       const packageName = workerConfig.package.split('/')[1]; // Extract 'resize' or 'webp'
       const workerFile = normalizedName.replace('.js', '.browser.mjs');
 
+      console.log(
+        `[worker-helper] In browser environment. Trying to create worker:`
+      );
+      console.log(`[worker-helper]   - Package Name: ${packageName}`);
+      console.log(`[worker-helper]   - Worker File: ${workerFile}`);
+
+      // If a custom asset path is provided, use it directly
+      if (options?.assetPath) {
+        // Normalize the asset path - ensure it starts with / and ends without /
+        let normalizedAssetPath = options.assetPath;
+        if (!normalizedAssetPath.startsWith('/')) {
+          normalizedAssetPath = '/' + normalizedAssetPath;
+        }
+        if (normalizedAssetPath.endsWith('/')) {
+          normalizedAssetPath = normalizedAssetPath.slice(0, -1);
+        }
+
+        // Construct absolute URL: {origin}{assetPath}/{package}/{workerFile}
+        const workerPath = `${normalizedAssetPath}/${packageName}/${workerFile}`;
+        const workerUrl = new URL(workerPath, window.location.origin).href;
+
+        console.log(
+          `[worker-helper] Using provided assetPath. Full Worker URL: ${workerUrl}`
+        );
+        try {
+          const worker = new Worker(workerUrl, { type: 'module' });
+          console.log(
+            `[worker-helper] Successfully created worker with assetPath: ${workerUrl}`
+          );
+          return worker;
+        } catch (e) {
+          console.error(
+            `[worker-helper] Failed to load worker from assetPath URL: ${workerUrl}`,
+            e
+          );
+          throw new Error(
+            `Worker failed to load from ${workerUrl}: ${e instanceof Error ? e.message : String(e)}`
+          );
+        }
+      }
+
       // Try multiple path strategies to support both:
       // 1. Monorepo development structure: ../../{package}/dist/{workerFile}
       // 2. npm installed structure: ../../../{package}/dist/{workerFile}
@@ -67,10 +115,21 @@ export function createCodecWorker(workerFilename: string): Worker {
       for (const relPath of pathStrategies) {
         try {
           const workerUrl = new URL(relPath, import.meta.url);
-          return new Worker(workerUrl, {
+          console.log(
+            `[worker-helper] Trying path strategy. Full Worker URL: ${workerUrl.href}`
+          );
+          const worker = new Worker(workerUrl, {
             type: 'module',
           });
+          console.log(
+            `[worker-helper] Successfully created worker with URL: ${workerUrl.href}`
+          );
+          return worker;
         } catch (error) {
+          console.warn(
+            `[worker-helper] Path strategy failed for ${relPath}:`,
+            error
+          );
           lastError = error instanceof Error ? error : new Error(String(error));
           // Continue to next strategy
         }
@@ -78,6 +137,7 @@ export function createCodecWorker(workerFilename: string): Worker {
 
       // If all strategies failed, throw the last error
       if (lastError) {
+        console.error('[worker-helper] All path strategies failed.', lastError);
         throw lastError;
       }
       throw new Error(
@@ -150,6 +210,7 @@ export function createCodecWorker(workerFilename: string): Worker {
  */
 export function createReadyWorker(
   workerFilename: string,
+  options?: CreateWorkerOptions,
   timeoutMs: number = 10000
 ): Promise<Worker> {
   return new Promise((resolve, reject) => {
@@ -163,7 +224,7 @@ export function createReadyWorker(
 
     let worker: Worker;
     try {
-      worker = createCodecWorker(workerFilename);
+      worker = createCodecWorker(workerFilename, options);
     } catch (error) {
       clearTimeout(timeout);
       reject(error);

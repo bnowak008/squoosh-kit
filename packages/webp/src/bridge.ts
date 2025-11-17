@@ -10,6 +10,10 @@ import {
 import { validateImageInput } from '@squoosh-kit/runtime';
 import type { EncodeInputOptions } from './types';
 
+export type BridgeOptions = {
+  assetPath?: string;
+};
+
 interface WebPBridge {
   encode(
     image: ImageInput,
@@ -43,20 +47,30 @@ class WebpClientBridge implements WebPBridge {
 class WebpWorkerBridge implements WebPBridge {
   private worker: Worker | null = null;
   private workerReady: Promise<Worker> | null = null;
+  private options?: BridgeOptions;
+
+  constructor(options?: BridgeOptions) {
+    console.log(
+      '[webp/bridge] WebpWorkerBridge constructor called with options:',
+      options
+    );
+    this.options = options;
+  }
 
   private async getWorker(): Promise<Worker> {
-    if (!this.worker) {
-      if (!this.workerReady) {
-        this.workerReady = this.createWorker();
-      }
-      this.worker = await this.workerReady;
+    if (!this.workerReady) {
+      this.workerReady = this.createWorker();
     }
-    return this.worker;
+    return this.workerReady;
   }
 
   private async createWorker(): Promise<Worker> {
-    // Use the centralized worker helper for robust path resolution
-    return createReadyWorker('webp.worker');
+    console.log('[webp/bridge] createWorker called. Creating ready worker...');
+    this.worker = await createReadyWorker('webp.worker.js', this.options);
+    console.log(
+      '[webp/bridge] createWorker: Ready worker created successfully.'
+    );
+    return this.worker;
   }
 
   async encode(
@@ -79,6 +93,13 @@ class WebpWorkerBridge implements WebPBridge {
   }
 }
 
-export function createBridge(mode: 'worker' | 'client'): WebPBridge {
-  return mode === 'client' ? new WebpClientBridge() : new WebpWorkerBridge();
+export function createBridge(
+  mode: 'worker' | 'client',
+  options?: BridgeOptions
+): WebPBridge {
+  console.log(`[webp/bridge] createBridge called with mode: ${mode}`);
+  if (mode === 'worker') {
+    return new WebpWorkerBridge(options);
+  }
+  return new WebpClientBridge();
 }

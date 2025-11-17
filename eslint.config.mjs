@@ -22,7 +22,9 @@ export default defineConfig([
     '**/wasm/',
     '**/*.js',
     '**/*.d.ts',
+    '**/*.mjs',
     '.squoosh-temp/**/*',
+    '**/public/squoosh-kit/**',
   ]),
   {
     extends: compat.extends(

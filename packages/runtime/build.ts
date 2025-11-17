@@ -1,18 +1,15 @@
-import { Glob } from 'bun';
-
 const SOURCE_DIR = 'src';
 const OUTPUT_DIR = 'dist';
 
-const glob = new Glob(`${SOURCE_DIR}/**/*.ts`);
-const entrypoints = [...glob.scanSync()];
+const entrypoints = [`${SOURCE_DIR}/index.ts`];
 
 try {
   const result = await Bun.build({
     entrypoints,
     outdir: OUTPUT_DIR,
-    splitting: true,
+    splitting: false,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'bun',
     format: 'esm',
     naming: '[dir]/[name].bun.[ext]',
@@ -30,9 +27,9 @@ try {
   const nodeResult = await Bun.build({
     entrypoints,
     outdir: OUTPUT_DIR,
-    splitting: true,
+    splitting: false,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'node',
     format: 'esm',
     naming: '[dir]/[name].node.mjs',
@@ -50,9 +47,9 @@ try {
   const nodeCjsResult = await Bun.build({
     entrypoints,
     outdir: OUTPUT_DIR,
-    splitting: true,
+    splitting: false,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'node',
     format: 'cjs',
     naming: '[dir]/[name].node.cjs',
@@ -70,9 +67,9 @@ try {
   const browserResult = await Bun.build({
     entrypoints,
     outdir: OUTPUT_DIR,
-    splitting: true,
+    splitting: false,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'browser',
     format: 'esm',
     naming: '[dir]/[name].browser.mjs',
@@ -103,3 +100,5 @@ try {
 } catch (error) {
   console.error(error);
 }
+
+export {};

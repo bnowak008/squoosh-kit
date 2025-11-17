@@ -7,52 +7,57 @@
  * - Workers (fetch)
  */
 export async function loadWasmBinary(
-  relativePath: string
+  relativePath: string,
+  baseUrlOverride?: string | URL
 ): Promise<ArrayBuffer> {
-  try {
-    // Strategy 1: Try Node.js fs first (most reliable)
-    if (typeof process !== 'undefined' && process.versions?.node) {
-      const fsModule = await import(/* @vite-ignore */ 'fs/promises');
-      // If caller provided an absolute URL, respect it; otherwise resolve relative to this module
-      const isAbsoluteUrl = /^(file:|https?:)/.test(relativePath);
-      const fileUrl = isAbsoluteUrl
-        ? new URL(relativePath)
-        : new URL(relativePath, import.meta.url);
-      // Node fs expects a file path; convert only for file: URLs
-      const filePath =
-        fileUrl.protocol === 'file:'
-          ? (await import('url')).fileURLToPath(fileUrl)
-          : fileUrl.pathname;
-      const buffer = await fsModule.readFile(filePath);
+  // Get the base URL depending on the environment (worker or main thread)
+  // If a base URL is provided, use it; otherwise use import.meta.url from this module
+  // In a worker, import.meta.url is the worker's own URL.
+  // In the main thread, it's the URL of the current module.
+  const baseUrl = baseUrlOverride
+    ? typeof baseUrlOverride === 'string'
+      ? new URL('.', baseUrlOverride)
+      : new URL('.', baseUrlOverride.href)
+    : new URL('.', import.meta.url);
+  const fullUrl = new URL(relativePath, baseUrl);
 
-      return buffer.buffer.slice(
-        buffer.byteOffset,
-        buffer.byteOffset + buffer.byteLength
-      );
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    // Fall through to fetch strategy
-  }
+  console.log(`[WasmLoader] Loading WASM from relative path: ${relativePath}`);
+  console.log(`[WasmLoader] Base URL (import.meta.url): ${baseUrl.href}`);
+  console.log(`[WasmLoader] Constructed full URL: ${fullUrl.href}`);
 
-  // Strategy 2: Fallback to fetch (works in browsers and workers)
   try {
-    const url = /^(file:|https?:)/.test(relativePath)
-      ? new URL(/* @vite-ignore */ relativePath)
-      : new URL(/* @vite-ignore */ relativePath, import.meta.url);
-    const response = await fetch(url);
+    const response = await fetch(fullUrl.href);
+
+    console.log(
+      `[WasmLoader] Fetch response status for ${fullUrl.href}: ${response.status}`
+    );
 
     if (!response.ok) {
+      const responseText = await response.text();
+      console.error(
+        `[WasmLoader] Fetch response text (first 500 chars):`,
+        responseText.substring(0, 500)
+      );
       throw new Error(
-        `Failed to fetch WASM binary: ${response.status} ${response.statusText}`
+        `Failed to fetch WASM module at ${fullUrl.href}: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const contentType = response.headers.get('content-type');
+    console.log(`[WasmLoader] Response Content-Type: ${contentType}`);
+    if (!contentType || !contentType.includes('application/wasm')) {
+      console.warn(
+        `[WasmLoader] Warning: WASM module at ${fullUrl.href} served with incorrect MIME type: "${contentType}". Should be "application/wasm".`
       );
     }
 
     return await response.arrayBuffer();
   } catch (error) {
-    throw new Error(
-      `Failed to load WASM binary from "${relativePath}": ${error instanceof Error ? error.message : String(error)}`
+    console.error(
+      `[WasmLoader] CRITICAL: Fetching WASM binary from ${fullUrl.href} failed.`,
+      error
     );
+    throw error;
   }
 }
 

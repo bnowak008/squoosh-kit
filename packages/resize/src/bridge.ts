@@ -10,6 +10,10 @@ import {
 import { validateImageInput } from '@squoosh-kit/runtime';
 import type { ResizeOptions } from './types.ts';
 
+export type BridgeOptions = {
+  assetPath?: string;
+};
+
 interface ResizeBridge {
   resize(
     image: ImageInput,
@@ -43,20 +47,22 @@ class ResizeClientBridge implements ResizeBridge {
 class ResizeWorkerBridge implements ResizeBridge {
   private worker: Worker | null = null;
   private workerReady: Promise<Worker> | null = null;
+  private options?: BridgeOptions;
+
+  constructor(options?: BridgeOptions) {
+    this.options = options;
+  }
 
   private async getWorker(): Promise<Worker> {
-    if (!this.worker) {
-      if (!this.workerReady) {
-        this.workerReady = this.createWorker();
-      }
-      this.worker = await this.workerReady;
+    if (!this.workerReady) {
+      this.workerReady = this.createWorker();
     }
-    return this.worker;
+    return this.workerReady;
   }
 
   private async createWorker(): Promise<Worker> {
-    // Use the centralized worker helper for robust path resolution
-    return createReadyWorker('resize.worker');
+    this.worker = await createReadyWorker('resize.worker.js', this.options);
+    return this.worker;
   }
 
   async resize(
@@ -90,8 +96,12 @@ class ResizeWorkerBridge implements ResizeBridge {
   }
 }
 
-export function createBridge(mode: 'worker' | 'client'): ResizeBridge {
-  return mode === 'client'
-    ? new ResizeClientBridge()
-    : new ResizeWorkerBridge();
+export function createBridge(
+  mode: 'worker' | 'client',
+  options?: BridgeOptions
+): ResizeBridge {
+  if (mode === 'worker') {
+    return new ResizeWorkerBridge(options);
+  }
+  return new ResizeClientBridge();
 }

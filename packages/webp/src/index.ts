@@ -3,7 +3,7 @@
  */
 
 import type { ImageInput } from '@squoosh-kit/runtime';
-import { createBridge } from './bridge';
+import { createBridge, type BridgeOptions } from './bridge';
 import type { EncodeInputOptions } from './types';
 
 export type { ImageInput, EncodeInputOptions };
@@ -78,9 +78,10 @@ export async function encode(
  * @returns A function that encodes an image to WebP format with optional AbortSignal.
  */
 export function createWebpEncoder(
-  mode: 'worker' | 'client' = 'worker'
+  mode: 'worker' | 'client' = 'worker',
+  options?: BridgeOptions
 ): WebpEncoderFactory {
-  const bridge = createBridge(mode);
+  const bridge = createBridge(mode, options);
 
   return Object.assign(
     (

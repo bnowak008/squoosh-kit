@@ -9,7 +9,7 @@
     "declarationMap": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "types": ["bun"],
+    "types": ["bun-types"],
     "baseUrl": ".",
     "paths": {
       "@squoosh-kit/*": ["packages/*/src"]

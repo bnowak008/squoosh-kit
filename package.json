@@ -1,6 +1,6 @@
 {
   "name": "squoosh-kit",
-  "version": "0.0.26",
+  "version": "0.0.45",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize/,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
     "lint": "eslint . --ext .ts",
@@ -44,8 +44,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "tsc --noEmit",
-    "clean": "bun run --filter \"@squoosh-kit/*\" clean:local && rm -rf node_modules .bun/install/cache bun.lockb bun.lock",
+    "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'dev-dist' -type d -prune -exec rm -rf '{}' + && find . -name 'bundle' -type d -prune -exec rm -rf '{}' + && find . -name 'tsconfig.tsbuildinfo' -type f -delete && find . -name 'bun.lockb' -type f -delete  && find . -name 'bun.lock' -type f -delete",
     "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
+    "quick-release": "bun run clean && bun i && bun run format && bun run test && bun run build && bun run validate && bun run release",
+    "quick-release:publish": "bun run quick-release && bun run release:publish",
     "release": "bun run release:core --dry-run && bun run release:runtime --dry-run && bun run release:resize --dry-run && bun run release:webp --dry-run",
     "release:core": "cd packages/core && bun publish",
     "release:resize": "cd packages/resize && bun publish",

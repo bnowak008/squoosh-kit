@@ -11,141 +11,140 @@ import {
   detectSimd,
 } from '@squoosh-kit/runtime';
 import { validateWebpOptions } from './validators';
-import webp_enc, { type WebPModule } from '../wasm/webp/webp_enc';
+import { type WebPModule } from '../wasm/webp/webp_enc';
 import type { EncodeInputOptions, EncodeOptions } from './types';
 
 let cachedModule: WebPModule | null = null;
-let moduleLoadingPromise: Promise<WebPModule> | null = null;
 
 async function loadWebPModule(): Promise<WebPModule> {
   if (cachedModule) {
     return cachedModule;
   }
 
-  if (moduleLoadingPromise) {
-    return moduleLoadingPromise;
-  }
+  const simdSupported = await detectSimd();
+  const modulePath = simdSupported
+    ? 'webp/webp_enc_simd.js'
+    : 'webp/webp_enc.js';
 
-  moduleLoadingPromise = (async (): Promise<WebPModule> => {
-    try {
-      // Environment polyfills for Emscripten-generated code
-      // The WebP encoder WASM module expects browser-like globals (self, location)
-      // These polyfills ensure compatibility when running in Bun/Node.js environments
+  try {
+    console.log('[WebP Worker] Initializing. SIMD support:', simdSupported);
+    console.log(
+      `[WebP Worker] Attempting to import module from path: ${modulePath}`
+    );
 
-      // Polyfill 'self' global for Emscripten compatibility
-      if (typeof self === 'undefined') {
-        (global as { self?: typeof globalThis }).self = global;
-      }
-
-      // Polyfill 'location' object for Emscripten module initialization
-      if (typeof self !== 'undefined' && !self.location) {
-        (self as { location?: { href: string } }).location = {
-          href: import.meta.url,
-        };
-      }
-
-      // Polyfill SharedArrayBuffer for worker contexts without COOP/COEP headers
-      if (
-        typeof SharedArrayBuffer === 'undefined' &&
-        typeof window === 'undefined'
-      ) {
-        (
-          globalThis as unknown as Record<string, typeof ArrayBuffer>
-        ).SharedArrayBuffer = ArrayBuffer;
-      }
-
-      // Helper function to load WASM and initialize with explicit binary
-      const initModuleWithBinary = async (
-        moduleFactory: (config: {
-          noInitialRun: boolean;
-          wasmBinary?: ArrayBuffer;
-        }) => Promise<WebPModule>,
-        wasmPath: string
-      ): Promise<WebPModule> => {
-        try {
-          // Try to load WASM binary
-          const wasmBuffer = await loadWasmBinary(wasmPath);
-          if (typeof console !== 'undefined' && console.log) {
-            console.log(
-              `[WebP] Loaded WASM binary from ${wasmPath} (${(wasmBuffer.byteLength / 1024).toFixed(1)}KB)`
-            );
-          }
-          return moduleFactory({ noInitialRun: true, wasmBinary: wasmBuffer });
-        } catch (error) {
-          // Fallback: try without explicit binary
-          if (typeof console !== 'undefined' && console.warn) {
-            console.warn(
-              '[WebP] Failed to load WASM binary explicitly, trying module initialization without it:',
-              error
-            );
-          }
-          return moduleFactory({ noInitialRun: true });
-        }
+    // Mock self.location for test environments where it doesn't exist
+    // Emscripten code tries to access self.location.href during initialization
+    // We set it to import.meta.url so _scriptDir will be used instead
+    const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+    if (!globalSelf.location) {
+      (globalSelf as { location?: { href: string } }).location = {
+        href: import.meta.url,
       };
-
-      // Detect SIMD support and load appropriate module
-      const simdSupported = await detectSimd();
-
-      if (simdSupported) {
-        if (typeof console !== 'undefined' && console.log) {
-          console.log('[WebP] SIMD support detected, loading SIMD encoder');
-        }
-        try {
-          // Try to load SIMD-optimized encoder dynamically
-          // Import the precompiled SIMD module - it's a standalone Emscripten module factory
-          const simdModuleFactory = await import(
-            /* @vite-ignore */ '../wasm/webp/webp_enc_simd.js'
-          );
-          cachedModule = await initModuleWithBinary(
-            simdModuleFactory.default as (config: {
-              noInitialRun: boolean;
-              wasmBinary?: ArrayBuffer;
-            }) => Promise<WebPModule>,
-            /* @vite-ignore */ new URL(
-              '../wasm/webp/webp_enc_simd.wasm',
-              import.meta.url
-            ).href
-          );
-          if (cachedModule) {
-            return cachedModule;
-          }
-        } catch (simdError) {
-          if (typeof console !== 'undefined' && console.warn) {
-            console.warn(
-              '[WebP] Failed to load SIMD encoder, falling back to standard:',
-              simdError
-            );
-          }
-          // Fall through to standard encoder
-        }
-      }
-
-      // Load standard (non-SIMD) encoder as fallback
-      cachedModule = await initModuleWithBinary(
-        webp_enc as (config: {
-          noInitialRun: boolean;
-          wasmBinary?: ArrayBuffer;
-        }) => Promise<WebPModule>,
-        /* @vite-ignore */ new URL(
-          '../wasm/webp/webp_enc.wasm',
-          import.meta.url
-        ).href
-      );
-
-      if (!cachedModule) {
-        throw new Error('Failed to load WebP module');
-      }
-
-      return cachedModule;
-    } catch (error) {
-      moduleLoadingPromise = null;
-      throw new Error(
-        `Failed to load WebP module: ${error instanceof Error ? error.message : String(error)}`
-      );
     }
-  })();
+    // Also ensure self exists if it doesn't (for Emscripten code that checks ENVIRONMENT_IS_WORKER)
+    if (typeof self === 'undefined' && typeof globalThis !== 'undefined') {
+      (globalThis as { self?: typeof globalThis }).self = globalThis;
+    }
 
-  return moduleLoadingPromise;
+    // Use a standard dynamic import instead of require, and tell Vite to ignore it
+    // Using string concatenation to avoid bundler issues with template literals
+    // Try both paths: './wasm/' for browser/dist and '../wasm/' for tests/source
+    let moduleFactory;
+    const pathsToTry = ['./wasm/' + modulePath, '../wasm/' + modulePath];
+
+    let lastError: Error | null = null;
+    for (const importPath of pathsToTry) {
+      try {
+        moduleFactory = (await import(/* @vite-ignore */ importPath)).default;
+        console.log(
+          `[WebP Worker] Successfully loaded module from: ${importPath}`
+        );
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.warn(
+          `[WebP Worker] Failed to load from ${importPath}, trying next path...`
+        );
+      }
+    }
+
+    if (!moduleFactory) {
+      throw lastError || new Error('Could not load WebP module from any path');
+    }
+
+    console.log('[WebP Worker] Module factory loaded successfully.');
+
+    // Try both paths for WASM binary as well
+    const wasmPathsToTry = simdSupported
+      ? ['./wasm/webp/webp_enc_simd.wasm', '../wasm/webp/webp_enc_simd.wasm']
+      : ['./wasm/webp/webp_enc.wasm', '../wasm/webp/webp_enc.wasm'];
+
+    console.log(
+      `[WebP Worker] Preparing to load WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
+    );
+
+    const initModuleWithBinary = async (
+      moduleFactory: (config: {
+        noInitialRun: boolean;
+        wasmBinary?: ArrayBuffer;
+      }) => Promise<WebPModule>,
+      wasmPaths: string[]
+    ): Promise<WebPModule> => {
+      // Use the worker's own import.meta.url as the base for resolving WASM paths
+      const workerBaseUrl = new URL('.', import.meta.url);
+      let lastError: Error | null = null;
+      for (const wasmPath of wasmPaths) {
+        try {
+          console.log(
+            `[WebP Worker] Calling loadWasmBinary with path: ${wasmPath}`
+          );
+          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+          console.log(
+            `[WebP Worker] Successfully fetched WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`
+          );
+
+          // Ensure self.location exists right before calling moduleFactory
+          // Emscripten code accesses self.location.href when the factory is executed
+          const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+          if (!globalSelf.location) {
+            (globalSelf as { location?: { href: string } }).location = {
+              href: import.meta.url,
+            };
+          }
+          if (
+            typeof self === 'undefined' &&
+            typeof globalThis !== 'undefined'
+          ) {
+            (globalThis as { self?: typeof globalThis }).self = globalThis;
+          }
+
+          return await moduleFactory({
+            noInitialRun: true,
+            wasmBinary,
+          });
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          console.warn(
+            `[WebP Worker] Failed to load WASM from ${wasmPath}, trying next path...`
+          );
+        }
+      }
+      throw (
+        lastError ||
+        new Error('Could not load WASM binary from any of the attempted paths')
+      );
+    };
+
+    cachedModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
+    console.log('[WebP Worker] WebP module initialized successfully.');
+    return cachedModule;
+  } catch (err) {
+    console.error(
+      `[WebP Worker] CRITICAL: Failed to load WebP module from path: ${modulePath}`,
+      err
+    );
+    throw err;
+  }
 }
 
 /**
