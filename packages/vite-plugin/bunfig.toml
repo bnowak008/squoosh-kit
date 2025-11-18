@@ -1,0 +1,6 @@
+[install]
+# Install configuration
+cache = true
+production = false
+frozenLockfile = true
+

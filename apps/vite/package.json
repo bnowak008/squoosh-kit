@@ -1,12 +1,10 @@
 {
   "name": "@squoosh-kit/vite",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "predev": "bun run scripts/copy-assets.ts",
     "dev": "vite --force",
-    "prebuild": "bun run scripts/copy-assets.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -14,7 +12,7 @@
   "dependencies": {
     "@squoosh-kit/resize": "workspace:*",
     "@squoosh-kit/webp": "workspace:*",
-    "@vitejs/plugin-react-swc": "^4.2.2",
+    "@squoosh-kit/vite-plugin": "workspace:*",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -25,7 +23,7 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",

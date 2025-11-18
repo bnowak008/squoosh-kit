@@ -1,6 +1,6 @@
 {
   "name": "squoosh-kit",
-  "version": "0.0.45",
+  "version": "0.1.10",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize/,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
     "lint": "eslint . --ext .ts",
@@ -47,13 +47,14 @@
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'dev-dist' -type d -prune -exec rm -rf '{}' + && find . -name 'bundle' -type d -prune -exec rm -rf '{}' + && find . -name 'tsconfig.tsbuildinfo' -type f -delete && find . -name 'bun.lockb' -type f -delete  && find . -name 'bun.lock' -type f -delete",
     "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
     "quick-release": "bun run clean && bun i && bun run format && bun run test && bun run build && bun run validate && bun run release",
-    "quick-release:publish": "bun run quick-release && bun run release:publish",
-    "release": "bun run release:core --dry-run && bun run release:runtime --dry-run && bun run release:resize --dry-run && bun run release:webp --dry-run",
+    "quick-release:publish": "bun run quick-release && bun run version:patch && bun run release:publish",
+    "release": "bun run release:core --dry-run && bun run release:runtime --dry-run && bun run release:resize --dry-run && bun run release:webp --dry-run && bun run release:vite-plugin --dry-run",
     "release:core": "cd packages/core && bun publish",
     "release:resize": "cd packages/resize && bun publish",
     "release:webp": "cd packages/webp && bun publish",
+    "release:vite-plugin": "cd packages/vite-plugin && bun publish",
     "release:runtime": "cd packages/runtime && bun publish",
-    "release:publish": "bun run release:core && bun run release:runtime && bun run release:resize && bun run release:webp",
+    "release:publish": "bun run release:core && bun run release:runtime && bun run release:resize && bun run release:webp && bun run release:vite-plugin",
     "sync-codecs": "bun run scripts/sync-squoosh-codecs.ts",
     "sync-version": "bun run scripts/sync-version.ts",
     "version:current": "bun run scripts/sync-version.ts current",
@@ -75,5 +76,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "resolutions": {
+    "vite": "^7.2.2"
+  }
 }

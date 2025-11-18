@@ -21,5 +21,12 @@
     "prefer-const": "error",
     "no-var": "error"
   },
-  "ignorePatterns": ["dist/", "node_modules/", "wasm/", "*.js", "*.d.ts"]
+  "ignorePatterns": [
+    "dist/",
+    "node_modules/",
+    "wasm/",
+    "*.js",
+    "*.d.ts",
+    "public/squoosh-kit/**"
+  ]
 }

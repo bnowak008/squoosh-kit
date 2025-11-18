@@ -90,8 +90,7 @@ function App() {
       // Set the correct assetPath based on environment
       // In dev: files are in node_modules/@squoosh-kit/
       // In production: files are copied to public/squoosh-kit/ -> /squoosh-kit/ in dist
-      const isDev = import.meta.env.DEV;
-      const assetPath = isDev ? '/node_modules/@squoosh-kit/' : '/squoosh-kit/';
+      const assetPath = '/squoosh-kit/';
       const bridgeOptions = { assetPath };
       console.log('Creating resizer and encoder with assetPath:', assetPath);
       const resizer = createResizer(mode, bridgeOptions);

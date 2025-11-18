@@ -1,15 +1,43 @@
 {
-  "name": "vite-plugin",
-  "module": "index.ts",
+  "name": "@squoosh-kit/vite-plugin",
+  "version": "0.1.10",
   "type": "module",
-  "private": true,
+  "description": "Vite plugin for Squoosh Kit - handles asset copying and WASM configuration",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/vite-plugin"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/vite-plugin#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bunx tsc -p . && bun build ./src/index.ts --outdir dist --format esm --target bun --external vite",
+    "clean": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
+    "@types/bun": "latest",
+    "typescript": "~5.9.3",
     "vite": "^7.2.2"
   }
 }

@@ -39,28 +39,24 @@ async function init(): Promise<void> {
 
   initPromise = (async () => {
     try {
-      // Load WASM binary with robust fallback strategies
-      // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
-      let wasmBuffer: ArrayBuffer | null = null;
-      const pathsToTry = [
-        new URL(
-          /* @vite-ignore */ './wasm/squoosh_resize_bg.wasm',
-          import.meta.url
-        ).href,
-        new URL(
-          /* @vite-ignore */ '../wasm/squoosh_resize_bg.wasm',
-          import.meta.url
-        ).href,
+      // Use the worker's own import.meta.url as the base for resolving WASM paths
+      const workerBaseUrl = new URL('.', import.meta.url);
+      const wasmPathsToTry = [
+        './wasm/squoosh_resize_bg.wasm',
+        '../wasm/squoosh_resize_bg.wasm',
       ];
 
+      console.log('workerBaseUrl:', workerBaseUrl);
+      console.log('wasmPathsToTry:', wasmPathsToTry);
+
+      let wasmBuffer: ArrayBuffer | null = null;
       let lastError: Error | null = null;
-      for (const path of pathsToTry) {
+      for (const path of wasmPathsToTry) {
         try {
-          wasmBuffer = await loadWasmBinary(path);
+          wasmBuffer = await loadWasmBinary(path, workerBaseUrl);
           break;
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
-          // Continue to next path
         }
       }
 

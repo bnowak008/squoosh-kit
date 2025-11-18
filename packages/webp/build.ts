@@ -7,9 +7,6 @@ const OUTPUT_DIR = 'dist';
 const entrypoints = [`${SOURCE_DIR}/index.ts`, `${SOURCE_DIR}/webp.worker.ts`];
 
 try {
-  // Ensure assets directory exists and copy assets]
-  await import('./scripts/copy-assets.ts');
-
   const result = await Bun.build({
     entrypoints,
     outdir: OUTPUT_DIR,

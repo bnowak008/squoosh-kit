@@ -113,6 +113,8 @@ export function createCodecWorker(
       let lastError: Error | null = null;
 
       for (const relPath of pathStrategies) {
+        console.log('relPath:', relPath);
+        console.log('import.meta.url:', import.meta.url);
         try {
           const workerUrl = new URL(relPath, import.meta.url);
           console.log(
@@ -153,6 +155,9 @@ export function createCodecWorker(
     const srcRelPath = workerConfig.package.includes('resize')
       ? `../../resize/src/${baseName}.ts`
       : `../../webp/src/${baseName}.ts`;
+
+    console.log('srcRelPath:', srcRelPath);
+    console.log('import.meta.url:', import.meta.url);
     try {
       return new Worker(new URL(srcRelPath, import.meta.url), {
         type: 'module',
@@ -162,6 +167,9 @@ export function createCodecWorker(
       const distRelPath = workerConfig.package.includes('resize')
         ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
         : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+
+      console.log('distRelPath:', distRelPath);
+      console.log('import.meta.url:', import.meta.url);
       try {
         return new Worker(new URL(distRelPath, import.meta.url), {
           type: 'module',
@@ -173,6 +181,7 @@ export function createCodecWorker(
             const resolved = import.meta.resolve(
               `${workerConfig.package}/${workerConfig.specifier}`
             );
+            console.log('resolved:', resolved);
             return new Worker(resolved, { type: 'module' });
           } catch {
             // Continue to error below

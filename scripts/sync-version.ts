@@ -33,7 +33,7 @@ import { join } from 'path';
  */
 
 const WORKSPACE_ROOT = import.meta.dir + '/..';
-const PACKAGES = ['core', 'resize', 'runtime', 'webp'];
+const PACKAGES = ['core', 'resize', 'runtime', 'webp', 'vite-plugin'];
 
 type BumpType = 'major' | 'minor' | 'patch';
 
