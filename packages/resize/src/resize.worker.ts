@@ -46,9 +46,6 @@ async function init(): Promise<void> {
         '../wasm/squoosh_resize_bg.wasm',
       ];
 
-      console.log('workerBaseUrl:', workerBaseUrl);
-      console.log('wasmPathsToTry:', wasmPathsToTry);
-
       let wasmBuffer: ArrayBuffer | null = null;
       let lastError: Error | null = null;
       for (const path of wasmPathsToTry) {

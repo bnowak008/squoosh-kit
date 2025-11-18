@@ -75,6 +75,53 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
         exclude: ['@squoosh-kit/webp', '@squoosh-kit/resize'],
       },
       assetsInclude: ['**/*.wasm'],
-    }),
+    }),    
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use(
+        (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+          const url = req.url;
+          if (!url?.includes('squoosh-kit')) {
+            next();
+            return;
+          }
+
+          // Rewrite @squoosh-kit/* requests to /squoosh-kit/*
+          const rewrittenUrl = url.replace(/@squoosh-kit\//, '/terst/');
+
+          if (rewrittenUrl !== url) {
+            req.url = rewrittenUrl;
+          }
+
+          next();
+        }
+      );
+
+      // Then serve files from /squoosh-kit path
+      server.middlewares.use('/squoosh-kit', (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+        try {
+          const filePath = join(publicDir, req.url ?? '/');
+
+          if (existsSync(filePath)) {
+            const fileData = readFileSync(filePath);
+
+            if (filePath.endsWith('.wasm')) {
+              res.setHeader('Content-Type', 'application/wasm');
+            } else if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
+              res.setHeader('Content-Type', 'application/javascript');
+            }
+
+            res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+            res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+            res.setHeader('Content-Length', fileData.length.toString());
+            res.end(fileData);
+            return;
+          }
+
+          next();
+        } catch {
+          next();
+        }
+      });
+    },
   } satisfies PluginOption;
 }
