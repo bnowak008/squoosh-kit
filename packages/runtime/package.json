@@ -41,6 +41,6 @@
     "wasm-feature-detect": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^24.9.1"
+    "@types/node": "^25.0.9"
   }
 }
