@@ -71,17 +71,91 @@
         "vite-plugin-static-copy": "^3.3.0",
       },
     },
+    "packages/avif": {
+      "name": "@squoosh-kit/avif",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
     "packages/core": {
       "name": "@squoosh-kit/core",
       "version": "0.1.18",
       "dependencies": {
+        "@squoosh-kit/avif": "workspace:*",
+        "@squoosh-kit/hqx": "workspace:*",
+        "@squoosh-kit/imagequant": "workspace:*",
+        "@squoosh-kit/jxl": "workspace:*",
+        "@squoosh-kit/mozjpeg": "workspace:*",
+        "@squoosh-kit/oxipng": "workspace:*",
+        "@squoosh-kit/png": "workspace:*",
+        "@squoosh-kit/qoi": "workspace:*",
         "@squoosh-kit/resize": "workspace:*",
+        "@squoosh-kit/rotate": "workspace:*",
+        "@squoosh-kit/visdif": "workspace:*",
         "@squoosh-kit/webp": "workspace:*",
+        "@squoosh-kit/wp2": "workspace:*",
+      },
+    },
+    "packages/hqx": {
+      "name": "@squoosh-kit/hqx",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/imagequant": {
+      "name": "@squoosh-kit/imagequant",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/jxl": {
+      "name": "@squoosh-kit/jxl",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/mozjpeg": {
+      "name": "@squoosh-kit/mozjpeg",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/oxipng": {
+      "name": "@squoosh-kit/oxipng",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/png": {
+      "name": "@squoosh-kit/png",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/qoi": {
+      "name": "@squoosh-kit/qoi",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/resize": {
       "name": "@squoosh-kit/resize",
       "version": "0.1.18",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/rotate": {
+      "name": "@squoosh-kit/rotate",
+      "version": "0.1.0",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
@@ -96,6 +170,13 @@
         "@types/node": "^25.5.0",
       },
     },
+    "packages/visdif": {
+      "name": "@squoosh-kit/visdif",
+      "version": "0.1.0",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
     "packages/vite-plugin": {
       "name": "@squoosh-kit/vite-plugin",
       "version": "0.1.18",
@@ -108,6 +189,13 @@
     "packages/webp": {
       "name": "@squoosh-kit/webp",
       "version": "0.1.18",
+      "dependencies": {
+        "@squoosh-kit/runtime": "workspace:*",
+      },
+    },
+    "packages/wp2": {
+      "name": "@squoosh-kit/wp2",
+      "version": "0.1.0",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
@@ -331,21 +419,43 @@
 
     "@size-limit/webpack": ["@size-limit/webpack@11.2.0", "", { "dependencies": { "nanoid": "^5.1.0", "webpack": "^5.98.0" }, "peerDependencies": { "size-limit": "11.2.0" } }, "sha512-ACsNBkMY0VcpIAlS3wG2qOK5DZNNFAoU/BTPAIOvSsE+g2wtNG6/nLQm84CbJtZt7/a0ABKaFKDaJ1gwNgQv/Q=="],
 
+    "@squoosh-kit/avif": ["@squoosh-kit/avif@workspace:packages/avif"],
+
     "@squoosh-kit/core": ["@squoosh-kit/core@workspace:packages/core"],
 
     "@squoosh-kit/example": ["@squoosh-kit/example@workspace:apps/example"],
 
     "@squoosh-kit/examples": ["@squoosh-kit/examples@workspace:apps/example_2"],
 
+    "@squoosh-kit/hqx": ["@squoosh-kit/hqx@workspace:packages/hqx"],
+
+    "@squoosh-kit/imagequant": ["@squoosh-kit/imagequant@workspace:packages/imagequant"],
+
+    "@squoosh-kit/jxl": ["@squoosh-kit/jxl@workspace:packages/jxl"],
+
+    "@squoosh-kit/mozjpeg": ["@squoosh-kit/mozjpeg@workspace:packages/mozjpeg"],
+
+    "@squoosh-kit/oxipng": ["@squoosh-kit/oxipng@workspace:packages/oxipng"],
+
+    "@squoosh-kit/png": ["@squoosh-kit/png@workspace:packages/png"],
+
+    "@squoosh-kit/qoi": ["@squoosh-kit/qoi@workspace:packages/qoi"],
+
     "@squoosh-kit/resize": ["@squoosh-kit/resize@workspace:packages/resize"],
 
+    "@squoosh-kit/rotate": ["@squoosh-kit/rotate@workspace:packages/rotate"],
+
     "@squoosh-kit/runtime": ["@squoosh-kit/runtime@workspace:packages/runtime"],
+
+    "@squoosh-kit/visdif": ["@squoosh-kit/visdif@workspace:packages/visdif"],
 
     "@squoosh-kit/vite": ["@squoosh-kit/vite@workspace:apps/vite"],
 
     "@squoosh-kit/vite-plugin": ["@squoosh-kit/vite-plugin@workspace:packages/vite-plugin"],
 
     "@squoosh-kit/webp": ["@squoosh-kit/webp@workspace:packages/webp"],
+
+    "@squoosh-kit/wp2": ["@squoosh-kit/wp2@workspace:packages/wp2"],
 
     "@tootallnate/quickjs-emscripten": ["@tootallnate/quickjs-emscripten@0.23.0", "", {}, "sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA=="],
 

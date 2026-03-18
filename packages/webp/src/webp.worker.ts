@@ -1,5 +1,5 @@
 /**
- * WebP encoder - single-source worker/client implementation
+ * WebP encoder/decoder - single-source worker/client implementation
  */
 
 import {
@@ -12,6 +12,7 @@ import {
 } from '@squoosh-kit/runtime';
 import { validateWebpOptions } from './validators';
 import { type WebPModule } from '../wasm/webp/webp_enc';
+import type { WebPModule as WebPDecModule } from '../wasm/webp-dec/webp_dec';
 import type { EncodeInputOptions, EncodeOptions } from './types';
 
 let cachedModule: WebPModule | null = null;
@@ -79,12 +80,12 @@ async function loadWebPModule(): Promise<WebPModule> {
 
     // Try both paths for WASM binary as well
     const wasmPathsToTry = simdSupported
-      ? (isSource
-          ? ['../wasm/webp/webp_enc_simd.wasm', './wasm/webp/webp_enc_simd.wasm']
-          : ['./wasm/webp/webp_enc_simd.wasm', '../wasm/webp/webp_enc_simd.wasm'])
-      : (isSource
-          ? ['../wasm/webp/webp_enc.wasm', './wasm/webp/webp_enc.wasm']
-          : ['./wasm/webp/webp_enc.wasm', '../wasm/webp/webp_enc.wasm']);
+      ? isSource
+        ? ['../wasm/webp/webp_enc_simd.wasm', './wasm/webp/webp_enc_simd.wasm']
+        : ['./wasm/webp/webp_enc_simd.wasm', '../wasm/webp/webp_enc_simd.wasm']
+      : isSource
+        ? ['../wasm/webp/webp_enc.wasm', './wasm/webp/webp_enc.wasm']
+        : ['./wasm/webp/webp_enc.wasm', '../wasm/webp/webp_enc.wasm'];
 
     console.log(
       `[WebP Worker] Preparing to load WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
@@ -250,6 +251,185 @@ export async function webpEncodeClient(
   return result;
 }
 
+let cachedDecModule: WebPDecModule | null = null;
+
+async function loadWebPDecModule(): Promise<WebPDecModule> {
+  if (cachedDecModule) {
+    return cachedDecModule;
+  }
+
+  // No SIMD variant available for the WebP decoder
+  const modulePath = 'webp-dec/webp_dec.js';
+
+  try {
+    console.log('[WebP Worker] Initializing dec module...');
+    console.log(
+      `[WebP Worker] Attempting to import dec module from path: ${modulePath}`
+    );
+
+    const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+    if (!globalSelf.location) {
+      (globalSelf as { location?: { href: string } }).location = {
+        href: import.meta.url,
+      };
+    }
+    if (typeof self === 'undefined' && typeof globalThis !== 'undefined') {
+      (globalThis as { self?: typeof globalThis }).self = globalThis;
+    }
+
+    // Polyfill ImageData for Node/Bun environments where it's not available
+    if (typeof ImageData === 'undefined') {
+      (
+        globalThis as {
+          ImageData?: new (
+            data: Uint8ClampedArray,
+            width: number,
+            height: number
+          ) => ImageData;
+        }
+      ).ImageData = class {
+        data: Uint8ClampedArray;
+        width: number;
+        height: number;
+        colorSpace = 'srgb' as PredefinedColorSpace;
+        constructor(data: Uint8ClampedArray, width: number, height: number) {
+          this.data = data;
+          this.width = width;
+          this.height = height;
+        }
+      } as unknown as typeof ImageData;
+    }
+
+    let moduleFactory;
+    const isSource = import.meta.url.includes('/src/');
+    const pathsToTry = isSource
+      ? ['../wasm/' + modulePath, './wasm/' + modulePath]
+      : ['./wasm/' + modulePath, '../wasm/' + modulePath];
+
+    let lastError: Error | null = null;
+    for (const importPath of pathsToTry) {
+      try {
+        moduleFactory = (await import(/* @vite-ignore */ importPath)).default;
+        console.log(
+          `[WebP Worker] Successfully loaded dec module from: ${importPath}`
+        );
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.warn(
+          `[WebP Worker] Failed to load dec from ${importPath}, trying next path...`
+        );
+      }
+    }
+
+    if (!moduleFactory) {
+      throw (
+        lastError || new Error('Could not load WebP dec module from any path')
+      );
+    }
+
+    console.log('[WebP Worker] Dec module factory loaded successfully.');
+
+    const wasmPathsToTry = isSource
+      ? ['../wasm/webp-dec/webp_dec.wasm', './wasm/webp-dec/webp_dec.wasm']
+      : ['./wasm/webp-dec/webp_dec.wasm', '../wasm/webp-dec/webp_dec.wasm'];
+
+    console.log(
+      `[WebP Worker] Preparing to load dec WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
+    );
+
+    const initDecModuleWithBinary = async (
+      moduleFactory: (config: {
+        noInitialRun: boolean;
+        wasmBinary?: ArrayBuffer;
+      }) => Promise<WebPDecModule>,
+      wasmPaths: string[]
+    ): Promise<WebPDecModule> => {
+      const workerBaseUrl = new URL('.', import.meta.url);
+      let lastError: Error | null = null;
+      for (const wasmPath of wasmPaths) {
+        try {
+          console.log(
+            `[WebP Worker] Calling loadWasmBinary with dec path: ${wasmPath}`
+          );
+          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+          console.log(
+            `[WebP Worker] Successfully fetched dec WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`
+          );
+
+          const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+          if (!globalSelf.location) {
+            (globalSelf as { location?: { href: string } }).location = {
+              href: import.meta.url,
+            };
+          }
+          if (
+            typeof self === 'undefined' &&
+            typeof globalThis !== 'undefined'
+          ) {
+            (globalThis as { self?: typeof globalThis }).self = globalThis;
+          }
+
+          return await moduleFactory({
+            noInitialRun: true,
+            wasmBinary,
+          });
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          console.warn(
+            `[WebP Worker] Failed to load dec WASM from ${wasmPath}, trying next path...`
+          );
+        }
+      }
+      throw (
+        lastError ||
+        new Error(
+          'Could not load dec WASM binary from any of the attempted paths'
+        )
+      );
+    };
+
+    cachedDecModule = await initDecModuleWithBinary(
+      moduleFactory,
+      wasmPathsToTry
+    );
+    console.log('[WebP Worker] WebP dec module initialized successfully.');
+    return cachedDecModule;
+  } catch (err) {
+    console.error(
+      '[WebP Worker] CRITICAL: Failed to load WebP dec module',
+      err
+    );
+    throw err;
+  }
+}
+
+/**
+ * Client-mode WebP decoder (exported for direct use)
+ */
+export async function webpDecodeClient(
+  data: BufferSource,
+  signal?: AbortSignal
+): Promise<ImageData> {
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
+
+  const module = await loadWebPDecModule();
+
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
+
+  const result = module.decode(data);
+
+  if (!result) {
+    throw new Error('WebP decoding failed');
+  }
+
+  return result;
+}
+
 /**
  * Worker message handler
  * Register the handler regardless of environment (for both worker context and tests)
@@ -264,35 +444,57 @@ if (typeof self !== 'undefined') {
       return;
     }
 
-    const request = data as WorkerRequest<{
-      image: ImageInput;
-      options?: EncodeInputOptions;
-    }>;
+    if (data?.type === 'webp:encode') {
+      const request = data as WorkerRequest<{
+        image: ImageInput;
+        options?: EncodeInputOptions;
+      }>;
 
-    const response: WorkerResponse<Uint8Array> = {
-      id: request.id,
-      ok: false,
-    };
+      const response: WorkerResponse<Uint8Array> = {
+        id: request.id,
+        ok: false,
+      };
 
-    try {
-      if (request.type === 'webp:encode') {
+      try {
         const { image, options } = request.payload;
-
         const result = await webpEncodeClient(image, options);
-
         response.ok = true;
         response.data = result;
-
-        // Post the response without transferring - the Uint8Array will be cloned
-        // Transfer is only used for incoming requests (image.data buffer from client)
         self.postMessage(response);
-      } else {
-        response.error = `Unknown message type: ${request.type}`;
+      } catch (error) {
+        response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
       }
-    } catch (error) {
-      response.error = error instanceof Error ? error.message : String(error);
-      self.postMessage(response);
+      return;
     }
+
+    if (data?.type === 'webp:decode') {
+      const request = data as WorkerRequest<{ data: BufferSource }>;
+
+      const response: WorkerResponse<ImageData> = {
+        id: request.id,
+        ok: false,
+      };
+
+      try {
+        const result = await webpDecodeClient(request.payload.data);
+        response.ok = true;
+        response.data = result;
+        self.postMessage(response);
+      } catch (error) {
+        response.error = error instanceof Error ? error.message : String(error);
+        self.postMessage(response);
+      }
+      return;
+    }
+
+    // Unknown message type
+    const request = data as WorkerRequest<unknown>;
+    const response: WorkerResponse<never> = {
+      id: request.id,
+      ok: false,
+      error: `Unknown message type: ${data?.type}`,
+    };
+    self.postMessage(response);
   };
 }

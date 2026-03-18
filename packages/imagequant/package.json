@@ -1,0 +1,52 @@
+{
+  "name": "@squoosh-kit/imagequant",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "ImageQuant palette quantizer for squoosh-kit, providing lossy PNG compression via palette quantization.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT AND Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/imagequant"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/imagequant#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.mjs",
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs"
+    },
+    "./imagequant.worker.js": {
+      "types": "./dist/imagequant.worker.d.ts",
+      "browser": "./dist/imagequant.worker.browser.mjs",
+      "bun": "./dist/imagequant.worker.bun.js",
+      "import": "./dist/imagequant.worker.node.mjs",
+      "require": "./dist/imagequant.worker.node.cjs"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun run build.ts",
+    "clean:local": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
+    "prepack": "bun run build && bun test",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@squoosh-kit/runtime": "workspace:*"
+  }
+}

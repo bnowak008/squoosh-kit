@@ -45,6 +45,17 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
   const publicDir = join(viteRoot, 'public', 'squoosh-kit');
   const webpDist = join(squooshKitRoot, 'webp', 'dist');
   const resizeDist = join(squooshKitRoot, 'resize', 'dist');
+  const avifDist = join(squooshKitRoot, 'avif', 'dist');
+  const mozjpegDist = join(squooshKitRoot, 'mozjpeg', 'dist');
+  const jxlDist = join(squooshKitRoot, 'jxl', 'dist');
+  const oxipngDist = join(squooshKitRoot, 'oxipng', 'dist');
+  const imagequantDist = join(squooshKitRoot, 'imagequant', 'dist');
+  const pngDist = join(squooshKitRoot, 'png', 'dist');
+  const qoiDist = join(squooshKitRoot, 'qoi', 'dist');
+  const wp2Dist = join(squooshKitRoot, 'wp2', 'dist');
+  const hqxDist = join(squooshKitRoot, 'hqx', 'dist');
+  const rotateDist = join(squooshKitRoot, 'rotate', 'dist');
+  const visdifDist = join(squooshKitRoot, 'visdif', 'dist');
 
   return {
     name: 'squoosh-vite-plugin',
@@ -57,6 +68,39 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
       }
       if (existsSync(resizeDist)) {
         copyBrowserFiles(resizeDist, join(publicDir, 'resize'));
+      }
+      if (existsSync(avifDist)) {
+        copyBrowserFiles(avifDist, join(publicDir, 'avif'));
+      }
+      if (existsSync(mozjpegDist)) {
+        copyBrowserFiles(mozjpegDist, join(publicDir, 'mozjpeg'));
+      }
+      if (existsSync(jxlDist)) {
+        copyBrowserFiles(jxlDist, join(publicDir, 'jxl'));
+      }
+      if (existsSync(oxipngDist)) {
+        copyBrowserFiles(oxipngDist, join(publicDir, 'oxipng'));
+      }
+      if (existsSync(imagequantDist)) {
+        copyBrowserFiles(imagequantDist, join(publicDir, 'imagequant'));
+      }
+      if (existsSync(pngDist)) {
+        copyBrowserFiles(pngDist, join(publicDir, 'png'));
+      }
+      if (existsSync(qoiDist)) {
+        copyBrowserFiles(qoiDist, join(publicDir, 'qoi'));
+      }
+      if (existsSync(wp2Dist)) {
+        copyBrowserFiles(wp2Dist, join(publicDir, 'wp2'));
+      }
+      if (existsSync(hqxDist)) {
+        copyBrowserFiles(hqxDist, join(publicDir, 'hqx'));
+      }
+      if (existsSync(rotateDist)) {
+        copyBrowserFiles(rotateDist, join(publicDir, 'rotate'));
+      }
+      if (existsSync(visdifDist)) {
+        copyBrowserFiles(visdifDist, join(publicDir, 'visdif'));
       }
 
       console.log('Squoosh assets copied successfully!');
@@ -73,7 +117,21 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
         },
       },
       optimizeDeps: {
-        exclude: ['@squoosh-kit/webp', '@squoosh-kit/resize'],
+        exclude: [
+          '@squoosh-kit/webp',
+          '@squoosh-kit/resize',
+          '@squoosh-kit/avif',
+          '@squoosh-kit/mozjpeg',
+          '@squoosh-kit/jxl',
+          '@squoosh-kit/oxipng',
+          '@squoosh-kit/imagequant',
+          '@squoosh-kit/png',
+          '@squoosh-kit/qoi',
+          '@squoosh-kit/wp2',
+          '@squoosh-kit/hqx',
+          '@squoosh-kit/rotate',
+          '@squoosh-kit/visdif',
+        ],
       },
       assetsInclude: ['**/*.wasm'],
     }),

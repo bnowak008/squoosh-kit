@@ -20,6 +20,7 @@ interface WebPBridge {
     options?: EncodeInputOptions,
     signal?: AbortSignal
   ): Promise<Uint8Array>;
+  decode(data: BufferSource, signal?: AbortSignal): Promise<ImageData>;
   terminate(): Promise<void>;
 }
 
@@ -37,6 +38,15 @@ class WebpClientBridge implements WebPBridge {
       signal?: AbortSignal
     ) => Promise<Uint8Array>;
     return webpEncodeClient(image, options, signal);
+  }
+
+  async decode(data: BufferSource, signal?: AbortSignal): Promise<ImageData> {
+    const module = await import('./webp.worker.js');
+    const webpDecodeClient = module.webpDecodeClient as (
+      data: BufferSource,
+      signal?: AbortSignal
+    ) => Promise<ImageData>;
+    return webpDecodeClient(data, signal);
   }
 
   async terminate(): Promise<void> {
@@ -82,6 +92,11 @@ class WebpWorkerBridge implements WebPBridge {
 
     validateImageInput(image);
     return callWorker(worker, 'webp:encode', { image, options }, signal);
+  }
+
+  async decode(data: BufferSource, signal?: AbortSignal): Promise<ImageData> {
+    const worker = await this.getWorker();
+    return callWorker(worker, 'webp:decode', { data }, signal);
   }
 
   async terminate(): Promise<void> {
