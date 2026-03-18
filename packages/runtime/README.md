@@ -1,8 +1,8 @@
 # @squoosh-kit/runtime
 
-[![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fwebp.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fwebp)
+[![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fruntime.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fruntime)
 [![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![License: MIT](https://img.shields.io/badge/license-Apache%202-blue)](https://opensource.org/license/apache-2-0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 ![Squoosh Kit](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)

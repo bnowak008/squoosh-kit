@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fvite-plugin.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fvite-plugin)
 [![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![License: MIT](https://img.shields.io/badge/license-Apache%202-blue)](https://opensource.org/license/apache-2-0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 A Vite plugin for Squoosh Kit that handles asset copying and WebAssembly configuration.
@@ -32,9 +32,10 @@ Add the plugin to your `vite.config.ts`:
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import squooshVitePlugin from '@squoosh-kit/vite-plugin';
+import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [react(), squooshVitePlugin()],
+  plugins: [react(), squooshVitePlugin(resolve('node_modules/@squoosh-kit'))],
 });
 ```
 
@@ -99,11 +100,13 @@ const resizedImage = await resizer(imageData, { width: 800 });
 
 ## API Reference
 
-### `squooshVitePlugin()`
+### `squooshVitePlugin(squooshKitRoot)`
 
 Returns a Vite plugin that configures Squoosh Kit integration.
 
-**Parameters:** None
+**Parameters:**
+
+- `squooshKitRoot: string` — Path to the `@squoosh-kit` directory inside `node_modules`. The plugin uses this to locate the `webp/dist` and `resize/dist` directories for asset copying.
 
 **Returns:** Vite Plugin
 
@@ -111,9 +114,10 @@ Returns a Vite plugin that configures Squoosh Kit integration.
 
 ```typescript
 import squooshVitePlugin from '@squoosh-kit/vite-plugin';
+import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [squooshVitePlugin()],
+  plugins: [squooshVitePlugin(resolve('node_modules/@squoosh-kit'))],
 });
 ```
 

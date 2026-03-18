@@ -90,7 +90,42 @@ function getCurrentVersion(): string {
   return json.version;
 }
 
+function isWorkingTreeClean(): boolean {
+  try {
+    const result = execSync('git status --porcelain', { encoding: 'utf-8' });
+    return result.trim() === '';
+  } catch {
+    return false;
+  }
+}
+
+function tagExists(tag: string): boolean {
+  try {
+    execSync(`git rev-parse refs/tags/${tag}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function syncVersions(newVersion: string): void {
+  // Guard: clean working tree
+  if (!isWorkingTreeClean()) {
+    console.error(
+      '❌ Working tree is not clean. Commit or stash your changes before bumping the version.'
+    );
+    process.exit(1);
+  }
+
+  // Guard: tag must not already exist
+  const tag = `v${newVersion}`;
+  if (tagExists(tag)) {
+    console.error(
+      `❌ Tag ${tag} already exists. Choose a different version or delete the existing tag first.`
+    );
+    process.exit(1);
+  }
+
   console.log(`\nSyncing version to ${newVersion}...\n`);
 
   const rootPackageJsonPath = join(WORKSPACE_ROOT, 'package.json');
@@ -108,10 +143,15 @@ function syncVersions(newVersion: string): void {
 
   console.log(`\n✨ All versions synced to ${newVersion}`);
 
-  execSync('git add -A');
-  execSync(`git commit -m "chore: release v${newVersion}"`);
-  execSync(`git tag v${newVersion}`);
-  console.log(`\n🏷️  Created commit and tag v${newVersion}`);
+  // Stage only the specific files we modified — never git add -A
+  execSync(`git add package.json`);
+  for (const pkg of PACKAGES) {
+    execSync(`git add packages/${pkg}/package.json`);
+  }
+
+  execSync(`git commit -m "chore: release ${tag}"`);
+  execSync(`git tag ${tag}`);
+  console.log(`\n🏷️  Created commit and tag ${tag}`);
   console.log('Run: git push --follow-tags');
 }
 

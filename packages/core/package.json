@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
-  "license": "MIT",
+  "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/bnowak008/squoosh-kit.git"

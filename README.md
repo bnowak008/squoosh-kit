@@ -1,7 +1,7 @@
 # Squoosh Kit
 
 [![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![License: MIT](https://img.shields.io/badge/license-Apache%202-blue)](https://opensource.org/license/apache-2-0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 ![Alt](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)
@@ -22,12 +22,13 @@ Whether you're building a web application, a Node.js service, or a desktop app w
 
 ## What You Get
 
-| Package                                      | What's Inside                       | Best For                                                                                 |
-| -------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- |
-| [`@squoosh-kit/webp`](./packages/webp)       | WebP encoding with quality control  | Next-gen image formats, file size optimization                                           |
-| [`@squoosh-kit/resize`](./packages/resize)   | Flexible resizing with 4 algorithms | Thumbnails, responsive images, batch processing (triangular, catrom, mitchell, lanczos3) |
-| [`@squoosh-kit/core`](./packages/core)       | Everything bundled together         | Quick prototyping, simple projects                                                       |
-| [`@squoosh-kit/runtime`](./packages/runtime) | Internal runtime utilities          | Advanced customization                                                                   |
+| Package                                              | What's Inside                                | Best For                                                                                 |
+| ---------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [`@squoosh-kit/webp`](./packages/webp)               | WebP encoding with quality control           | Next-gen image formats, file size optimization                                           |
+| [`@squoosh-kit/resize`](./packages/resize)           | Flexible resizing with 4 algorithms          | Thumbnails, responsive images, batch processing (triangular, catrom, mitchell, lanczos3) |
+| [`@squoosh-kit/core`](./packages/core)               | Everything bundled together                  | Quick prototyping, simple projects                                                       |
+| [`@squoosh-kit/vite-plugin`](./packages/vite-plugin) | Vite plugin for WASM assets and CORS headers | Vite-based apps (React, Vue, Svelte, etc.)                                               |
+| [`@squoosh-kit/runtime`](./packages/runtime)         | Internal runtime utilities                   | Advanced customization                                                                   |
 
 ## Quick Example
 
@@ -36,23 +37,10 @@ import { encode } from '@squoosh-kit/webp';
 import { resize } from '@squoosh-kit/resize';
 
 // Resize first, then encode to WebP
-const resized = await resize(new AbortController().signal, imageData, {
-  width: 800,
-  method: 'mitchell',
-});
+const resized = await resize(imageData, { width: 800, method: 'mitchell' });
 
-const webpBuffer = await encode(new AbortController().signal, resized, {
-  quality: 85,
-});
+const webpBuffer = await encode(resized, { quality: 85 });
 ```
-
-## Why Squoosh Kit?
-
-- **Blazing Fast**: WebAssembly codecs from Google Squoosh
-- **Non-blocking**: Web Workers keep your UI responsive
-- **Type Safe**: Full TypeScript support with detailed APIs
-- **Bun Native**: Optimized for Bun, works great in Node.js and browsers
-- **Zero Config**: Works out of the box with sensible defaults
 
 ## Installation
 
@@ -101,10 +89,6 @@ const encoder = createWebpEncoder('client');
 const encoder = createWebpEncoder('worker'); // ❌ WASM files missing
 ```
 
-### Future Plans
-
-For v1.0, we will have all functionality and codecs available
-
 ## Learn More
 
 Each package has its own comprehensive documentation:
@@ -113,28 +97,25 @@ Each package has its own comprehensive documentation:
 - [Image Resizing](./packages/resize/README.md) - Resize algorithms and configuration
 - [Core Package](./packages/core/README.md) - Meta-package documentation
 
-## Vite Configuration for Workers
+## Vite Integration
 
-If you're using Vite and encounter worker loading issues, add this to your `vite.config.ts`:
+Install the official Vite plugin to automatically configure WASM assets, CORS headers, and dev server settings:
+
+```bash
+bun add -D @squoosh-kit/vite-plugin
+```
 
 ```typescript
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import squooshVitePlugin from '@squoosh-kit/vite-plugin';
+import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [react()],
-  optimizeDeps: {
-    // Exclude squoosh worker files from pre-bundling
-    // This allows them to be loaded as regular ES modules
-    exclude: [
-      '@squoosh-kit/resize/resize.worker.js',
-      '@squoosh-kit/webp/webp.worker.js',
-    ],
-  },
+  plugins: [squooshVitePlugin(resolve('node_modules/@squoosh-kit'))],
 });
 ```
 
-This configuration tells Vite not to pre-bundle the worker files, allowing them to be loaded directly from `node_modules`.
+The plugin handles everything automatically: copying browser-compatible assets to `public/squoosh-kit/`, setting CORS headers (`require-corp`, `same-origin`), excluding Squoosh packages from Vite's optimization pipeline, and serving WASM files with the correct MIME type in development.
 
 ### Without Vite (Other Bundlers)
 
@@ -157,4 +138,8 @@ bun test             # Run tests
 
 ## License
 
-MIT - feel free to use in your projects!
+The squoosh-kit source code (TypeScript wrappers, worker bridge, build tooling) is licensed under the **MIT License** — see [LICENSE](./LICENSE).
+
+The WebAssembly binaries distributed with `@squoosh-kit/webp` and `@squoosh-kit/resize` are compiled from [Google Squoosh](https://github.com/GoogleChromeLabs/squoosh) and are licensed under the **Apache License 2.0** — see [NOTICE](./NOTICE) for the full attribution and license text.
+
+If you use `@squoosh-kit/webp` or `@squoosh-kit/resize` (or `@squoosh-kit/core` which depends on them), your distribution includes Apache 2.0 content. The two licenses are compatible — both are permissive and allow commercial use.
