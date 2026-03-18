@@ -39,6 +39,7 @@ function copyBrowserFiles(srcDir: string, destDir: string) {
     cpSync(wasmDir, destWasmDir, { recursive: true });
   }
 }
+
 export default function squooshVitePlugin(squooshKitRoot: string) {
   const viteRoot = process.cwd();
   const publicDir = join(viteRoot, 'public', 'squoosh-kit');
@@ -75,53 +76,66 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
         exclude: ['@squoosh-kit/webp', '@squoosh-kit/resize'],
       },
       assetsInclude: ['**/*.wasm'],
-    }),    
+    }),
     configureServer(server: ViteDevServer) {
       server.middlewares.use(
         (req: IncomingMessage, res: ServerResponse, next: () => void) => {
           const url = req.url;
+
           if (!url?.includes('squoosh-kit')) {
             next();
             return;
           }
 
-          // Rewrite @squoosh-kit/* requests to /squoosh-kit/*
-          const rewrittenUrl = url.replace(/@squoosh-kit\//, '/terst/');
+          let rewrittenUrl = url;
 
-          if (rewrittenUrl !== url) {
-            req.url = rewrittenUrl;
+          if (url.includes('@squoosh-kit')) {
+            rewrittenUrl =
+              '/squoosh-kit' +
+              url.split('@squoosh-kit')[1].replace('/dist', '').split('?')[0];
+          } else {
+            rewrittenUrl =
+              '/squoosh-kit' +
+              url.split('squoosh-kit')[1].replace('/dist', '').split('?')[0];
           }
 
+          req.url = rewrittenUrl;
           next();
         }
       );
 
       // Then serve files from /squoosh-kit path
-      server.middlewares.use('/squoosh-kit', (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        try {
-          const filePath = join(publicDir, req.url ?? '/');
+      server.middlewares.use(
+        '/squoosh-kit',
+        (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+          try {
+            const filePath = join(publicDir, req.url ?? '/');
 
-          if (existsSync(filePath)) {
-            const fileData = readFileSync(filePath);
+            if (existsSync(filePath)) {
+              const fileData = readFileSync(filePath);
 
-            if (filePath.endsWith('.wasm')) {
-              res.setHeader('Content-Type', 'application/wasm');
-            } else if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
-              res.setHeader('Content-Type', 'application/javascript');
+              if (filePath.endsWith('.wasm')) {
+                res.setHeader('Content-Type', 'application/wasm');
+              } else if (
+                filePath.endsWith('.js') ||
+                filePath.endsWith('.mjs')
+              ) {
+                res.setHeader('Content-Type', 'application/javascript');
+              }
+
+              res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+              res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+              res.setHeader('Content-Length', fileData.length.toString());
+              res.end(fileData);
+              return;
             }
 
-            res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-            res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-            res.setHeader('Content-Length', fileData.length.toString());
-            res.end(fileData);
-            return;
+            next();
+          } catch {
+            next();
           }
-
-          next();
-        } catch {
-          next();
         }
-      });
+      );
     },
   } satisfies PluginOption;
 }
