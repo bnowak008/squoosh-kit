@@ -121,6 +121,8 @@ for (const imagePath of imageFiles) {
 
 The main encoding function. Handles everything automatically and returns a Promise.
 
+**Note**: `encode()` uses a global singleton worker that is never automatically terminated. For long-running applications where worker cleanup is important, use `createWebpEncoder()` instead so you can call `.terminate()` when done.
+
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - (optional) `WebpOptions` for quality and format settings
 - `signal` - (optional) `AbortSignal` to cancel long-running operations. If provided, you can cancel by calling `controller.abort()` on the associated `AbortController`. If not provided, the operation cannot be cancelled.

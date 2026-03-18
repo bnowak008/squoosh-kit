@@ -93,7 +93,8 @@ export function createCodecWorker(
             e
           );
           throw new Error(
-            `Worker failed to load from ${workerUrl}: ${e instanceof Error ? e.message : String(e)}`
+            `Worker failed to load from ${workerUrl}: ${e instanceof Error ? e.message : String(e)}`,
+            { cause: e }
           );
         }
       }
@@ -201,7 +202,8 @@ export function createCodecWorker(
     throw new Error(
       `Failed to create worker from ${normalizedName}: ${errorMessage}. ` +
         `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed. ` +
-        `If you're using Vite, ensure the worker files are not being optimized as dependencies.`
+        `If you're using Vite, ensure the worker files are not being optimized as dependencies.`,
+      { cause: error }
     );
   }
 }

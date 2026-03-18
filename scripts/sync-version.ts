@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 
 /**
  * Version Sync Script for Squoosh Kit
@@ -106,6 +107,12 @@ function syncVersions(newVersion: string): void {
   }
 
   console.log(`\n✨ All versions synced to ${newVersion}`);
+
+  execSync('git add -A');
+  execSync(`git commit -m "chore: release v${newVersion}"`);
+  execSync(`git tag v${newVersion}`);
+  console.log(`\n🏷️  Created commit and tag v${newVersion}`);
+  console.log('Run: git push --follow-tags');
 }
 
 function main(): void {

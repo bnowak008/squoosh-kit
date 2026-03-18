@@ -97,11 +97,11 @@ export async function loadWasmModule(
 
     return await import(/* @vite-ignore */ url.href);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e3) {
     throw new Error(
       `Failed to load WASM module from "${modulePath}". ` +
-        `Ensure WASM files are in the expected location and the module can be resolved.`
+        `Ensure WASM files are in the expected location and the module can be resolved.`,
+      { cause: e3 }
     );
   }
 }

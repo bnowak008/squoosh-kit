@@ -48,9 +48,12 @@ async function loadWebPModule(): Promise<WebPModule> {
 
     // Use a standard dynamic import instead of require, and tell Vite to ignore it
     // Using string concatenation to avoid bundler issues with template literals
-    // Try both paths: './wasm/' for browser/dist and '../wasm/' for tests/source
+    // Try both paths: '../wasm/' first when running from source (tests), './wasm/' first in dist
     let moduleFactory;
-    const pathsToTry = ['./wasm/' + modulePath, '../wasm/' + modulePath];
+    const isSource = import.meta.url.includes('/src/');
+    const pathsToTry = isSource
+      ? ['../wasm/' + modulePath, './wasm/' + modulePath]
+      : ['./wasm/' + modulePath, '../wasm/' + modulePath];
 
     let lastError: Error | null = null;
     for (const importPath of pathsToTry) {
@@ -76,8 +79,12 @@ async function loadWebPModule(): Promise<WebPModule> {
 
     // Try both paths for WASM binary as well
     const wasmPathsToTry = simdSupported
-      ? ['./wasm/webp/webp_enc_simd.wasm', '../wasm/webp/webp_enc_simd.wasm']
-      : ['./wasm/webp/webp_enc.wasm', '../wasm/webp/webp_enc.wasm'];
+      ? (isSource
+          ? ['../wasm/webp/webp_enc_simd.wasm', './wasm/webp/webp_enc_simd.wasm']
+          : ['./wasm/webp/webp_enc_simd.wasm', '../wasm/webp/webp_enc_simd.wasm'])
+      : (isSource
+          ? ['../wasm/webp/webp_enc.wasm', './wasm/webp/webp_enc.wasm']
+          : ['./wasm/webp/webp_enc.wasm', '../wasm/webp/webp_enc.wasm']);
 
     console.log(
       `[WebP Worker] Preparing to load WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
@@ -210,16 +217,7 @@ export async function webpEncodeClient(
     throw new Error('Image data must be Uint8Array or Uint8ClampedArray');
   }
 
-  const t0 = performance.now();
   const module = await loadWebPModule();
-  const t1 = performance.now();
-
-  if (typeof console !== 'undefined' && console.log) {
-    console.log(`[WebP] module loading took ${(t1 - t0).toFixed(2)}ms`);
-    console.log(
-      `[WebP] Module type: ${cachedModule && 'encode' in cachedModule ? 'Ready' : 'Unknown'}`
-    );
-  }
 
   // Check abort after async operation
   if (signal?.aborted) {
@@ -239,17 +237,7 @@ export async function webpEncodeClient(
           data.length
         );
 
-  if (typeof console !== 'undefined' && console.log) {
-    console.log(`[WebP] encode options:`, encodeOptions);
-  }
-
-  const t2 = performance.now();
   const result = module.encode(dataArray, width, height, encodeOptions);
-  const t3 = performance.now();
-
-  if (typeof console !== 'undefined' && console.log) {
-    console.log(`[WebP] actual encoding took ${(t3 - t2).toFixed(2)}ms`);
-  }
 
   if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -290,18 +278,7 @@ if (typeof self !== 'undefined') {
       if (request.type === 'webp:encode') {
         const { image, options } = request.payload;
 
-        const t0 = performance.now();
-        const controller = new AbortController();
-        const result = await webpEncodeClient(
-          image,
-          options,
-          controller.signal
-        );
-        const t1 = performance.now();
-
-        if (typeof console !== 'undefined' && console.log) {
-          console.log(`[WebP Worker] encode took ${(t1 - t0).toFixed(2)}ms`);
-        }
+        const result = await webpEncodeClient(image, options);
 
         response.ok = true;
         response.data = result;

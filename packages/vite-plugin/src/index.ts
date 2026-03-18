@@ -87,7 +87,7 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
             return;
           }
 
-          let rewrittenUrl = url;
+          let rewrittenUrl: string;
 
           if (url.includes('@squoosh-kit')) {
             rewrittenUrl =

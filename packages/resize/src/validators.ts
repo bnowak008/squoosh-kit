@@ -14,6 +14,7 @@ export function validateResizeOptions(options: unknown): asserts options is {
   if (opts.width !== undefined) {
     if (
       typeof opts.width !== 'number' ||
+      !Number.isFinite(opts.width) ||
       !Number.isInteger(opts.width) ||
       opts.width <= 0
     ) {
@@ -26,6 +27,7 @@ export function validateResizeOptions(options: unknown): asserts options is {
   if (opts.height !== undefined) {
     if (
       typeof opts.height !== 'number' ||
+      !Number.isFinite(opts.height) ||
       !Number.isInteger(opts.height) ||
       opts.height <= 0
     ) {

@@ -39,8 +39,8 @@
     "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "tsc --noEmit",
@@ -60,17 +60,19 @@
     "version:current": "bun run scripts/sync-version.ts current",
     "version:major": "bun run scripts/sync-version.ts major",
     "version:minor": "bun run scripts/sync-version.ts minor",
-    "version:patch": "bun run scripts/sync-version.ts patch"
+    "version:patch": "bun run scripts/sync-version.ts patch",
+    "size-limit": "size-limit"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.38.0",
+    "@eslint/js": "^10.0.1",
     "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "eslint": "^9.38.0",
-    "globals": "^16.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
     "prettier": "^3.2.5",
+    "size-limit": "^11.0.0",
+    "@size-limit/preset-big-lib": "^11.0.0",
     "typescript": "^5.6.3"
   },
   "workspaces": [
@@ -78,6 +80,8 @@
     "packages/*"
   ],
   "resolutions": {
-    "vite": "^7.2.2"
+    "vite": "^7.3.1",
+    "flatted": "^3.4.2",
+    "rollup": "^4.59.0"
   }
 }

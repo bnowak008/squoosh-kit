@@ -42,24 +42,16 @@ describe('Integration Tests', () => {
     expect(typeof resizer).toBe('function');
   });
 
-  it('should validate image input from main entry point', () => {
-    const image = createTestImage();
-    expect(image.data).toBeInstanceOf(Uint8ClampedArray);
-    expect(image.width).toBe(3);
-    expect(image.height).toBe(3);
-    expect(image.data.length).toBe(36); // 3x3x4 = 36 bytes
+  it('should encode with webp and resize in sequence', async () => {
+    const data = new Uint8ClampedArray(16 * 16 * 4).fill(128);
+    const image = { data, width: 16, height: 16 };
+    const resizer = createResizer('client');
+    const resized = await resizer(image, { width: 8, height: 8 });
+    const encoder = createWebpEncoder('client');
+    const encoded = await encoder(resized);
+    expect(encoded).toBeInstanceOf(Uint8Array);
+    const header = new TextDecoder().decode(encoded.slice(0, 4));
+    expect(header).toBe('RIFF');
   });
 
-  it('should handle different execution modes', () => {
-    // Test that both modes are supported
-    const clientWebpEncoder = createWebpEncoder('client');
-    const workerWebpEncoder = createWebpEncoder('worker');
-    const clientResizer = createResizer('client');
-    const workerResizer = createResizer('worker');
-
-    expect(typeof clientWebpEncoder).toBe('function');
-    expect(typeof workerWebpEncoder).toBe('function');
-    expect(typeof clientResizer).toBe('function');
-    expect(typeof workerResizer).toBe('function');
-  });
 });

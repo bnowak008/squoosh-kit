@@ -41,10 +41,10 @@ async function init(): Promise<void> {
     try {
       // Use the worker's own import.meta.url as the base for resolving WASM paths
       const workerBaseUrl = new URL('.', import.meta.url);
-      const wasmPathsToTry = [
-        './wasm/squoosh_resize_bg.wasm',
-        '../wasm/squoosh_resize_bg.wasm',
-      ];
+      const isSource = import.meta.url.includes('/src/');
+      const wasmPathsToTry = isSource
+        ? ['../wasm/squoosh_resize_bg.wasm', './wasm/squoosh_resize_bg.wasm']
+        : ['./wasm/squoosh_resize_bg.wasm', '../wasm/squoosh_resize_bg.wasm'];
 
       let wasmBuffer: ArrayBuffer | null = null;
       let lastError: Error | null = null;
@@ -84,7 +84,8 @@ async function init(): Promise<void> {
             await squoosh_resize_module.default(wasmBuffer);
           } catch (retryError) {
             throw new Error(
-              `WASM module initialization failed even with polyfill: ${retryError instanceof Error ? retryError.message : String(retryError)}`
+              `WASM module initialization failed even with polyfill: ${retryError instanceof Error ? retryError.message : String(retryError)}`,
+              { cause: retryError }
             );
           }
         } else {
@@ -96,7 +97,8 @@ async function init(): Promise<void> {
     } catch (error) {
       initPromise = null;
       throw new Error(
-        `Failed to initialize resize WASM module: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to initialize resize WASM module: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error }
       );
     }
   })();
