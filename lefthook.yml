@@ -1,14 +1,14 @@
 # pre-commit:
 #   parallel: true
 #   commands:
-    # format:
-    #   run: bunx prettier --write {staged_files}
-    #   glob: '*.{ts,tsx,js,json,md,yaml,yml}'
-    #   stage_fixed: true
-    # lint:
-    #   run: bunx eslint --fix {staged_files}
-    #   glob: '*.{ts,tsx,js,mjs,cjs}'
-    #   stage_fixed: true
+# format:
+#   run: bunx prettier --write {staged_files}
+#   glob: '*.{ts,tsx,js,json,md,yaml,yml}'
+#   stage_fixed: true
+# lint:
+#   run: bunx eslint --fix {staged_files}
+#   glob: '*.{ts,tsx,js,mjs,cjs}'
+#   stage_fixed: true
 
 # pre-push:
 #   parallel: false

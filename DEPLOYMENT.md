@@ -41,6 +41,7 @@ git push --follow-tags
 ```
 
 Pushing the tag triggers the CI pipeline which:
+
 1. Runs tests, type checks, lint, and bundle size checks
 2. Builds all packages
 3. Publishes all 5 packages to npm

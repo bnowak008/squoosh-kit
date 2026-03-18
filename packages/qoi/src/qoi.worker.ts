@@ -10,7 +10,6 @@ import {
   validateImageInput,
   polyfillImageData,
 } from '@squoosh-kit/runtime';
-import { validateQoiEncodeOptions } from './validators';
 import type { QoiModule, QOIModule, EncodeOptions } from './types';
 
 let cachedEncModule: QoiModule | null = null;

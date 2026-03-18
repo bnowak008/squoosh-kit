@@ -6,18 +6,6 @@ import { describe, it, expect } from 'bun:test';
 import { createResizer } from '../src/index.ts';
 import type { ImageInput } from '../src/index.ts';
 
-// Test image data: 4x4 red square
-const createTestImage = (): ImageInput => {
-  const data = new Uint8Array(64); // 4x4x4 = 64 bytes
-  for (let i = 0; i < 64; i += 4) {
-    data[i] = 255; // R
-    data[i + 1] = 0; // G
-    data[i + 2] = 0; // B
-    data[i + 3] = 255; // A
-  }
-  return { data, width: 4, height: 4 };
-};
-
 describe('Resize Factory', () => {
   it('should create a factory function for client mode', () => {
     const resizer = createResizer('client');
@@ -28,17 +16,18 @@ describe('Resize Factory', () => {
     const resizer = createResizer('worker');
     expect(typeof resizer).toBe('function');
   });
-
 });
 
 describe('ImageData Buffer Handling (Zero-Copy Optimization)', () => {
   it('should accept Uint8ClampedArray input and resize correctly', async () => {
     const clampedData = new Uint8ClampedArray([
-      255, 0, 0, 255, 255, 0, 0, 255,
-      255, 0, 0, 255, 255, 0, 0, 255,
+      255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
     ]);
     const resizer = createResizer('client');
-    const result = await resizer({ data: clampedData, width: 2, height: 2 }, { width: 1, height: 1 });
+    const result = await resizer(
+      { data: clampedData, width: 2, height: 2 },
+      { width: 1, height: 1 }
+    );
     expect(result.data).toBeInstanceOf(Uint8ClampedArray);
     expect(result.width).toBe(1);
     expect(result.height).toBe(1);
@@ -300,20 +289,7 @@ describe('Input Validation', () => {
   });
 });
 
-
 describe('Edge Cases in Resize Logic', () => {
-  const createTestImage = (width: number, height: number): ImageInput => {
-    const size = width * height * 4;
-    const data = new Uint8Array(size);
-    for (let i = 0; i < size; i += 4) {
-      data[i] = 255; // R
-      data[i + 1] = 0; // G
-      data[i + 2] = 0; // B
-      data[i + 3] = 255; // A
-    }
-    return { data, width, height };
-  };
-
   it('should handle extreme aspect ratio (very wide) without errors', async () => {
     const resizer = createResizer('client');
     const data = new Uint8Array(1920 * 1 * 4).fill(255);
@@ -331,5 +307,4 @@ describe('Edge Cases in Resize Logic', () => {
     expect(result.width).toBe(960);
     expect(result.height).toBe(540); // 1080 * 960 / 1920 = 540
   });
-
 });

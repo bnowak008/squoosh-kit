@@ -1,0 +1,26 @@
+{
+  "name": "@squoosh-kit/squoosh",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --force",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@squoosh-kit/core": "workspace:*",
+    "@squoosh-kit/vite-plugin": "workspace:*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.0",
+    "@types/node": "^25.5.0",
+    "@vitejs/plugin-react": "^5.1.1",
+    "tailwindcss": "^4.1.11",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  }
+}

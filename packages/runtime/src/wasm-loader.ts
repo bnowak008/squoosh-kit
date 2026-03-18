@@ -96,7 +96,6 @@ export async function loadWasmModule(
     const url = new URL(/* @vite-ignore */ modulePath, import.meta.url);
 
     return await import(/* @vite-ignore */ url.href);
-
   } catch (e3) {
     throw new Error(
       `Failed to load WASM module from "${modulePath}". ` +

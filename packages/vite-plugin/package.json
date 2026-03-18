@@ -35,9 +35,11 @@
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "vite": ">=7"
+  },
   "devDependencies": {
     "@types/bun": "latest",
-    "typescript": "~5.9.3",
-    "vite": "^7.2.2"
+    "typescript": "~5.9.3"
   }
 }

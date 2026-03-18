@@ -6,29 +6,6 @@ import { describe, it, expect } from 'bun:test';
 import { createWebpEncoder } from '../src/index.js';
 import type { ImageInput } from '../src/index.js';
 
-// Test image data: 2x2 red square
-const createTestImage = (): ImageInput => {
-  const data = new Uint8Array([
-    255,
-    0,
-    0,
-    255, // Red pixel
-    255,
-    0,
-    0,
-    255, // Red pixel
-    255,
-    0,
-    0,
-    255, // Red pixel
-    255,
-    0,
-    0,
-    255, // Red pixel
-  ]);
-  return { data, width: 2, height: 2 };
-};
-
 describe('WebP Factory', () => {
   it('should create a factory function for client mode', () => {
     const webpEncoder = createWebpEncoder('client');
@@ -44,8 +21,7 @@ describe('WebP Factory', () => {
 describe('ImageData Buffer Handling (Zero-Copy Optimization)', () => {
   it('should accept Uint8ClampedArray input and encode correctly', async () => {
     const clampedData = new Uint8ClampedArray([
-      255, 0, 0, 255, 255, 0, 0, 255,
-      255, 0, 0, 255, 255, 0, 0, 255,
+      255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
     ]);
     const encoder = createWebpEncoder('client');
     const result = await encoder({ data: clampedData, width: 2, height: 2 });
@@ -255,4 +231,3 @@ describe('Input Validation', () => {
     });
   });
 });
-

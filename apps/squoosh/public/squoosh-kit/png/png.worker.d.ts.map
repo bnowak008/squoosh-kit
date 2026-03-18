@@ -1,0 +1,1 @@
+{"version":3,"file":"png.worker.d.ts","sourceRoot":"","sources":["../src/png.worker.ts"],"names":[],"mappings":"AAAA;;GAEG;AAEH,OAAO,KAAK,EAGV,UAAU,EACX,MAAM,sBAAsB,CAAC;AA2F9B,wBAAsB,eAAe,CACnC,KAAK,EAAE,UAAU,EACjB,MAAM,CAAC,EAAE,WAAW,GACnB,OAAO,CAAC,UAAU,CAAC,CAgCrB;AAED,wBAAsB,eAAe,CACnC,IAAI,EAAE,UAAU,EAChB,MAAM,CAAC,EAAE,WAAW,GACnB,OAAO,CAAC,SAAS,CAAC,CAiBpB"}

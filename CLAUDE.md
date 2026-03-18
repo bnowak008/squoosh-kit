@@ -68,6 +68,7 @@ The bridge is created in `bridge.ts` per package, the worker entry point is `*.w
 ### Multi-Target Builds
 
 Each package builds 4 output targets using `Bun.build()` in the package's `build.ts`:
+
 1. `index.bun.mjs` — Bun runtime
 2. `index.node.mjs` — Node ESM
 3. `index.node.cjs` — Node CJS
