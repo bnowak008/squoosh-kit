@@ -41,3 +41,5 @@ examples/*.webp
 examples/*.png
 examples/*.jpg
 examples/*.jpeg
+
+apps/vite/public/squoosh-kit/
