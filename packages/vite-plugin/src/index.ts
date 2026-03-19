@@ -40,7 +40,7 @@ function copyBrowserFiles(srcDir: string, destDir: string) {
   }
 }
 
-export default function squooshVitePlugin(squooshKitRoot: string) {
+export default function squooshVitePlugin(squooshKitRoot: string): PluginOption {
   const viteRoot = process.cwd();
   const publicDir = join(viteRoot, 'public', 'squoosh-kit');
   const webpDist = join(squooshKitRoot, 'webp', 'dist');
@@ -107,11 +107,8 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
     },
     config: () => ({
       server: {
-        fs: {
-          allow: [viteRoot, squooshKitRoot],
-        },
         headers: {
-          'Cross-Origin-Embedder-Policy': 'require-corp',
+          'Cross-Origin-Embedder-Policy': 'credentialless',
           'Cross-Origin-Opener-Policy': 'same-origin',
           'Access-Control-Allow-Origin': '*',
         },
@@ -136,33 +133,7 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
       assetsInclude: ['**/*.wasm'],
     }),
     configureServer(server: ViteDevServer) {
-      server.middlewares.use(
-        (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-          const url = req.url;
-
-          if (!url?.includes('squoosh-kit')) {
-            next();
-            return;
-          }
-
-          let rewrittenUrl: string;
-
-          if (url.includes('@squoosh-kit')) {
-            rewrittenUrl =
-              '/squoosh-kit' +
-              url.split('@squoosh-kit')[1].replace('/dist', '').split('?')[0];
-          } else {
-            rewrittenUrl =
-              '/squoosh-kit' +
-              url.split('squoosh-kit')[1].replace('/dist', '').split('?')[0];
-          }
-
-          req.url = rewrittenUrl;
-          next();
-        }
-      );
-
-      // Then serve files from /squoosh-kit path
+      // Serve files from /squoosh-kit path
       server.middlewares.use(
         '/squoosh-kit',
         (req: IncomingMessage, res: ServerResponse, next: () => void) => {
@@ -181,7 +152,7 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
                 res.setHeader('Content-Type', 'application/javascript');
               }
 
-              res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+              res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
               res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
               res.setHeader('Content-Length', fileData.length.toString());
               res.end(fileData);
@@ -195,5 +166,5 @@ export default function squooshVitePlugin(squooshKitRoot: string) {
         }
       );
     },
-  } satisfies PluginOption;
+  };
 }

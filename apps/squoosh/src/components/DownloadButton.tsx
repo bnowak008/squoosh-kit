@@ -29,8 +29,8 @@ export default function DownloadButton({ bytes, codecId, sourceFileName }: Props
       disabled={!bytes}
       className="
         flex items-center gap-2 px-4 py-2 rounded-lg
-        bg-blue-600 hover:bg-blue-500 active:bg-blue-700
-        text-white text-sm font-medium
+        bg-white hover:bg-white/90 active:bg-white/80
+        text-[#09f] text-sm font-semibold
         disabled:opacity-40 disabled:cursor-not-allowed
         transition-colors
       "

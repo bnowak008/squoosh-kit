@@ -21,12 +21,12 @@ export default function WebPOptions({ options, onChange }: Props) {
         value={options.quality}
         onChange={(v) => onChange({ quality: v })}
       />
-      <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+      <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
         <input
           type="checkbox"
           checked={options.lossless === 1}
           onChange={(e) => onChange({ lossless: e.target.checked ? 1 : 0 })}
-          className="accent-blue-500"
+          className="accent-white"
         />
         Lossless
       </label>

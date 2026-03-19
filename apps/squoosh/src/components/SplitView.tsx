@@ -22,23 +22,11 @@ export default function SplitView({
   return (
     <div
       ref={containerRef}
-      className="relative flex h-full overflow-hidden select-none"
+      className="relative w-full h-full overflow-hidden select-none rounded-2xl shadow-xl"
       style={{ '--split': `${splitPercent}%` } as React.CSSProperties}
     >
-      {/* Left pane — original */}
-      <div
-        className="flex-shrink-0 overflow-hidden"
-        style={{ width: 'var(--split, 50%)' }}
-      >
-        <ImagePane
-          objectUrl={sourceObjectUrl}
-          label="Original"
-          side="left"
-        />
-      </div>
-
-      {/* Right pane — compressed */}
-      <div className="flex-1 overflow-hidden">
+      {/* Right pane — compressed (bottom layer, full size) */}
+      <div className="absolute inset-0">
         <ImagePane
           objectUrl={encodeResult?.objectUrl ?? null}
           codecId={codecId}
@@ -46,6 +34,18 @@ export default function SplitView({
           label="Compressed"
           side="right"
           isEncoding={isEncoding}
+        />
+      </div>
+
+      {/* Left pane — original (top layer, clipped to --split) */}
+      <div
+        className="absolute inset-0"
+        style={{ clipPath: 'inset(0 calc(100% - var(--split, 50%)) 0 0)' }}
+      >
+        <ImagePane
+          objectUrl={sourceObjectUrl}
+          label="Original"
+          side="left"
         />
       </div>
 

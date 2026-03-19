@@ -17,7 +17,7 @@ export default function Slider({
 }: Props) {
   return (
     <label className="flex flex-col gap-1">
-      <div className="flex justify-between text-xs text-gray-400">
+      <div className="flex justify-between text-xs text-white/70">
         <span>{label}</span>
         <span className="text-white font-mono">{value}</span>
       </div>
@@ -28,7 +28,7 @@ export default function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-blue-500 cursor-pointer"
+        className="w-full accent-white cursor-pointer"
       />
     </label>
   );

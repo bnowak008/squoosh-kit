@@ -12,9 +12,9 @@ export default function FormatSelector({ value, onChange }: Props) {
       value={value}
       onChange={(e) => onChange(e.target.value as CodecId)}
       className="
-        bg-gray-800 text-white border border-gray-600 rounded-lg
-        px-3 py-2 text-sm font-medium
-        focus:outline-none focus:border-blue-500
+        bg-white/20 text-white border border-white/30 rounded-lg
+        px-3 py-2 text-sm font-semibold
+        focus:outline-none focus:border-white/60
         cursor-pointer
       "
     >

@@ -20,12 +20,12 @@ export default function OxipngOptions({ options, onChange }: Props) {
         value={options.level}
         onChange={(v) => onChange({ level: v })}
       />
-      <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+      <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
         <input
           type="checkbox"
           checked={options.interlace}
           onChange={(e) => onChange({ interlace: e.target.checked })}
-          className="accent-blue-500"
+          className="accent-white"
         />
         Interlace
       </label>

@@ -1,8 +1,284 @@
+import { useState } from 'react';
 import type { Dispatch } from 'react';
-import type { AppState, Action, CodecId } from '../types';
+import type { AppState, Action, CodecId, ResizeOptions } from '../types';
 import FormatSelector from './FormatSelector';
 import OptionsPanel from './OptionsPanel';
 import DownloadButton from './DownloadButton';
+import ResizePanel from './ResizePanel';
+
+// ── token helpers ──────────────────────────────────────────────────────────────
+
+type Token = { text: string; color: string };
+
+const kw    = (t: string): Token => ({ text: t, color: '#c792ea' });
+const fn    = (t: string): Token => ({ text: t, color: '#82aaff' });
+const str   = (t: string): Token => ({ text: t, color: '#c3e88d' });
+const num   = (t: string): Token => ({ text: t, color: '#f78c6c' });
+const pun   = (t: string): Token => ({ text: t, color: '#89ddff' });
+const prop  = (t: string): Token => ({ text: t, color: '#f07178' });
+const plain = (t: string): Token => ({ text: t, color: '#eeffff' });
+const cmt   = (t: string): Token => ({ text: t, color: '#546e7a' });
+
+// ── codec metadata ─────────────────────────────────────────────────────────────
+
+const FACTORY: Record<CodecId, string> = {
+  webp:    'createWebpEncoder',
+  avif:    'createAvifEncoder',
+  mozjpeg: 'createMozjpegEncoder',
+  jxl:     'createJxlEncoder',
+  oxipng:  'createOxipngOptimizer',
+  png:     'createPngEncoder',
+};
+
+const FN: Record<CodecId, string> = {
+  webp:    'encode',
+  avif:    'encode',
+  mozjpeg: 'encode',
+  jxl:     'encode',
+  oxipng:  'optimize',
+  png:     'encode',
+};
+
+// ── token builders ─────────────────────────────────────────────────────────────
+
+function valToken(val: unknown): Token {
+  if (typeof val === 'boolean') return num(String(val));
+  if (typeof val === 'number')  return num(String(val));
+  return str(`'${String(val)}'`);
+}
+
+function optBlock(options: Record<string, unknown>, indent = '  '): Token[][] {
+  const entries = Object.entries(options);
+  if (entries.length === 0) return [];
+  return entries.map(([key, val], i) => [
+    plain(indent), prop(key), pun(': '), valToken(val),
+    ...(i < entries.length - 1 ? [pun(',')] : []),
+  ]);
+}
+
+function importLine(names: string[]): Token[] {
+  const inner = names.join(', ');
+  return [kw('import'), plain(' '), pun('{'), plain(` ${inner} `), pun('}'), plain(' '), kw('from'), plain(' '), str("'@squoosh-kit/core'"), pun(';')];
+}
+
+/** Lines for a resize step, used across all snippet types. */
+function resizeLines(ro: ResizeOptions, inputVar: string, outputVar: string): Token[][] {
+  const entries = Object.entries(ro).filter(([, v]) => v !== undefined) as [string, unknown][];
+  return [
+    [
+      kw('const'), plain(` ${outputVar} `), pun('='), plain(' '), kw('await'), plain(' '),
+      fn('resize.resize'), pun('('), plain(inputVar), pun(', '), pun('{'),
+    ],
+    ...entries.map(([key, val], i) => [
+      plain('  '), prop(key), pun(': '), valToken(val),
+      ...(i < entries.length - 1 ? [pun(',')] : []),
+    ]),
+    [pun('}'), pun(')')],
+  ];
+}
+
+// ── snippet builders ───────────────────────────────────────────────────────────
+
+function buildSimple(
+  codecId: CodecId,
+  options: Record<string, unknown>,
+  resizeEnabled: boolean,
+  resizeOptions: ResizeOptions,
+): Token[][] {
+  const hasPng  = codecId === 'png';
+  const hasOpts = !hasPng && Object.keys(options).length > 0;
+  const imports = resizeEnabled ? ['resize', codecId] : [codecId];
+  const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
+
+  const lines: Token[][] = [importLine(imports), []];
+
+  if (resizeEnabled) {
+    const ro = Object.fromEntries(Object.entries(resizeOptions).filter(([, v]) => v !== undefined));
+    lines.push(...resizeLines(ro as ResizeOptions, 'imageInput', 'resized'));
+    lines[lines.length - 1] = [...lines[lines.length - 1], pun(';')];
+    lines.push([]);
+  }
+
+  lines.push([
+    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
+    fn(`${codecId}.${FN[codecId]}`), pun('('), plain(encodeInput),
+    ...(hasOpts  ? [pun(', '), pun('{')]
+      : hasPng   ? []
+      :            [pun(')')]),
+  ]);
+
+  if (hasOpts) {
+    lines.push(...optBlock(options));
+    lines.push([pun('}'), pun(')')]);
+  }
+
+  lines[lines.length - 1] = [...lines[lines.length - 1], pun(';')];
+  return lines;
+}
+
+function buildAdvanced(
+  codecId: CodecId,
+  options: Record<string, unknown>,
+  resizeEnabled: boolean,
+  resizeOptions: ResizeOptions,
+): Token[][] {
+  const factory   = FACTORY[codecId];
+  const hasPng    = codecId === 'png';
+  const hasOpts   = !hasPng && Object.keys(options).length > 0;
+  const imports   = resizeEnabled ? ['resize', codecId] : [codecId];
+  const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
+
+  const lines: Token[][] = [
+    importLine(imports),
+    [],
+  ];
+
+  if (resizeEnabled) {
+    lines.push(
+      [kw('const'), plain(' resizer '), pun('='), plain(' '), fn('resize.createResizer'), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
+    );
+  }
+
+  lines.push(
+    [kw('const'), plain(' encoder '), pun('='), plain(' '), fn(`${codecId}.${factory}`), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
+    [],
+    [kw('const'), plain(' controller '), pun('='), plain(' '), kw('new'), plain(' '), fn('AbortController'), pun('();')],
+    [],
+  );
+
+  if (resizeEnabled) {
+    const ro = Object.fromEntries(Object.entries(resizeOptions).filter(([, v]) => v !== undefined));
+    const resLines = resizeLines(ro as ResizeOptions, 'imageInput', 'resized');
+    resLines[0] = [kw('const'), plain(' resized '), pun('='), plain(' '), kw('await'), plain(' '), fn('resizer'), pun('('), plain('imageInput'), pun(', '), pun('{')];
+    resLines.push([pun('},'), plain(' controller.signal'), pun(')')]);
+    resLines[resLines.length - 1] = [...resLines[resLines.length - 1], pun(';')];
+    lines.push(...resLines, []);
+  }
+
+  lines.push([
+    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
+    fn('encoder'), pun('('), plain(encodeInput),
+    ...(hasOpts  ? [pun(', '), pun('{')]
+      : hasPng   ? [pun(', '), plain('controller.signal'), pun(')')]
+      :            [pun(', '), plain('controller.signal'), pun(')')]),
+  ]);
+
+  if (hasOpts) {
+    lines.push(...optBlock(options));
+    lines.push([pun('},'), plain(' controller.signal'), pun(')')]);
+  }
+  lines[lines.length - 1] = [...lines[lines.length - 1], pun(';')];
+
+  lines.push(
+    [],
+    [cmt('// reuse for multiple images, then clean up:')],
+    ...(resizeEnabled ? [[kw('await'), plain(' '), fn('resizer.terminate'), pun('();')]] : []) as Token[][],
+    [kw('await'), plain(' '), fn('encoder.terminate'), pun('();')],
+  );
+
+  return lines;
+}
+
+function buildRuntimes(
+  codecId: CodecId,
+  options: Record<string, unknown>,
+  resizeEnabled: boolean,
+  resizeOptions: ResizeOptions,
+): Token[][] {
+  const hasPng    = codecId === 'png';
+  const hasOpts   = !hasPng && Object.keys(options).length > 0;
+  const factory   = FACTORY[codecId];
+  const imports   = resizeEnabled ? ['resize', codecId] : [codecId];
+  const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
+
+  const ro = resizeEnabled
+    ? Object.fromEntries(Object.entries(resizeOptions).filter(([, v]) => v !== undefined)) as ResizeOptions
+    : null;
+
+  // ─ Node / Bun ──────────────────────────────────────────────────────────────
+  const nodeLines: Token[][] = [
+    [cmt('// ─── Node.js / Bun ──────────────────────────────────────')],
+    importLine(imports),
+    [],
+  ];
+
+  if (ro) {
+    const rl = resizeLines(ro, 'imageInput', 'resized');
+    rl[rl.length - 1] = [...rl[rl.length - 1], pun(';')];
+    nodeLines.push(...rl, []);
+  }
+
+  nodeLines.push([
+    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
+    fn(`${codecId}.${FN[codecId]}`), pun('('), plain(encodeInput),
+    ...(hasOpts  ? [pun(', '), pun('{')]
+      : hasPng   ? []
+      :            [pun(')')]),
+  ]);
+  if (hasOpts) {
+    nodeLines.push(...optBlock(options));
+    nodeLines.push([pun('}'), pun(')')]);
+  }
+  nodeLines[nodeLines.length - 1] = [...nodeLines[nodeLines.length - 1], pun(';')];
+
+  // ─ Browser ─────────────────────────────────────────────────────────────────
+  const browserLines: Token[][] = [
+    [],
+    [cmt('// ─── Browser (Vite) ─────────────────────────────────────')],
+  ];
+
+  if (ro) {
+    browserLines.push(
+      [kw('const'), plain(' resizer '), pun('='), plain(' '), fn('resize.createResizer'), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
+    );
+  }
+
+  browserLines.push(
+    [kw('const'), plain(' encoder '), pun('='), plain(' '), fn(`${codecId}.${factory}`), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
+    [kw('const'), plain(' signal '), pun('='), plain(' '), pun('('), kw('new'), plain(' '), fn('AbortController'), pun(')'), pun('.signal;')],
+    [],
+  );
+
+  if (ro) {
+    const rl = resizeLines(ro, 'imageInput', 'resized');
+    rl[0] = [kw('const'), plain(' resized '), pun('='), plain(' '), kw('await'), plain(' '), fn('resizer'), pun('('), plain('imageInput'), pun(', '), pun('{')];
+    rl.push([pun('},'), plain(' signal'), pun(')')]);
+    rl[rl.length - 1] = [...rl[rl.length - 1], pun(';')];
+    browserLines.push(...rl, []);
+  }
+
+  browserLines.push([
+    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
+    fn('encoder'), pun('('), plain(encodeInput),
+    ...(hasOpts  ? [pun(', '), pun('{')]
+      : hasPng   ? [pun(', '), plain('signal'), pun(')')]
+      :            [pun(', '), plain('signal'), pun(')')]),
+  ]);
+
+  if (hasOpts) {
+    browserLines.push(...optBlock(options));
+    browserLines.push([pun('},'), plain(' signal'), pun(')')]);
+  }
+  browserLines[browserLines.length - 1] = [...browserLines[browserLines.length - 1], pun(';')];
+
+  if (ro) {
+    browserLines.push([kw('await'), plain(' '), fn('resizer.terminate'), pun('();')]);
+  }
+  browserLines.push([kw('await'), plain(' '), fn('encoder.terminate'), pun('();')]);
+
+  return [...nodeLines, ...browserLines];
+}
+
+// ── tab types ──────────────────────────────────────────────────────────────────
+
+type Tab = 'simple' | 'advanced' | 'runtimes';
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'simple',   label: 'Simple'   },
+  { id: 'advanced', label: 'Advanced' },
+  { id: 'runtimes', label: 'Runtimes' },
+];
+
+// ── component ──────────────────────────────────────────────────────────────────
 
 type Props = {
   state: AppState;
@@ -22,8 +298,11 @@ function compressionRatio(original: number, compressed: number): string {
 }
 
 export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
-  const { sourceFile, imageInput, encodeResult, codecId, codecOptions, phase } =
-    state;
+  const {
+    sourceFile, imageInput, encodeResult, encodeError,
+    codecId, codecOptions, resizeEnabled, resizeOptions, phase,
+  } = state;
+  const [activeTab, setActiveTab] = useState<Tab>('simple');
 
   function handleOptionsChange(patch: Record<string, unknown>) {
     dispatch({ type: 'SET_OPTIONS', options: patch });
@@ -35,71 +314,74 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
 
   const isEncoding = phase === 'encoding';
 
+  const lines =
+    activeTab === 'simple'   ? buildSimple(codecId, codecOptions, resizeEnabled, resizeOptions) :
+    activeTab === 'advanced' ? buildAdvanced(codecId, codecOptions, resizeEnabled, resizeOptions) :
+                               buildRuntimes(codecId, codecOptions, resizeEnabled, resizeOptions);
+
   return (
-    <div className="flex border-t border-gray-800 bg-gray-900 text-white">
-      {/* Left — source info */}
-      <div className="flex-1 flex flex-col justify-center gap-1 px-5 py-4 border-r border-gray-800 min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-medium truncate text-gray-200">
-            {sourceFile?.name ?? '—'}
-          </span>
-          <button
-            onClick={handleReset}
-            title="Upload new image"
-            className="ml-auto flex-shrink-0 p-1 rounded text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="flex border-t border-white/10 text-white" style={{ background: '#09f' }}>
+      {/* Left — code snippet (stays dark) */}
+      <div className="flex-1 flex flex-col min-w-0 border-r border-white/10 overflow-hidden bg-gray-900">
+        {/* Tab bar */}
+        <div className="flex items-center border-b border-white/10">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                px-4 py-2 text-xs font-mono transition-colors
+                ${activeTab === tab.id
+                  ? 'text-white border-b border-white -mb-px'
+                  : 'text-white/40 hover:text-white/70'}
+              `}
+            >
+              {tab.label}
+            </button>
+          ))}
+          <div className="ml-auto pr-2">
+            <button
+              onClick={handleReset}
+              title="Upload new image"
+              className="p-1 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
-        {imageInput && (
-          <span className="text-xs text-gray-500">
-            {imageInput.width} × {imageInput.height}
-          </span>
-        )}
-        {sourceFile && (
-          <span className="text-xs text-gray-500">
-            {formatBytes(sourceFile.size)}
-          </span>
-        )}
+
+        {/* Code */}
+        <pre className="flex-1 px-4 py-3 text-xs font-mono leading-relaxed overflow-auto bg-gray-950/60">
+          {lines.map((line, li) => (
+            <div key={li}>
+              {line.length === 0
+                ? '\u00a0'
+                : line.map((tok, ti) => (
+                    <span key={ti} style={{ color: tok.color }}>{tok.text}</span>
+                  ))}
+            </div>
+          ))}
+        </pre>
       </div>
 
-      {/* Right — codec controls */}
-      <div className="flex flex-col gap-3 px-5 py-4 w-72 flex-shrink-0">
+      {/* Right — codec controls on #09f blue */}
+      <div className="flex flex-col gap-3 px-5 py-4 w-72 flex-shrink-0 overflow-y-auto">
         <div className="flex items-center gap-3">
           <FormatSelector value={codecId} onChange={onSetCodec} />
 
-          {/* Output size / spinner */}
           <div className="ml-auto text-right">
             {isEncoding ? (
-              <svg
-                className="animate-spin h-5 w-5 text-blue-400 ml-auto"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
+              <svg className="animate-spin h-5 w-5 text-white/80 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             ) : encodeResult ? (
               <div className="flex flex-col items-end">
-                <span className="text-sm font-medium text-white">
-                  {formatBytes(encodeResult.sizeBytes)}
-                </span>
+                <span className="text-sm font-bold text-white">{formatBytes(encodeResult.sizeBytes)}</span>
                 {sourceFile && (
-                  <span className="text-xs text-green-400">
+                  <span className="text-xs text-white/70">
                     {compressionRatio(sourceFile.size, encodeResult.sizeBytes)}
                   </span>
                 )}
@@ -113,6 +395,23 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
           options={codecOptions}
           onChange={handleOptionsChange}
         />
+
+        <div className="border-t border-white/20 pt-3">
+          <ResizePanel
+            enabled={resizeEnabled}
+            options={resizeOptions}
+            originalWidth={imageInput?.width ?? 0}
+            originalHeight={imageInput?.height ?? 0}
+            onToggle={(enabled) => dispatch({ type: 'SET_RESIZE_ENABLED', enabled })}
+            onChange={(options) => dispatch({ type: 'SET_RESIZE_OPTIONS', options })}
+          />
+        </div>
+
+        {encodeError && (
+          <div className="text-xs text-white bg-white/20 border border-white/30 rounded px-2 py-1.5 break-words">
+            {encodeError}
+          </div>
+        )}
 
         <div className="mt-auto pt-1">
           <DownloadButton

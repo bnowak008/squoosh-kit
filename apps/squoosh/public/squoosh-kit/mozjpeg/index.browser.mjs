@@ -77,6 +77,50 @@ function createCodecWorker(workerFilename, options) {
     "webp.worker.js": {
       package: "@squoosh-kit/webp",
       specifier: "webp.worker.js"
+    },
+    "avif.worker.js": {
+      package: "@squoosh-kit/avif",
+      specifier: "avif.worker.js"
+    },
+    "mozjpeg.worker.js": {
+      package: "@squoosh-kit/mozjpeg",
+      specifier: "mozjpeg.worker.js"
+    },
+    "jxl.worker.js": {
+      package: "@squoosh-kit/jxl",
+      specifier: "jxl.worker.js"
+    },
+    "oxipng.worker.js": {
+      package: "@squoosh-kit/oxipng",
+      specifier: "oxipng.worker.js"
+    },
+    "png.worker.js": {
+      package: "@squoosh-kit/png",
+      specifier: "png.worker.js"
+    },
+    "imagequant.worker.js": {
+      package: "@squoosh-kit/imagequant",
+      specifier: "imagequant.worker.js"
+    },
+    "qoi.worker.js": {
+      package: "@squoosh-kit/qoi",
+      specifier: "qoi.worker.js"
+    },
+    "wp2.worker.js": {
+      package: "@squoosh-kit/wp2",
+      specifier: "wp2.worker.js"
+    },
+    "hqx.worker.js": {
+      package: "@squoosh-kit/hqx",
+      specifier: "hqx.worker.js"
+    },
+    "rotate.worker.js": {
+      package: "@squoosh-kit/rotate",
+      specifier: "rotate.worker.js"
+    },
+    "visdif.worker.js": {
+      package: "@squoosh-kit/visdif",
+      specifier: "visdif.worker.js"
     }
   };
   const workerConfig = workerMap[normalizedName];
@@ -140,7 +184,8 @@ function createCodecWorker(workerFilename, options) {
     }
     const platformExt = isBun() ? ".bun.js" : ".node.mjs";
     const baseName = normalizedName.replace(".js", "");
-    const srcRelPath = workerConfig.package.includes("resize") ? `../../resize/src/${baseName}.ts` : `../../webp/src/${baseName}.ts`;
+    const pkgName = workerConfig.package.split("/")[1];
+    const srcRelPath = `../../${pkgName}/src/${baseName}.ts`;
     console.log("srcRelPath:", srcRelPath);
     console.log("import.meta.url:", import.meta.url);
     try {
@@ -148,7 +193,7 @@ function createCodecWorker(workerFilename, options) {
         type: "module"
       });
     } catch {
-      const distRelPath = workerConfig.package.includes("resize") ? `../../resize/dist/${baseName}.${platformExt.slice(1)}` : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+      const distRelPath = `../../${pkgName}/dist/${baseName}.${platformExt.slice(1)}`;
       console.log("distRelPath:", distRelPath);
       console.log("import.meta.url:", import.meta.url);
       try {
@@ -729,4 +774,4 @@ export {
   createMozjpegDecoder
 };
 
-//# debugId=95F4D84B31809F0364756E2164756E21
+//# debugId=4DCCFE07F0D5902F64756E2164756E21

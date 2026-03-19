@@ -20,12 +20,12 @@ export default function MozjpegOptions({ options, onChange }: Props) {
         value={options.quality}
         onChange={(v) => onChange({ quality: v })}
       />
-      <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+      <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
         <input
           type="checkbox"
           checked={options.progressive}
           onChange={(e) => onChange({ progressive: e.target.checked })}
-          className="accent-blue-500"
+          className="accent-white"
         />
         Progressive
       </label>
