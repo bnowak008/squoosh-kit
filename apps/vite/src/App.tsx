@@ -38,11 +38,26 @@ function App() {
     null
   );
 
+  const blobUrlsRef = useRef({
+    source: null as string | null,
+    resized: null as string | null,
+    processed: null as string | null,
+  });
+
+  useEffect(() => {
+    blobUrlsRef.current = {
+      source: sourceImageUrl,
+      resized: resizedImageUrl,
+      processed: processedImageUrl,
+    };
+  }, [sourceImageUrl, resizedImageUrl, processedImageUrl]);
+
   useEffect(() => {
     return () => {
-      if (sourceImageUrl) URL.revokeObjectURL(sourceImageUrl);
-      if (resizedImageUrl) URL.revokeObjectURL(resizedImageUrl);
-      if (processedImageUrl) URL.revokeObjectURL(processedImageUrl);
+      const { source, resized, processed } = blobUrlsRef.current;
+      if (source) URL.revokeObjectURL(source);
+      if (resized) URL.revokeObjectURL(resized);
+      if (processed) URL.revokeObjectURL(processed);
     };
   }, []);
 

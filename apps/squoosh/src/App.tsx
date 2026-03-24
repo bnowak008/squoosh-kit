@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Dispatch } from 'react';
 import type { AppState, Action, CodecId } from './types';
 import { getCodec, CODECS } from './codec/registry';
@@ -9,14 +9,6 @@ import BottomPanel from './components/BottomPanel';
 import { useImageDecode } from './hooks/useImageDecode';
 import { useEncoder } from './hooks/useEncoder';
 import { prewarmCodec } from './codec/encode';
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'animated-waves': React.HTMLAttributes<HTMLElement>;
-    }
-  }
-}
 
 type BlobConfig = {
   id: number;
@@ -359,12 +351,7 @@ function WaveSeparator() {
     el.setAttribute('wave-count', '3');
   }, []);
   
-  return (
-    // @ts-ignore
-    <animated-waves
-      ref={ref}
-    />
-  );
+  return <animated-waves ref={ref} />;
 }
 
 function runWhenIdle(task: () => void): () => void {
