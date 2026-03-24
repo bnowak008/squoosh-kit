@@ -18,6 +18,7 @@ export default function SplitView({
 }: Props) {
   const { containerRef, splitPercent, handlePointerDown } =
     useSplitPane(50);
+  const hasEncodedOutput = Boolean(encodeResult);
 
   return (
     <div
@@ -28,9 +29,10 @@ export default function SplitView({
       {/* Right pane — compressed (bottom layer, full size) */}
       <div className="absolute inset-0">
         <ImagePane
-          objectUrl={encodeResult?.objectUrl ?? null}
-          codecId={codecId}
-          encodedBytes={encodeResult?.bytes ?? null}
+          objectUrl={hasEncodedOutput ? encodeResult?.objectUrl ?? null : sourceObjectUrl}
+          codecId={hasEncodedOutput ? codecId : undefined}
+          encodedBytes={hasEncodedOutput ? encodeResult?.bytes ?? null : null}
+          isEncodedPreview={hasEncodedOutput}
           label="Compressed"
           side="right"
           isEncoding={isEncoding}

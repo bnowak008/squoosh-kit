@@ -411,6 +411,7 @@ var init_oxipng_worker = __esm(() => {
     self.onmessage = async (event) => {
       const data = event.data;
       if (data?.type === "worker:ping") {
+        await initOxiPNG();
         self.postMessage({ type: "worker:ready" });
         return;
       }
@@ -424,7 +425,7 @@ var init_oxipng_worker = __esm(() => {
           const result = await oxipngOptimizeClient(request.payload.image, request.payload.options);
           response.ok = true;
           response.data = result;
-          self.postMessage(response);
+          self.postMessage(response, [result.buffer]);
         } else {
           response.error = `Unknown message type: ${request.type}`;
           self.postMessage(response);
@@ -442,4 +443,4 @@ export {
   oxipngOptimizeClient
 };
 
-//# debugId=A0BB5FCF0EABE05964756E2164756E21
+//# debugId=5D34EEC25D13715164756E2164756E21

@@ -159,6 +159,7 @@ if (typeof self !== 'undefined') {
     const data = event.data;
 
     if (data?.type === 'worker:ping') {
+      await initOxiPNG();
       self.postMessage({ type: 'worker:ready' });
       return;
     }
@@ -181,7 +182,7 @@ if (typeof self !== 'undefined') {
         );
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        self.postMessage(response, [result.buffer]);
       } else {
         response.error = `Unknown message type: ${request.type}`;
         self.postMessage(response);

@@ -16,6 +16,8 @@ import type { JXLModule as JXLDecModule } from '../wasm/jxl-dec/jxl_dec';
 
 let cachedEncModule: JXLModule | null = null;
 let cachedDecModule: JXLDecModule | null = null;
+let loadEncModulePromise: Promise<JXLModule> | null = null;
+let loadDecModulePromise: Promise<JXLDecModule> | null = null;
 
 /**
  * Determine if we are running in a Node/Bun environment
@@ -29,10 +31,9 @@ function isNodeOrBun(): boolean {
 }
 
 async function loadJxlEncModule(): Promise<JXLModule> {
-  if (cachedEncModule) {
-    return cachedEncModule;
-  }
-
+  if (cachedEncModule) return cachedEncModule;
+  if (loadEncModulePromise) return loadEncModulePromise;
+  loadEncModulePromise = (async () => {
   // Emscripten polyfills
   const globalSelf = typeof self !== 'undefined' ? self : globalThis;
   if (!globalSelf.location) {
@@ -155,13 +156,14 @@ async function loadJxlEncModule(): Promise<JXLModule> {
     );
     throw err;
   }
+  })().catch((err: unknown) => { loadEncModulePromise = null; throw err; });
+  return loadEncModulePromise;
 }
 
 async function loadJxlDecModule(): Promise<JXLDecModule> {
-  if (cachedDecModule) {
-    return cachedDecModule;
-  }
-
+  if (cachedDecModule) return cachedDecModule;
+  if (loadDecModulePromise) return loadDecModulePromise;
+  loadDecModulePromise = (async () => {
   // Emscripten polyfills
   const globalSelf = typeof self !== 'undefined' ? self : globalThis;
   if (!globalSelf.location) {
@@ -287,6 +289,8 @@ async function loadJxlDecModule(): Promise<JXLDecModule> {
     );
     throw err;
   }
+  })().catch((err: unknown) => { loadDecModulePromise = null; throw err; });
+  return loadDecModulePromise;
 }
 
 /**
@@ -398,6 +402,7 @@ if (typeof self !== 'undefined') {
 
     // Handle worker ping for initialization
     if (data?.type === 'worker:ping') {
+      await loadJxlEncModule();
       self.postMessage({ type: 'worker:ready' });
       return;
     }
@@ -418,7 +423,7 @@ if (typeof self !== 'undefined') {
         const result = await jxlEncodeClient(image, options);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        self.postMessage(response, [result.buffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -435,7 +440,7 @@ if (typeof self !== 'undefined') {
         const result = await jxlDecodeClient(request.payload.data);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        self.postMessage(response, [result.data.buffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);

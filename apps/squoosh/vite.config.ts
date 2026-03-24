@@ -5,6 +5,10 @@ import squooshVitePlugin from '@squoosh-kit/vite-plugin';
 import { join } from 'path';
 
 export default defineConfig({
+  base: '/',
+  server: {
+    allowedHosts: ['squoosh-kit.dev', 'www.squoosh-kit.dev'],
+  },
   plugins: [
     react(),
     tailwindcss(),

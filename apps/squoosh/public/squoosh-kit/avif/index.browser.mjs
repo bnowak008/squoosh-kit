@@ -418,155 +418,169 @@ __export(exports_avif_worker, {
   avifDecodeClient: () => avifDecodeClient
 });
 async function loadAvifEncModule() {
-  if (cachedEncModule) {
+  if (cachedEncModule)
     return cachedEncModule;
-  }
-  const globalSelf = typeof self !== "undefined" ? self : globalThis;
-  if (!globalSelf.location) {
-    globalSelf.location = {
-      href: import.meta.url
-    };
-  }
-  if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-    globalThis.self = globalThis;
-  }
-  const useNode = isBun() || isNode();
-  const modulePath = useNode ? "avif-enc/avif_node_enc.js" : "avif-enc/avif_enc.js";
-  try {
-    console.log("[AVIF Worker] Initializing encoder. Node/Bun:", useNode);
-    console.log(`[AVIF Worker] Attempting to import encoder module from path: ${modulePath}`);
-    let moduleFactory;
-    const isSource = import.meta.url.includes("/src/");
-    const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
-    let lastError = null;
-    for (const importPath of pathsToTry) {
-      try {
-        moduleFactory = (await import(importPath)).default;
-        console.log(`[AVIF Worker] Successfully loaded encoder module from: ${importPath}`);
-        break;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(`[AVIF Worker] Failed to load encoder from ${importPath}, trying next path...`);
-      }
+  if (loadEncModulePromise)
+    return loadEncModulePromise;
+  loadEncModulePromise = (async () => {
+    const globalSelf = typeof self !== "undefined" ? self : globalThis;
+    if (!globalSelf.location) {
+      globalSelf.location = {
+        href: import.meta.url
+      };
     }
-    if (!moduleFactory) {
-      throw lastError || new Error("Could not load AVIF encoder module from any path");
+    if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+      globalThis.self = globalThis;
     }
-    console.log("[AVIF Worker] Encoder module factory loaded successfully.");
-    const wasmFileName = useNode ? "avif_node_enc.wasm" : "avif_enc.wasm";
-    const wasmPathsToTry = isSource ? [`../wasm/avif-enc/${wasmFileName}`, `./wasm/avif-enc/${wasmFileName}`] : [`./wasm/avif-enc/${wasmFileName}`, `../wasm/avif-enc/${wasmFileName}`];
-    console.log(`[AVIF Worker] Preparing to load encoder WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
-    const initModuleWithBinary = async (factory, wasmPaths) => {
-      const workerBaseUrl = new URL(".", import.meta.url);
-      let lastErr = null;
-      for (const wasmPath of wasmPaths) {
+    const useNode = isBun() || isNode();
+    const modulePath = useNode ? "avif-enc/avif_node_enc.js" : "avif-enc/avif_enc.js";
+    try {
+      console.log("[AVIF Worker] Initializing encoder. Node/Bun:", useNode);
+      console.log(`[AVIF Worker] Attempting to import encoder module from path: ${modulePath}`);
+      let moduleFactory;
+      const isSource = import.meta.url.includes("/src/");
+      const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
+      let lastError = null;
+      for (const importPath of pathsToTry) {
         try {
-          console.log(`[AVIF Worker] Calling loadWasmBinary with path: ${wasmPath}`);
-          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
-          console.log(`[AVIF Worker] Successfully fetched encoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
-          const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
-          if (!globalSelf2.location) {
-            globalSelf2.location = {
-              href: import.meta.url
-            };
-          }
-          if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-            globalThis.self = globalThis;
-          }
-          return await factory({
-            noInitialRun: true,
-            wasmBinary
-          });
-        } catch (err) {
-          lastErr = err instanceof Error ? err : new Error(String(err));
-          console.warn(`[AVIF Worker] Failed to load encoder WASM from ${wasmPath}, trying next path...`);
+          moduleFactory = (await import(importPath)).default;
+          console.log(`[AVIF Worker] Successfully loaded encoder module from: ${importPath}`);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          console.warn(`[AVIF Worker] Failed to load encoder from ${importPath}, trying next path...`);
         }
       }
-      throw lastErr || new Error("Could not load encoder WASM binary from any of the attempted paths");
-    };
-    cachedEncModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
-    console.log("[AVIF Worker] AVIF encoder module initialized successfully.");
-    return cachedEncModule;
-  } catch (err) {
-    console.error(`[AVIF Worker] CRITICAL: Failed to load AVIF encoder module from path: ${modulePath}`, err);
+      if (!moduleFactory) {
+        throw lastError || new Error("Could not load AVIF encoder module from any path");
+      }
+      console.log("[AVIF Worker] Encoder module factory loaded successfully.");
+      const wasmFileName = useNode ? "avif_node_enc.wasm" : "avif_enc.wasm";
+      const wasmPathsToTry = isSource ? [`../wasm/avif-enc/${wasmFileName}`, `./wasm/avif-enc/${wasmFileName}`] : [`./wasm/avif-enc/${wasmFileName}`, `../wasm/avif-enc/${wasmFileName}`];
+      console.log(`[AVIF Worker] Preparing to load encoder WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
+      const initModuleWithBinary = async (factory, wasmPaths) => {
+        const workerBaseUrl = new URL(".", import.meta.url);
+        let lastErr = null;
+        for (const wasmPath of wasmPaths) {
+          try {
+            console.log(`[AVIF Worker] Calling loadWasmBinary with path: ${wasmPath}`);
+            const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+            console.log(`[AVIF Worker] Successfully fetched encoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
+            const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
+            if (!globalSelf2.location) {
+              globalSelf2.location = {
+                href: import.meta.url
+              };
+            }
+            if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+              globalThis.self = globalThis;
+            }
+            return await factory({
+              noInitialRun: true,
+              wasmBinary
+            });
+          } catch (err) {
+            lastErr = err instanceof Error ? err : new Error(String(err));
+            console.warn(`[AVIF Worker] Failed to load encoder WASM from ${wasmPath}, trying next path...`);
+          }
+        }
+        throw lastErr || new Error("Could not load encoder WASM binary from any of the attempted paths");
+      };
+      cachedEncModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
+      console.log("[AVIF Worker] AVIF encoder module initialized successfully.");
+      return cachedEncModule;
+    } catch (err) {
+      console.error(`[AVIF Worker] CRITICAL: Failed to load AVIF encoder module from path: ${modulePath}`, err);
+      throw err;
+    }
+  })().catch((err) => {
+    loadEncModulePromise = null;
     throw err;
-  }
+  });
+  return loadEncModulePromise;
 }
 async function loadAvifDecModule() {
-  if (cachedDecModule) {
+  if (cachedDecModule)
     return cachedDecModule;
-  }
-  const globalSelf = typeof self !== "undefined" ? self : globalThis;
-  if (!globalSelf.location) {
-    globalSelf.location = {
-      href: import.meta.url
-    };
-  }
-  if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-    globalThis.self = globalThis;
-  }
-  polyfillImageData();
-  const useNode = isBun() || isNode();
-  const modulePath = useNode ? "avif-dec/avif_node_dec.js" : "avif-dec/avif_dec.js";
-  try {
-    console.log("[AVIF Worker] Initializing decoder. Node/Bun:", useNode);
-    console.log(`[AVIF Worker] Attempting to import decoder module from path: ${modulePath}`);
-    let moduleFactory;
-    const isSource = import.meta.url.includes("/src/");
-    const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
-    let lastError = null;
-    for (const importPath of pathsToTry) {
-      try {
-        moduleFactory = (await import(importPath)).default;
-        console.log(`[AVIF Worker] Successfully loaded decoder module from: ${importPath}`);
-        break;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(`[AVIF Worker] Failed to load decoder from ${importPath}, trying next path...`);
-      }
+  if (loadDecModulePromise)
+    return loadDecModulePromise;
+  loadDecModulePromise = (async () => {
+    const globalSelf = typeof self !== "undefined" ? self : globalThis;
+    if (!globalSelf.location) {
+      globalSelf.location = {
+        href: import.meta.url
+      };
     }
-    if (!moduleFactory) {
-      throw lastError || new Error("Could not load AVIF decoder module from any path");
+    if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+      globalThis.self = globalThis;
     }
-    console.log("[AVIF Worker] Decoder module factory loaded successfully.");
-    const wasmFileName = useNode ? "avif_node_dec.wasm" : "avif_dec.wasm";
-    const wasmPathsToTry = isSource ? [`../wasm/avif-dec/${wasmFileName}`, `./wasm/avif-dec/${wasmFileName}`] : [`./wasm/avif-dec/${wasmFileName}`, `../wasm/avif-dec/${wasmFileName}`];
-    console.log(`[AVIF Worker] Preparing to load decoder WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
-    const initModuleWithBinary = async (factory, wasmPaths) => {
-      const workerBaseUrl = new URL(".", import.meta.url);
-      let lastErr = null;
-      for (const wasmPath of wasmPaths) {
+    polyfillImageData();
+    const useNode = isBun() || isNode();
+    const modulePath = useNode ? "avif-dec/avif_node_dec.js" : "avif-dec/avif_dec.js";
+    try {
+      console.log("[AVIF Worker] Initializing decoder. Node/Bun:", useNode);
+      console.log(`[AVIF Worker] Attempting to import decoder module from path: ${modulePath}`);
+      let moduleFactory;
+      const isSource = import.meta.url.includes("/src/");
+      const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
+      let lastError = null;
+      for (const importPath of pathsToTry) {
         try {
-          console.log(`[AVIF Worker] Calling loadWasmBinary with path: ${wasmPath}`);
-          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
-          console.log(`[AVIF Worker] Successfully fetched decoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
-          const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
-          if (!globalSelf2.location) {
-            globalSelf2.location = {
-              href: import.meta.url
-            };
-          }
-          if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-            globalThis.self = globalThis;
-          }
-          return await factory({
-            noInitialRun: true,
-            wasmBinary
-          });
-        } catch (err) {
-          lastErr = err instanceof Error ? err : new Error(String(err));
-          console.warn(`[AVIF Worker] Failed to load decoder WASM from ${wasmPath}, trying next path...`);
+          moduleFactory = (await import(importPath)).default;
+          console.log(`[AVIF Worker] Successfully loaded decoder module from: ${importPath}`);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          console.warn(`[AVIF Worker] Failed to load decoder from ${importPath}, trying next path...`);
         }
       }
-      throw lastErr || new Error("Could not load decoder WASM binary from any of the attempted paths");
-    };
-    cachedDecModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
-    console.log("[AVIF Worker] AVIF decoder module initialized successfully.");
-    return cachedDecModule;
-  } catch (err) {
-    console.error(`[AVIF Worker] CRITICAL: Failed to load AVIF decoder module from path: ${modulePath}`, err);
+      if (!moduleFactory) {
+        throw lastError || new Error("Could not load AVIF decoder module from any path");
+      }
+      console.log("[AVIF Worker] Decoder module factory loaded successfully.");
+      const wasmFileName = useNode ? "avif_node_dec.wasm" : "avif_dec.wasm";
+      const wasmPathsToTry = isSource ? [`../wasm/avif-dec/${wasmFileName}`, `./wasm/avif-dec/${wasmFileName}`] : [`./wasm/avif-dec/${wasmFileName}`, `../wasm/avif-dec/${wasmFileName}`];
+      console.log(`[AVIF Worker] Preparing to load decoder WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
+      const initModuleWithBinary = async (factory, wasmPaths) => {
+        const workerBaseUrl = new URL(".", import.meta.url);
+        let lastErr = null;
+        for (const wasmPath of wasmPaths) {
+          try {
+            console.log(`[AVIF Worker] Calling loadWasmBinary with path: ${wasmPath}`);
+            const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+            console.log(`[AVIF Worker] Successfully fetched decoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
+            const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
+            if (!globalSelf2.location) {
+              globalSelf2.location = {
+                href: import.meta.url
+              };
+            }
+            if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+              globalThis.self = globalThis;
+            }
+            return await factory({
+              noInitialRun: true,
+              wasmBinary
+            });
+          } catch (err) {
+            lastErr = err instanceof Error ? err : new Error(String(err));
+            console.warn(`[AVIF Worker] Failed to load decoder WASM from ${wasmPath}, trying next path...`);
+          }
+        }
+        throw lastErr || new Error("Could not load decoder WASM binary from any of the attempted paths");
+      };
+      cachedDecModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
+      console.log("[AVIF Worker] AVIF decoder module initialized successfully.");
+      return cachedDecModule;
+    } catch (err) {
+      console.error(`[AVIF Worker] CRITICAL: Failed to load AVIF decoder module from path: ${modulePath}`, err);
+      throw err;
+    }
+  })().catch((err) => {
+    loadDecModulePromise = null;
     throw err;
-  }
+  });
+  return loadDecModulePromise;
 }
 function createEncodeOptions(options) {
   return {
@@ -628,7 +642,7 @@ async function avifDecodeClient(data, signal) {
   }
   return result;
 }
-var AVIFTune, cachedEncModule = null, cachedDecModule = null;
+var AVIFTune, cachedEncModule = null, cachedDecModule = null, loadEncModulePromise = null, loadDecModulePromise = null;
 var init_avif_worker = __esm(() => {
   init_src();
   AVIFTune = { auto: 0, psnr: 1, ssim: 2 };
@@ -636,6 +650,7 @@ var init_avif_worker = __esm(() => {
     self.onmessage = async (event) => {
       const data = event.data;
       if (data?.type === "worker:ping") {
+        await loadAvifEncModule();
         self.postMessage({ type: "worker:ready" });
         return;
       }
@@ -650,7 +665,7 @@ var init_avif_worker = __esm(() => {
           const result = await avifEncodeClient(image, options);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2);
+          self.postMessage(response2, [result.buffer]);
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -667,7 +682,7 @@ var init_avif_worker = __esm(() => {
           const result = await avifDecodeClient(request2.payload.data);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2);
+          self.postMessage(response2, [result.data.buffer]);
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -791,4 +806,4 @@ export {
   AVIFTune2 as AVIFTune
 };
 
-//# debugId=D2A73E72D9806ADF64756E2164756E21
+//# debugId=8F4DF4484853D8F264756E2164756E21

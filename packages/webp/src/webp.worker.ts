@@ -16,12 +16,12 @@ import type { WebPModule as WebPDecModule } from '../wasm/webp-dec/webp_dec';
 import type { EncodeInputOptions, EncodeOptions } from './types';
 
 let cachedModule: WebPModule | null = null;
+let loadModulePromise: Promise<WebPModule> | null = null;
 
 async function loadWebPModule(): Promise<WebPModule> {
-  if (cachedModule) {
-    return cachedModule;
-  }
-
+  if (cachedModule) return cachedModule;
+  if (loadModulePromise) return loadModulePromise;
+  loadModulePromise = (async () => {
   const simdSupported = await detectSimd();
   const modulePath = simdSupported
     ? 'webp/webp_enc_simd.js'
@@ -153,6 +153,8 @@ async function loadWebPModule(): Promise<WebPModule> {
     );
     throw err;
   }
+  })().catch((err: unknown) => { loadModulePromise = null; throw err; });
+  return loadModulePromise;
 }
 
 /**
@@ -252,12 +254,12 @@ export async function webpEncodeClient(
 }
 
 let cachedDecModule: WebPDecModule | null = null;
+let loadDecModulePromise: Promise<WebPDecModule> | null = null;
 
 async function loadWebPDecModule(): Promise<WebPDecModule> {
-  if (cachedDecModule) {
-    return cachedDecModule;
-  }
-
+  if (cachedDecModule) return cachedDecModule;
+  if (loadDecModulePromise) return loadDecModulePromise;
+  loadDecModulePromise = (async () => {
   // No SIMD variant available for the WebP decoder
   const modulePath = 'webp-dec/webp_dec.js';
 
@@ -402,6 +404,8 @@ async function loadWebPDecModule(): Promise<WebPDecModule> {
     );
     throw err;
   }
+  })().catch((err: unknown) => { loadDecModulePromise = null; throw err; });
+  return loadDecModulePromise;
 }
 
 /**
@@ -435,11 +439,18 @@ export async function webpDecodeClient(
  * Register the handler regardless of environment (for both worker context and tests)
  */
 if (typeof self !== 'undefined') {
+  // Eagerly load WASM the moment the worker starts — don't wait for the first encode message.
+  // By the time the user drops an image, WASM is loaded and V8 Turbofan has been compiling.
+  void loadWebPModule().catch(() => {
+    // Silently swallow — will be retried (and will surface the error) on the first real encode.
+  });
+
   self.onmessage = async (event: MessageEvent) => {
     const data = event.data;
 
     // Handle worker ping for initialization
     if (data?.type === 'worker:ping') {
+      await loadWebPModule();
       self.postMessage({ type: 'worker:ready' });
       return;
     }
@@ -460,7 +471,11 @@ if (typeof self !== 'undefined') {
         const result = await webpEncodeClient(image, options);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        const transferBuffer =
+          result.buffer instanceof ArrayBuffer
+            ? result.buffer
+            : result.slice().buffer;
+        self.postMessage(response, [transferBuffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -480,7 +495,11 @@ if (typeof self !== 'undefined') {
         const result = await webpDecodeClient(request.payload.data);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        const transferBuffer =
+          result.data.buffer instanceof ArrayBuffer
+            ? result.data.buffer
+            : result.data.slice().buffer;
+        self.postMessage(response, [transferBuffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);

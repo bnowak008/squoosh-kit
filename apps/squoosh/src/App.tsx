@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Dispatch } from 'react';
 import type { AppState, Action, CodecId } from './types';
 import { getCodec, CODECS } from './codec/registry';
@@ -8,6 +8,7 @@ import SplitView from './components/SplitView';
 import BottomPanel from './components/BottomPanel';
 import { useImageDecode } from './hooks/useImageDecode';
 import { useEncoder } from './hooks/useEncoder';
+import { prewarmCodec } from './codec/encode';
 
 declare global {
   namespace JSX {
@@ -27,13 +28,16 @@ type BlobConfig = {
   delay: string;
 };
 
+const AMBIENT_BLOB_COUNT = 14;
+const PERF_FLAG = 'perf';
+
 function generateBlobs(count: number): BlobConfig[] {
   return Array.from({ length: count }, (_, i) => ({
     id: i,
     size: Math.floor(Math.random() * 50) + 16,
-    // Keep ambient blobs in the right ~60% of the screen so they don't clutter InfoPanel
+    // Spread ambient blobs across the full top pane (both details + image panes)
     top: `${(Math.random() * 80 + 5).toFixed(1)}%`,
-    left: `${(Math.random() * 55 + 42).toFixed(1)}%`,
+    left: `${(Math.random() * 90 + 5).toFixed(1)}%`,
     opacity: parseFloat((Math.random() * 0.35 + 0.08).toFixed(2)),
     duration: `${(Math.random() * 7 + 5).toFixed(1)}s`,
     delay: `${(Math.random() * 5).toFixed(1)}s`,
@@ -48,11 +52,13 @@ const BIG_BLOB_LAYERS = [
   { size: 450, opacity: 0.88, morph: 'blob-morph-d', duration: '24s', delay: '-10s',  blur: 0  },
 ] as const;
 
-function BigBlob({ isDragging }: { isDragging: boolean }) {
+function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVisible: boolean }) {
   // dragRef: translates + skews toward cursor (no React re-renders — direct DOM)
   const dragRef  = useRef<HTMLDivElement>(null);
   // jiggleRef: fires squash-and-stretch on drop
   const jiggleRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const floatRef   = useRef<HTMLDivElement>(null);
 
   const rafRef = useRef(0);
   const pos    = useRef({ cx: 0, cy: 0, tx: 0, ty: 0 });
@@ -107,24 +113,52 @@ function BigBlob({ isDragging }: { isDragging: boolean }) {
       const el = jiggleRef.current;
       if (el) {
         el.style.animation = 'none';
-        void el.offsetHeight; // force reflow so animation restarts
-        el.style.animation = 'blob-jiggle 0.9s cubic-bezier(0.36,0.07,0.19,0.97) forwards';
-        setTimeout(() => { if (el) el.style.animation = ''; }, 950);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (el) {
+              el.style.animation = 'blob-jiggle 0.9s cubic-bezier(0.36,0.07,0.19,0.97) forwards';
+              setTimeout(() => { if (el) el.style.animation = ''; }, 950);
+            }
+          });
+        });
       }
     }
     prevDrag.current = isDragging;
   }, [isDragging]);
 
+  // Fade out when editor becomes visible
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    if (editorVisible) {
+      el.style.opacity = '0';
+      const onEnd = () => {
+        el.style.visibility = 'hidden';
+        if (floatRef.current) floatRef.current.style.animationPlayState = 'paused';
+      };
+      el.addEventListener('transitionend', onEnd, { once: true });
+      return () => el.removeEventListener('transitionend', onEnd);
+    } else {
+      el.style.visibility = '';
+      if (floatRef.current) floatRef.current.style.animationPlayState = '';
+      requestAnimationFrame(() => { if (wrapperRef.current) wrapperRef.current.style.opacity = '1'; });
+    }
+  }, [editorVisible]);
+
   return (
     <div
+      ref={wrapperRef}
       style={{
         position: 'absolute',
         top: '50%',
-        left: '75%',
+        left: '66%',
         width: 0,
         height: 0,
         zIndex: 0,
         pointerEvents: 'none',
+        opacity: 1,
+        transition: 'opacity 600ms ease-out',
+        willChange: 'opacity',
       }}
     >
       {/* Drag deformation layer (translate + skew toward cursor) */}
@@ -132,7 +166,7 @@ function BigBlob({ isDragging }: { isDragging: boolean }) {
         {/* Jiggle layer (squash-and-stretch on drop) */}
         <div ref={jiggleRef}>
           {/* Float layer (slow ambient drift) */}
-          <div style={{ animation: 'blob-float 16s linear infinite' }}>
+          <div ref={floatRef} style={{ animation: 'blob-float 17s linear infinite', willChange: 'transform' }}>
             {BIG_BLOB_LAYERS.map((layer, i) => (
               <div
                 key={i}
@@ -162,12 +196,25 @@ const initialState: AppState = {
   imageInput: null,
   sourceObjectUrl: null,
   codecId: 'webp',
-  codecOptions: CODECS[0].defaultOptions,
+  codecOptions: CODECS[0]?.defaultOptions ?? {},
   resizeEnabled: false,
   resizeOptions: { method: 'lanczos3', premultiply: true, linearRGB: true },
   encodeResult: null,
   encodeError: null,
 };
+
+function shallowEqualObjects(
+  a: Record<string, unknown>,
+  b: Record<string, unknown>
+): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -185,24 +232,28 @@ function reducer(state: AppState, action: Action): AppState {
         encodeError: null,
       };
     }
+    case 'SET_FILE_URL':
+      return { ...state, sourceObjectUrl: action.objectUrl };
     case 'DECODE_SUCCESS':
       return {
         ...state,
         phase: 'encoding',
         imageInput: action.imageInput,
-        sourceObjectUrl: action.objectUrl,
         resizeOptions: {
           ...state.resizeOptions,
           width: action.imageInput.width,
           height: action.imageInput.height,
         },
       };
-    case 'DECODE_ERROR':
+    case 'DECODE_ERROR': {
+      if (state.sourceObjectUrl) URL.revokeObjectURL(state.sourceObjectUrl);
       return {
         ...state,
         phase: 'landing',
+        sourceObjectUrl: null,
         encodeError: action.error,
       };
+    }
     case 'SET_CODEC': {
       if (state.encodeResult?.objectUrl)
         URL.revokeObjectURL(state.encodeResult.objectUrl);
@@ -214,14 +265,19 @@ function reducer(state: AppState, action: Action): AppState {
         encodeError: null,
       };
     }
-    case 'SET_OPTIONS':
+    case 'SET_OPTIONS': {
+      const nextCodecOptions = { ...state.codecOptions, ...action.options };
+      if (shallowEqualObjects(state.codecOptions, nextCodecOptions)) return state;
       return {
         ...state,
-        codecOptions: { ...state.codecOptions, ...action.options },
+        codecOptions: nextCodecOptions,
       };
+    }
     case 'SET_RESIZE_ENABLED':
+      if (state.resizeEnabled === action.enabled) return state;
       return { ...state, resizeEnabled: action.enabled, encodeResult: null };
     case 'SET_RESIZE_OPTIONS':
+      if (shallowEqualObjects(state.resizeOptions, action.options)) return state;
       return { ...state, resizeOptions: action.options, encodeResult: null };
     case 'ENCODE_START':
       return { ...state, phase: 'encoding', encodeError: null };
@@ -298,21 +354,38 @@ function WaveSeparator() {
     const el = ref.current;
     if (!el) return;
     el.setAttribute('position', 'top');
-    el.setAttribute('speed', '0.25');
+    el.setAttribute('speed', '0.35');
     el.setAttribute('wave-color', '#09f');
     el.setAttribute('wave-count', '3');
   }, []);
+  
   return (
+    // @ts-ignore
     <animated-waves
       ref={ref}
     />
   );
 }
 
+function runWhenIdle(task: () => void): () => void {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    const idleId = window.requestIdleCallback(() => task(), { timeout: 900 });
+    return () => window.cancelIdleCallback(idleId);
+  }
+
+  const timeoutId = globalThis.setTimeout(() => task(), 120);
+  return () => globalThis.clearTimeout(timeoutId);
+}
+
+function isPerfEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).has(PERF_FLAG);
+}
+
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const isDragging = useGlobalDrop(dispatch);
-  const blobs = useMemo(() => generateBlobs(7), []);
+  const blobs = useMemo(() => generateBlobs(AMBIENT_BLOB_COUNT), []);
 
   useImageDecode(state.sourceFile, dispatch);
   useEncoder(
@@ -329,16 +402,63 @@ export default function App() {
     dispatch({ type: 'SET_CODEC', codecId, defaultOptions: codec.defaultOptions });
   }
 
-  const hasImage = state.phase === 'encoding' || state.phase === 'editor';
+  // Transition starts as soon as the file is dropped (decoding phase),
+  // not after decode finishes — so the editor appears immediately
+  const showingEditor = state.phase !== 'landing';
+  const editorVisible = showingEditor;
+  const isProcessing = state.phase === 'decoding' || state.phase === 'encoding';
+
+  useEffect(() => {
+    const timeoutId = globalThis.setTimeout(() => prewarmCodec('webp'), 0);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, []);
+
+  useEffect(() => {
+    return runWhenIdle(() => prewarmCodec(state.codecId));
+  }, [state.codecId]);
+
+  useEffect(() => {
+    if (!isPerfEnabled() || typeof window === 'undefined') return;
+
+    const observer =
+      typeof PerformanceObserver !== 'undefined'
+        ? new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              console.info(`[perf] squoosh.longtask: ${entry.duration.toFixed(2)}ms @ start=${entry.startTime.toFixed(0)}ms`);
+            }
+          })
+        : null;
+
+    try {
+      observer?.observe({ type: 'longtask', buffered: true } as PerformanceObserverInit);
+    } catch {
+      observer?.disconnect();
+    }
+
+    let rafId = 0;
+    let lastTs = performance.now();
+    const tick = (ts: number) => {
+      const gap = ts - lastTs;
+      if (gap > 100) {
+        console.info(`[perf] squoosh.raf_gap: ${gap.toFixed(2)}ms`);
+      }
+      lastTs = ts;
+      rafId = window.requestAnimationFrame(tick);
+    };
+    rafId = window.requestAnimationFrame(tick);
+
+    return () => {
+      observer?.disconnect();
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden checker-bg">
-      {/* TOP PANE */}
-      <div className="flex-1 relative overflow-hidden min-h-0">
-        {/* Big multi-layer blob centered on drop zone */}
-        <BigBlob isDragging={isDragging} />
-
-        {/* Procedural ambient blobs */}
+    <div
+      className={`h-screen flex flex-col w-full justify-center overflow-hidden checker-bg ${isProcessing ? 'processing-active' : ''}`}
+    >
+      {/* Procedural ambient blobs — stay visible; large blob (BigBlob) hides when editor opens */}
+      <div style={{ pointerEvents: 'none' }}>
         {blobs.map((b) => (
           <div
             key={b.id}
@@ -357,21 +477,45 @@ export default function App() {
             }}
           />
         ))}
+      </div>
+
+      {/* TOP PANE */}
+      <div className="flex flex-1 relative min-h-0 w-full max-w-[1920px] mx-auto">
+        {/* Big multi-layer blob centered on drop zone */}
+        <BigBlob isDragging={isDragging} editorVisible={editorVisible} />
 
         {/* Two-column split */}
         <div className="absolute inset-0 flex z-10">
-          <InfoPanel />
-          <div className="w-1/2 relative overflow-hidden flex items-center justify-center p-6">
-            {hasImage ? (
+          <div className="w-1/3 overflow-hidden shrink-0 flex items-center justify-center">
+            <InfoPanel />
+          </div>
+          <div className="w-2/3 shrink-0 relative overflow-hidden flex items-center justify-center p-6">
+            <div
+              className="absolute inset-0 flex items-center justify-center p-6"
+              style={{
+                opacity: showingEditor ? 0 : 1,
+                transition: 'opacity 250ms ease-in-out',
+                pointerEvents: showingEditor ? 'none' : 'auto',
+              }}
+            >
+              <DropZone state={state} dispatch={dispatch} isDragging={isDragging} />
+            </div>
+
+            <div
+              className="absolute inset-0 flex items-center justify-center p-6"
+              style={{
+                opacity: showingEditor ? 1 : 0,
+                transition: 'opacity 250ms ease-in-out',
+                pointerEvents: showingEditor ? 'auto' : 'none',
+              }}
+            >
               <SplitView
                 sourceObjectUrl={state.sourceObjectUrl}
                 encodeResult={state.encodeResult}
                 codecId={state.codecId}
-                isEncoding={state.phase === 'encoding'}
+                isEncoding={state.phase === 'decoding' || state.phase === 'encoding'}
               />
-            ) : (
-              <DropZone state={state} dispatch={dispatch} isDragging={isDragging} />
-            )}
+            </div>
           </div>
         </div>
       </div>
@@ -380,50 +524,51 @@ export default function App() {
       <WaveSeparator />
 
       {/* BOTTOM ZONE — always rendered */}
-      <div className="flex-shrink-0 bg-[#09f] relative">
+      <div className="shrink-0 bg-[#09f] relative">
         {/* Spacer matching wave height */}
-        <div className="h-[60px]" />
+        <div className={`${showingEditor ? 'h-0' : 'h-[15vh] '} transition-height duration-200 ease-out`} />
 
-        {/* Codec panel — animates in when image loaded */}
-        <div
-          className="overflow-hidden transition-[max-height] duration-500 ease-in-out"
-          style={{ maxHeight: hasImage ? '420px' : '0px' }}
-        >
-          <BottomPanel
-            state={state}
-            dispatch={dispatch}
-            onSetCodec={handleSetCodec}
-          />
+        <div className="max-w-[1920px] mx-auto">
+          {/* Codec panel — instant layout switch, content fades in */}
+          {showingEditor && (
+            <div className="fade-in-editor">
+              <BottomPanel
+                state={state}
+                dispatch={dispatch}
+                onSetCodec={handleSetCodec}
+              />
+            </div>
+          )}
+
+          {/* Footer — always visible */}
+          <footer className="relative z-10 flex items-center gap-5 px-6 py-3 text-xs text-white flex-wrap">
+            <a
+              href="https://npmjs.com/package/@squoosh-kit/core"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-gray-300 transition-colors"
+            >
+              npm
+            </a>
+            <a
+              href="https://github.com/bnowak008/squoosh-kit"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-gray-300 transition-colors"
+            >
+              GitHub
+            </a>
+            <a
+              href="https://bnowak.dev"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-gray-300 transition-colors"
+            >
+              bnowak.dev
+            </a>
+            <span className="ml-auto text-white">Built on the shoulders of <a href="https://github.com/GoogleChromeLabs/squoosh" target="_blank" rel="noreferrer" className="hover:text-gray-300 transition-colors underline">Squoosh</a></span>
+          </footer>
         </div>
-
-        {/* Footer — always visible */}
-        <footer className="relative z-10 flex items-center gap-5 px-6 py-3 text-xs text-white flex-wrap">
-          <a
-            href="https://npmjs.com/package/@squoosh-kit/core"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-gray-300 transition-colors"
-          >
-            npm
-          </a>
-          <a
-            href="https://github.com/bnowak008/squoosh-kit"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-gray-300 transition-colors"
-          >
-            GitHub
-          </a>
-          <a
-            href="https://bnowak.dev"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-gray-300 transition-colors"
-          >
-            bnowak.dev
-          </a>
-          <span className="ml-auto text-white">Built on the shoulders of <a href="https://github.com/GoogleChromeLabs/squoosh" target="_blank" rel="noreferrer" className="hover:text-gray-300 transition-colors underline">Squoosh</a></span>
-        </footer>
       </div>
 
     </div>

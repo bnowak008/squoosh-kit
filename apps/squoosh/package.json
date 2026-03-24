@@ -1,11 +1,14 @@
 {
   "name": "@squoosh-kit/squoosh",
   "private": true,
+  "homepage": "https://squoosh-kit.dev",
   "type": "module",
   "scripts": {
     "dev": "vite --force",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && vite build",
+    "preview": "vite preview",
+    "pages:deploy": "wrangler pages deploy dist",
+    "pages:dev": "wrangler pages dev dist"
   },
   "dependencies": {
     "@squoosh-kit/core": "workspace:*",
@@ -21,6 +24,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "tailwindcss": "^4.1.11",
     "typescript": "~5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "wrangler": "^4.28.0"
   }
 }

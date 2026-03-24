@@ -430,6 +430,7 @@ var init_png_worker = __esm(() => {
     self.onmessage = async (event) => {
       const msgData = event.data;
       if (msgData?.type === "worker:ping") {
+        await initPNG();
         self.postMessage({ type: "worker:ready" });
         return;
       }
@@ -443,7 +444,7 @@ var init_png_worker = __esm(() => {
           const result = await pngEncodeClient(request2.payload.image);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2);
+          self.postMessage(response2, [result.buffer]);
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -460,7 +461,7 @@ var init_png_worker = __esm(() => {
           const result = await pngDecodeClient(request2.payload.data);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2);
+          self.postMessage(response2, [result.data.buffer]);
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -578,4 +579,4 @@ export {
   createPngDecoder
 };
 
-//# debugId=3013C96E9584C29D64756E2164756E21
+//# debugId=A1DFE5B24941B8BB64756E2164756E21

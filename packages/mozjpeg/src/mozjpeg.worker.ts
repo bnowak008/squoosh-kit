@@ -22,12 +22,13 @@ import type { MozjpegEncodeOptions, MozJPEGDecModule } from './types';
 
 let cachedEncModule: MozJPEGModule | null = null;
 let cachedDecModule: MozJPEGDecModule | null = null;
+let loadEncModulePromise: Promise<MozJPEGModule> | null = null;
+let loadDecModulePromise: Promise<MozJPEGDecModule> | null = null;
 
 async function loadMozjpegModule(): Promise<MozJPEGModule> {
-  if (cachedEncModule) {
-    return cachedEncModule;
-  }
-
+  if (cachedEncModule) return cachedEncModule;
+  if (loadEncModulePromise) return loadEncModulePromise;
+  loadEncModulePromise = (async () => {
   // Emscripten polyfills - required before any module loading
   const globalSelf = typeof self !== 'undefined' ? self : globalThis;
   if (!globalSelf.location) {
@@ -161,13 +162,14 @@ async function loadMozjpegModule(): Promise<MozJPEGModule> {
     );
     throw err;
   }
+  })().catch((err: unknown) => { loadEncModulePromise = null; throw err; });
+  return loadEncModulePromise;
 }
 
 async function loadMozjpegNodeDecModule(): Promise<MozJPEGDecModule> {
-  if (cachedDecModule) {
-    return cachedDecModule;
-  }
-
+  if (cachedDecModule) return cachedDecModule;
+  if (loadDecModulePromise) return loadDecModulePromise;
+  loadDecModulePromise = (async () => {
   // Emscripten polyfills
   const globalSelf = typeof self !== 'undefined' ? self : globalThis;
   if (!globalSelf.location) {
@@ -303,6 +305,8 @@ async function loadMozjpegNodeDecModule(): Promise<MozJPEGDecModule> {
     );
     throw err;
   }
+  })().catch((err: unknown) => { loadDecModulePromise = null; throw err; });
+  return loadDecModulePromise;
 }
 
 /**
@@ -428,6 +432,7 @@ if (typeof self !== 'undefined') {
 
     // Handle worker ping for initialization
     if (data?.type === 'worker:ping') {
+      await loadMozjpegModule();
       self.postMessage({ type: 'worker:ready' });
       return;
     }
@@ -448,7 +453,7 @@ if (typeof self !== 'undefined') {
         const result = await mozjpegEncodeClient(image, options);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        self.postMessage(response, [result.buffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -468,7 +473,7 @@ if (typeof self !== 'undefined') {
         const result = await mozjpegDecodeClient(request.payload.data);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        self.postMessage(response, [result.data.buffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);

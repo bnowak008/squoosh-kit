@@ -536,6 +536,7 @@ var init_resize_worker = __esm(() => {
     self.onmessage = async (event) => {
       const data = event.data;
       if (data?.type === "worker:ping") {
+        await init2();
         self.postMessage({ type: "worker:ready" });
         return;
       }
@@ -548,7 +549,8 @@ var init_resize_worker = __esm(() => {
         const resultImage = await _resizeCore(payload.image, payload.options);
         response.ok = true;
         response.data = resultImage;
-        self.postMessage(response);
+        const transferBuffer = resultImage.data.buffer instanceof ArrayBuffer ? resultImage.data.buffer : resultImage.data.slice().buffer;
+        self.postMessage(response, [transferBuffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -562,4 +564,4 @@ export {
   resizeClient
 };
 
-//# debugId=084E9FB34258F66E64756E2164756E21
+//# debugId=4F7B53536A1E2FA864756E2164756E21

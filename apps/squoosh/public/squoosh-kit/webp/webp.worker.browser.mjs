@@ -375,78 +375,85 @@ __export(exports_webp_worker, {
   webpDecodeClient: () => webpDecodeClient
 });
 async function loadWebPModule() {
-  if (cachedModule) {
+  if (cachedModule)
     return cachedModule;
-  }
-  const simdSupported2 = await detectSimd();
-  const modulePath = simdSupported2 ? "webp/webp_enc_simd.js" : "webp/webp_enc.js";
-  try {
-    console.log("[WebP Worker] Initializing. SIMD support:", simdSupported2);
-    console.log(`[WebP Worker] Attempting to import module from path: ${modulePath}`);
-    const globalSelf = typeof self !== "undefined" ? self : globalThis;
-    if (!globalSelf.location) {
-      globalSelf.location = {
-        href: import.meta.url
-      };
-    }
-    if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-      globalThis.self = globalThis;
-    }
-    let moduleFactory;
-    const isSource = import.meta.url.includes("/src/");
-    const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
-    let lastError = null;
-    for (const importPath of pathsToTry) {
-      try {
-        moduleFactory = (await import(importPath)).default;
-        console.log(`[WebP Worker] Successfully loaded module from: ${importPath}`);
-        break;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(`[WebP Worker] Failed to load from ${importPath}, trying next path...`);
+  if (loadModulePromise)
+    return loadModulePromise;
+  loadModulePromise = (async () => {
+    const simdSupported2 = await detectSimd();
+    const modulePath = simdSupported2 ? "webp/webp_enc_simd.js" : "webp/webp_enc.js";
+    try {
+      console.log("[WebP Worker] Initializing. SIMD support:", simdSupported2);
+      console.log(`[WebP Worker] Attempting to import module from path: ${modulePath}`);
+      const globalSelf = typeof self !== "undefined" ? self : globalThis;
+      if (!globalSelf.location) {
+        globalSelf.location = {
+          href: import.meta.url
+        };
       }
-    }
-    if (!moduleFactory) {
-      throw lastError || new Error("Could not load WebP module from any path");
-    }
-    console.log("[WebP Worker] Module factory loaded successfully.");
-    const wasmPathsToTry = simdSupported2 ? isSource ? ["../wasm/webp/webp_enc_simd.wasm", "./wasm/webp/webp_enc_simd.wasm"] : ["./wasm/webp/webp_enc_simd.wasm", "../wasm/webp/webp_enc_simd.wasm"] : isSource ? ["../wasm/webp/webp_enc.wasm", "./wasm/webp/webp_enc.wasm"] : ["./wasm/webp/webp_enc.wasm", "../wasm/webp/webp_enc.wasm"];
-    console.log(`[WebP Worker] Preparing to load WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
-    const initModuleWithBinary = async (moduleFactory2, wasmPaths) => {
-      const workerBaseUrl = new URL(".", import.meta.url);
-      let lastError2 = null;
-      for (const wasmPath of wasmPaths) {
+      if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+        globalThis.self = globalThis;
+      }
+      let moduleFactory;
+      const isSource = import.meta.url.includes("/src/");
+      const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
+      let lastError = null;
+      for (const importPath of pathsToTry) {
         try {
-          console.log(`[WebP Worker] Calling loadWasmBinary with path: ${wasmPath}`);
-          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
-          console.log(`[WebP Worker] Successfully fetched WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
-          const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
-          if (!globalSelf2.location) {
-            globalSelf2.location = {
-              href: import.meta.url
-            };
-          }
-          if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-            globalThis.self = globalThis;
-          }
-          return await moduleFactory2({
-            noInitialRun: true,
-            wasmBinary
-          });
-        } catch (err) {
-          lastError2 = err instanceof Error ? err : new Error(String(err));
-          console.warn(`[WebP Worker] Failed to load WASM from ${wasmPath}, trying next path...`);
+          moduleFactory = (await import(importPath)).default;
+          console.log(`[WebP Worker] Successfully loaded module from: ${importPath}`);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          console.warn(`[WebP Worker] Failed to load from ${importPath}, trying next path...`);
         }
       }
-      throw lastError2 || new Error("Could not load WASM binary from any of the attempted paths");
-    };
-    cachedModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
-    console.log("[WebP Worker] WebP module initialized successfully.");
-    return cachedModule;
-  } catch (err) {
-    console.error(`[WebP Worker] CRITICAL: Failed to load WebP module from path: ${modulePath}`, err);
+      if (!moduleFactory) {
+        throw lastError || new Error("Could not load WebP module from any path");
+      }
+      console.log("[WebP Worker] Module factory loaded successfully.");
+      const wasmPathsToTry = simdSupported2 ? isSource ? ["../wasm/webp/webp_enc_simd.wasm", "./wasm/webp/webp_enc_simd.wasm"] : ["./wasm/webp/webp_enc_simd.wasm", "../wasm/webp/webp_enc_simd.wasm"] : isSource ? ["../wasm/webp/webp_enc.wasm", "./wasm/webp/webp_enc.wasm"] : ["./wasm/webp/webp_enc.wasm", "../wasm/webp/webp_enc.wasm"];
+      console.log(`[WebP Worker] Preparing to load WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
+      const initModuleWithBinary = async (moduleFactory2, wasmPaths) => {
+        const workerBaseUrl = new URL(".", import.meta.url);
+        let lastError2 = null;
+        for (const wasmPath of wasmPaths) {
+          try {
+            console.log(`[WebP Worker] Calling loadWasmBinary with path: ${wasmPath}`);
+            const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+            console.log(`[WebP Worker] Successfully fetched WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
+            const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
+            if (!globalSelf2.location) {
+              globalSelf2.location = {
+                href: import.meta.url
+              };
+            }
+            if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+              globalThis.self = globalThis;
+            }
+            return await moduleFactory2({
+              noInitialRun: true,
+              wasmBinary
+            });
+          } catch (err) {
+            lastError2 = err instanceof Error ? err : new Error(String(err));
+            console.warn(`[WebP Worker] Failed to load WASM from ${wasmPath}, trying next path...`);
+          }
+        }
+        throw lastError2 || new Error("Could not load WASM binary from any of the attempted paths");
+      };
+      cachedModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
+      console.log("[WebP Worker] WebP module initialized successfully.");
+      return cachedModule;
+    } catch (err) {
+      console.error(`[WebP Worker] CRITICAL: Failed to load WebP module from path: ${modulePath}`, err);
+      throw err;
+    }
+  })().catch((err) => {
+    loadModulePromise = null;
     throw err;
-  }
+  });
+  return loadModulePromise;
 }
 function createEncodeOptions(options) {
   return {
@@ -507,90 +514,97 @@ async function webpEncodeClient(image, options, signal) {
   return result;
 }
 async function loadWebPDecModule() {
-  if (cachedDecModule) {
+  if (cachedDecModule)
     return cachedDecModule;
-  }
-  const modulePath = "webp-dec/webp_dec.js";
-  try {
-    console.log("[WebP Worker] Initializing dec module...");
-    console.log(`[WebP Worker] Attempting to import dec module from path: ${modulePath}`);
-    const globalSelf = typeof self !== "undefined" ? self : globalThis;
-    if (!globalSelf.location) {
-      globalSelf.location = {
-        href: import.meta.url
-      };
-    }
-    if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-      globalThis.self = globalThis;
-    }
-    if (typeof ImageData === "undefined") {
-      globalThis.ImageData = class {
-        data;
-        width;
-        height;
-        colorSpace = "srgb";
-        constructor(data, width, height) {
-          this.data = data;
-          this.width = width;
-          this.height = height;
-        }
-      };
-    }
-    let moduleFactory;
-    const isSource = import.meta.url.includes("/src/");
-    const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
-    let lastError = null;
-    for (const importPath of pathsToTry) {
-      try {
-        moduleFactory = (await import(importPath)).default;
-        console.log(`[WebP Worker] Successfully loaded dec module from: ${importPath}`);
-        break;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(`[WebP Worker] Failed to load dec from ${importPath}, trying next path...`);
+  if (loadDecModulePromise)
+    return loadDecModulePromise;
+  loadDecModulePromise = (async () => {
+    const modulePath = "webp-dec/webp_dec.js";
+    try {
+      console.log("[WebP Worker] Initializing dec module...");
+      console.log(`[WebP Worker] Attempting to import dec module from path: ${modulePath}`);
+      const globalSelf = typeof self !== "undefined" ? self : globalThis;
+      if (!globalSelf.location) {
+        globalSelf.location = {
+          href: import.meta.url
+        };
       }
-    }
-    if (!moduleFactory) {
-      throw lastError || new Error("Could not load WebP dec module from any path");
-    }
-    console.log("[WebP Worker] Dec module factory loaded successfully.");
-    const wasmPathsToTry = isSource ? ["../wasm/webp-dec/webp_dec.wasm", "./wasm/webp-dec/webp_dec.wasm"] : ["./wasm/webp-dec/webp_dec.wasm", "../wasm/webp-dec/webp_dec.wasm"];
-    console.log(`[WebP Worker] Preparing to load dec WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
-    const initDecModuleWithBinary = async (moduleFactory2, wasmPaths) => {
-      const workerBaseUrl = new URL(".", import.meta.url);
-      let lastError2 = null;
-      for (const wasmPath of wasmPaths) {
+      if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+        globalThis.self = globalThis;
+      }
+      if (typeof ImageData === "undefined") {
+        globalThis.ImageData = class {
+          data;
+          width;
+          height;
+          colorSpace = "srgb";
+          constructor(data, width, height) {
+            this.data = data;
+            this.width = width;
+            this.height = height;
+          }
+        };
+      }
+      let moduleFactory;
+      const isSource = import.meta.url.includes("/src/");
+      const pathsToTry = isSource ? ["../wasm/" + modulePath, "./wasm/" + modulePath] : ["./wasm/" + modulePath, "../wasm/" + modulePath];
+      let lastError = null;
+      for (const importPath of pathsToTry) {
         try {
-          console.log(`[WebP Worker] Calling loadWasmBinary with dec path: ${wasmPath}`);
-          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
-          console.log(`[WebP Worker] Successfully fetched dec WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
-          const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
-          if (!globalSelf2.location) {
-            globalSelf2.location = {
-              href: import.meta.url
-            };
-          }
-          if (typeof self === "undefined" && typeof globalThis !== "undefined") {
-            globalThis.self = globalThis;
-          }
-          return await moduleFactory2({
-            noInitialRun: true,
-            wasmBinary
-          });
-        } catch (err) {
-          lastError2 = err instanceof Error ? err : new Error(String(err));
-          console.warn(`[WebP Worker] Failed to load dec WASM from ${wasmPath}, trying next path...`);
+          moduleFactory = (await import(importPath)).default;
+          console.log(`[WebP Worker] Successfully loaded dec module from: ${importPath}`);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          console.warn(`[WebP Worker] Failed to load dec from ${importPath}, trying next path...`);
         }
       }
-      throw lastError2 || new Error("Could not load dec WASM binary from any of the attempted paths");
-    };
-    cachedDecModule = await initDecModuleWithBinary(moduleFactory, wasmPathsToTry);
-    console.log("[WebP Worker] WebP dec module initialized successfully.");
-    return cachedDecModule;
-  } catch (err) {
-    console.error("[WebP Worker] CRITICAL: Failed to load WebP dec module", err);
+      if (!moduleFactory) {
+        throw lastError || new Error("Could not load WebP dec module from any path");
+      }
+      console.log("[WebP Worker] Dec module factory loaded successfully.");
+      const wasmPathsToTry = isSource ? ["../wasm/webp-dec/webp_dec.wasm", "./wasm/webp-dec/webp_dec.wasm"] : ["./wasm/webp-dec/webp_dec.wasm", "../wasm/webp-dec/webp_dec.wasm"];
+      console.log(`[WebP Worker] Preparing to load dec WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
+      const initDecModuleWithBinary = async (moduleFactory2, wasmPaths) => {
+        const workerBaseUrl = new URL(".", import.meta.url);
+        let lastError2 = null;
+        for (const wasmPath of wasmPaths) {
+          try {
+            console.log(`[WebP Worker] Calling loadWasmBinary with dec path: ${wasmPath}`);
+            const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+            console.log(`[WebP Worker] Successfully fetched dec WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`);
+            const globalSelf2 = typeof self !== "undefined" ? self : globalThis;
+            if (!globalSelf2.location) {
+              globalSelf2.location = {
+                href: import.meta.url
+              };
+            }
+            if (typeof self === "undefined" && typeof globalThis !== "undefined") {
+              globalThis.self = globalThis;
+            }
+            return await moduleFactory2({
+              noInitialRun: true,
+              wasmBinary
+            });
+          } catch (err) {
+            lastError2 = err instanceof Error ? err : new Error(String(err));
+            console.warn(`[WebP Worker] Failed to load dec WASM from ${wasmPath}, trying next path...`);
+          }
+        }
+        throw lastError2 || new Error("Could not load dec WASM binary from any of the attempted paths");
+      };
+      cachedDecModule = await initDecModuleWithBinary(moduleFactory, wasmPathsToTry);
+      console.log("[WebP Worker] WebP dec module initialized successfully.");
+      return cachedDecModule;
+    } catch (err) {
+      console.error("[WebP Worker] CRITICAL: Failed to load WebP dec module", err);
+      throw err;
+    }
+  })().catch((err) => {
+    loadDecModulePromise = null;
     throw err;
-  }
+  });
+  return loadDecModulePromise;
 }
 async function webpDecodeClient(data, signal) {
   if (signal?.aborted) {
@@ -606,13 +620,15 @@ async function webpDecodeClient(data, signal) {
   }
   return result;
 }
-var cachedModule = null, cachedDecModule = null;
+var cachedModule = null, loadModulePromise = null, cachedDecModule = null, loadDecModulePromise = null;
 var init_webp_worker = __esm(() => {
   init_src();
   if (typeof self !== "undefined") {
+    loadWebPModule().catch(() => {});
     self.onmessage = async (event) => {
       const data = event.data;
       if (data?.type === "worker:ping") {
+        await loadWebPModule();
         self.postMessage({ type: "worker:ready" });
         return;
       }
@@ -627,7 +643,8 @@ var init_webp_worker = __esm(() => {
           const result = await webpEncodeClient(image, options);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2);
+          const transferBuffer = result.buffer instanceof ArrayBuffer ? result.buffer : result.slice().buffer;
+          self.postMessage(response2, [transferBuffer]);
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -644,7 +661,8 @@ var init_webp_worker = __esm(() => {
           const result = await webpDecodeClient(request2.payload.data);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2);
+          const transferBuffer = result.data.buffer instanceof ArrayBuffer ? result.data.buffer : result.data.slice().buffer;
+          self.postMessage(response2, [transferBuffer]);
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -668,4 +686,4 @@ export {
   webpDecodeClient
 };
 
-//# debugId=54AAA54627EC7C8464756E2164756E21
+//# debugId=4CFF3A00FD3B9B8F64756E2164756E21

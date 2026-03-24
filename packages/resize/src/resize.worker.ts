@@ -208,6 +208,7 @@ if (typeof self !== 'undefined') {
 
     // Handle worker ping for initialization
     if (data?.type === 'worker:ping') {
+      await init();
       self.postMessage({ type: 'worker:ready' });
       return;
     }
@@ -228,10 +229,11 @@ if (typeof self !== 'undefined') {
 
       response.ok = true;
       response.data = resultImage;
-
-      // Post the response without transferring - the ImageInput with data will be cloned
-      // Transfer is only used for incoming requests (image.data buffer from client)
-      self.postMessage(response);
+      const transferBuffer =
+        resultImage.data.buffer instanceof ArrayBuffer
+          ? resultImage.data.buffer
+          : resultImage.data.slice().buffer;
+      self.postMessage(response, [transferBuffer]);
     } catch (error) {
       response.error = error instanceof Error ? error.message : String(error);
       self.postMessage(response);

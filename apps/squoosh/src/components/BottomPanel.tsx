@@ -95,7 +95,7 @@ function buildSimple(
   if (resizeEnabled) {
     const ro = Object.fromEntries(Object.entries(resizeOptions).filter(([, v]) => v !== undefined));
     lines.push(...resizeLines(ro as ResizeOptions, 'imageInput', 'resized'));
-    lines[lines.length - 1] = [...lines[lines.length - 1], pun(';')];
+    lines[lines.length - 1] = [...(lines[lines.length - 1] ?? []), pun(';')];
     lines.push([]);
   }
 
@@ -112,7 +112,7 @@ function buildSimple(
     lines.push([pun('}'), pun(')')]);
   }
 
-  lines[lines.length - 1] = [...lines[lines.length - 1], pun(';')];
+  lines[lines.length - 1] = [...(lines[lines.length - 1] ?? []), pun(';')];
   return lines;
 }
 
@@ -151,7 +151,7 @@ function buildAdvanced(
     const resLines = resizeLines(ro as ResizeOptions, 'imageInput', 'resized');
     resLines[0] = [kw('const'), plain(' resized '), pun('='), plain(' '), kw('await'), plain(' '), fn('resizer'), pun('('), plain('imageInput'), pun(', '), pun('{')];
     resLines.push([pun('},'), plain(' controller.signal'), pun(')')]);
-    resLines[resLines.length - 1] = [...resLines[resLines.length - 1], pun(';')];
+    resLines[resLines.length - 1] = [...(resLines[resLines.length - 1] ?? []), pun(';')];
     lines.push(...resLines, []);
   }
 
@@ -167,7 +167,7 @@ function buildAdvanced(
     lines.push(...optBlock(options));
     lines.push([pun('},'), plain(' controller.signal'), pun(')')]);
   }
-  lines[lines.length - 1] = [...lines[lines.length - 1], pun(';')];
+  lines[lines.length - 1] = [...(lines[lines.length - 1] ?? []), pun(';')];
 
   lines.push(
     [],
@@ -204,7 +204,7 @@ function buildRuntimes(
 
   if (ro) {
     const rl = resizeLines(ro, 'imageInput', 'resized');
-    rl[rl.length - 1] = [...rl[rl.length - 1], pun(';')];
+    rl[rl.length - 1] = [...(rl[rl.length - 1] ?? []), pun(';')];
     nodeLines.push(...rl, []);
   }
 
@@ -219,7 +219,7 @@ function buildRuntimes(
     nodeLines.push(...optBlock(options));
     nodeLines.push([pun('}'), pun(')')]);
   }
-  nodeLines[nodeLines.length - 1] = [...nodeLines[nodeLines.length - 1], pun(';')];
+  nodeLines[nodeLines.length - 1] = [...(nodeLines[nodeLines.length - 1] ?? []), pun(';')];
 
   // ─ Browser ─────────────────────────────────────────────────────────────────
   const browserLines: Token[][] = [
@@ -243,7 +243,7 @@ function buildRuntimes(
     const rl = resizeLines(ro, 'imageInput', 'resized');
     rl[0] = [kw('const'), plain(' resized '), pun('='), plain(' '), kw('await'), plain(' '), fn('resizer'), pun('('), plain('imageInput'), pun(', '), pun('{')];
     rl.push([pun('},'), plain(' signal'), pun(')')]);
-    rl[rl.length - 1] = [...rl[rl.length - 1], pun(';')];
+    rl[rl.length - 1] = [...(rl[rl.length - 1] ?? []), pun(';')];
     browserLines.push(...rl, []);
   }
 
@@ -259,7 +259,7 @@ function buildRuntimes(
     browserLines.push(...optBlock(options));
     browserLines.push([pun('},'), plain(' signal'), pun(')')]);
   }
-  browserLines[browserLines.length - 1] = [...browserLines[browserLines.length - 1], pun(';')];
+  browserLines[browserLines.length - 1] = [...(browserLines[browserLines.length - 1] ?? []) , pun(';')];
 
   if (ro) {
     browserLines.push([kw('await'), plain(' '), fn('resizer.terminate'), pun('();')]);
@@ -320,9 +320,9 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
                                buildRuntimes(codecId, codecOptions, resizeEnabled, resizeOptions);
 
   return (
-    <div className="flex border-t border-white/10 text-white" style={{ background: '#09f' }}>
+    <div className="flex gap-4 justify-center text-white p-4" style={{ background: '#09f' }}>
       {/* Left — code snippet (stays dark) */}
-      <div className="flex-1 flex flex-col min-w-0 border-r border-white/10 overflow-hidden bg-gray-900">
+      <div className="h-[300px] flex flex-col grow min-w-0 max-w-200 border-r border-white/10 overflow-hidden bg-gray-900 rounded-lg">
         {/* Tab bar */}
         <div className="flex items-center border-b border-white/10">
           {TABS.map((tab) => (
@@ -353,17 +353,23 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
         </div>
 
         {/* Code */}
-        <pre className="flex-1 px-4 py-3 text-xs font-mono leading-relaxed overflow-auto bg-gray-950/60">
-          {lines.map((line, li) => (
-            <div key={li}>
-              {line.length === 0
-                ? '\u00a0'
-                : line.map((tok, ti) => (
-                    <span key={ti} style={{ color: tok.color }}>{tok.text}</span>
-                  ))}
-            </div>
-          ))}
-        </pre>
+        <div className="flex-1 overflow-hidden p-3 min-h-0">
+          <pre
+            key={activeTab}
+            className="code-fade h-full overflow-y-auto text-xs font-mono leading-relaxed rounded-lg px-4 py-3 bg-gray-950"
+            style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
+          >
+            {lines.map((line, li) => (
+              <div key={li}>
+                {line.length === 0
+                  ? '\u00a0'
+                  : line.map((tok, ti) => (
+                      <span key={ti} style={{ color: tok.color }}>{tok.text}</span>
+                    ))}
+              </div>
+            ))}
+          </pre>
+        </div>
       </div>
 
       {/* Right — codec controls on #09f blue */}

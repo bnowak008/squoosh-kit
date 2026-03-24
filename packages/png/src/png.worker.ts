@@ -164,6 +164,7 @@ if (typeof self !== 'undefined') {
     const msgData = event.data;
 
     if (msgData?.type === 'worker:ping') {
+      await initPNG();
       self.postMessage({ type: 'worker:ready' });
       return;
     }
@@ -178,7 +179,7 @@ if (typeof self !== 'undefined') {
         const result = await pngEncodeClient(request.payload.image);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        self.postMessage(response, [result.buffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -196,7 +197,7 @@ if (typeof self !== 'undefined') {
         const result = await pngDecodeClient(request.payload.data);
         response.ok = true;
         response.data = result;
-        self.postMessage(response);
+        self.postMessage(response, [result.data.buffer]);
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);

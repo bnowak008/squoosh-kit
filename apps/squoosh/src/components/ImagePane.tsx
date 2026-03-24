@@ -3,6 +3,7 @@ import type { CodecId } from '../types';
 import { jxl } from '@squoosh-kit/core';
 
 const BRIDGE_OPTIONS = { assetPath: '/squoosh-kit' };
+const PERF_FLAG = 'perf';
 
 type Props = {
   objectUrl: string | null;
@@ -11,7 +12,31 @@ type Props = {
   codecId?: CodecId;
   encodedBytes?: Uint8Array | null;
   isEncoding?: boolean;
+  isEncodedPreview?: boolean;
 };
+
+function isPerfEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).has(PERF_FLAG);
+}
+
+function mark(name: string): void {
+  if (typeof performance === 'undefined') return;
+  performance.mark(name);
+}
+
+function measure(name: string, start: string, end: string): void {
+  if (typeof performance === 'undefined') return;
+  try {
+    performance.measure(name, start, end);
+    if (!isPerfEnabled()) return;
+    const entries = performance.getEntriesByName(name);
+    const latest = entries[entries.length - 1];
+    if (latest) console.info(`[perf] ${name}: ${latest.duration.toFixed(2)}ms`);
+  } catch {
+    return;
+  }
+}
 
 export default function ImagePane({
   objectUrl,
@@ -20,8 +45,30 @@ export default function ImagePane({
   codecId,
   encodedBytes,
   isEncoding = false,
+  isEncodedPreview = false,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const shouldTrackEncodedLoad = side === 'right' && isEncodedPreview;
+
+  function onEncodedOutputLoaded(): void {
+    if (!shouldTrackEncodedLoad) return;
+    mark('squoosh.right_pane_encoded_loaded');
+    measure(
+      'squoosh.encode_start_to_right_pane_loaded',
+      'squoosh.encode_start',
+      'squoosh.right_pane_encoded_loaded'
+    );
+    measure(
+      'squoosh.encode_end_to_right_pane_loaded',
+      'squoosh.encode_end',
+      'squoosh.right_pane_encoded_loaded'
+    );
+    measure(
+      'squoosh.right_pane_url_to_loaded',
+      'squoosh.right_pane_url_set',
+      'squoosh.right_pane_encoded_loaded'
+    );
+  }
 
   // For JXL, render to canvas since browsers don't support it natively
   useEffect(() => {
@@ -48,8 +95,9 @@ export default function ImagePane({
         0,
         0
       );
+      onEncodedOutputLoaded();
     }).catch(() => {
-      // Decode error - canvas will be empty
+      // JXL decode failed — canvas stays hidden
     }).finally(() => {
       void decoder.terminate();
     });
@@ -80,6 +128,9 @@ export default function ImagePane({
             src={objectUrl}
             alt={label}
             className="absolute inset-0 w-full h-full object-contain"
+            loading="eager"
+            decoding="async"
+            onLoad={onEncodedOutputLoaded}
             draggable={false}
           />
         )
