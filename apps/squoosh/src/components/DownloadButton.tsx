@@ -7,12 +7,18 @@ type Props = {
   sourceFileName: string | null;
 };
 
-export default function DownloadButton({ bytes, codecId, sourceFileName }: Props) {
+export default function DownloadButton({
+  bytes,
+  codecId,
+  sourceFileName,
+}: Props) {
   function handleDownload() {
     if (!bytes || !sourceFileName) return;
 
     const codec = getCodec(codecId);
-    const blob = new Blob([bytes.buffer as ArrayBuffer], { type: codec.mimeType });
+    const blob = new Blob([bytes.buffer as ArrayBuffer], {
+      type: codec.mimeType,
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

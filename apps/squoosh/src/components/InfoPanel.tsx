@@ -31,17 +31,38 @@ export default function InfoPanel() {
 
         {/* Tagline */}
         <p className="text-gray-700 text-base leading-relaxed mb-4 max-w-[340px]">
-          The battle-tested image codecs from Google Squoosh, packaged as a modular library
-          that works in any JavaScript app.
+          The battle-tested image codecs from Google Squoosh, packaged as a
+          modular library that works in any JavaScript app.
         </p>
 
         {/* Feature list */}
         <ul className="flex flex-col gap-3 mb-8">
           {FEATURES.map((f) => (
-            <li key={f} className="flex items-start gap-3 text-base text-gray-700">
-              <svg className="shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 17 17" fill="none">
-                <circle cx="8.5" cy="8.5" r="8.5" fill="#ff2d78" fillOpacity="0.12" />
-                <path d="M5 8.5l2.5 2.5 4.5-5" stroke="#ff2d78" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <li
+              key={f}
+              className="flex items-start gap-3 text-base text-gray-700"
+            >
+              <svg
+                className="shrink-0 mt-0.5"
+                width="17"
+                height="17"
+                viewBox="0 0 17 17"
+                fill="none"
+              >
+                <circle
+                  cx="8.5"
+                  cy="8.5"
+                  r="8.5"
+                  fill="#ff2d78"
+                  fillOpacity="0.12"
+                />
+                <path
+                  d="M5 8.5l2.5 2.5 4.5-5"
+                  stroke="#ff2d78"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
               <span>{f}</span>
             </li>
@@ -52,7 +73,8 @@ export default function InfoPanel() {
         <div className="w-full bg-gray-950 rounded-xl overflow-hidden border border-gray-800 shadow-sm mb-6">
           <div className="flex items-center justify-between gap-2 px-4 py-3.5">
             <code className="font-mono text-sm text-green-400 select-all">
-              <span className="text-gray-500 mr-2 select-none">$</span>bun add @squoosh-kit/core
+              <span className="text-gray-500 mr-2 select-none">$</span>bun add
+              @squoosh-kit/core
             </code>
             <button
               onClick={handleCopy}
@@ -60,12 +82,32 @@ export default function InfoPanel() {
               title="Copy"
             >
               {copied ? (
-                <svg className="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="h-4 w-4 text-green-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               ) : (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
                 </svg>
               )}
             </button>

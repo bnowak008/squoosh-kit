@@ -79,22 +79,41 @@ export function useEncoder(
 
       if (resizeEnabled && resizeOptions.width && resizeOptions.height) {
         mark('squoosh.resize_start');
-        imageToEncode = await getResizer()(imageToEncode, resizeOptions, controller.signal);
+        imageToEncode = await getResizer()(
+          imageToEncode,
+          resizeOptions,
+          controller.signal
+        );
         mark('squoosh.resize_end');
-        measure('squoosh.resize_duration', 'squoosh.resize_start', 'squoosh.resize_end');
+        measure(
+          'squoosh.resize_duration',
+          'squoosh.resize_start',
+          'squoosh.resize_end'
+        );
       }
 
       if (controller.signal.aborted) return;
 
-      const bytes = await encodeWith(codecId, imageToEncode, options, controller.signal);
+      const bytes = await encodeWith(
+        codecId,
+        imageToEncode,
+        options,
+        controller.signal
+      );
 
       if (controller.signal.aborted) return;
 
       const codec = getCodec(codecId);
-      const blob = new Blob([bytes.buffer as ArrayBuffer], { type: codec.mimeType });
+      const blob = new Blob([bytes.buffer as ArrayBuffer], {
+        type: codec.mimeType,
+      });
       const objectUrl = URL.createObjectURL(blob);
       mark('squoosh.encode_end');
-      measure('squoosh.encode_duration', 'squoosh.encode_start', 'squoosh.encode_end');
+      measure(
+        'squoosh.encode_duration',
+        'squoosh.encode_start',
+        'squoosh.encode_end'
+      );
       mark('squoosh.right_pane_url_set');
       dispatch({ type: 'ENCODE_SUCCESS', bytes, objectUrl });
       if (isPerfEnabled()) {

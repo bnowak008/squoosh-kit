@@ -31,7 +31,11 @@ export type Action =
   | { type: 'SET_FILE_URL'; objectUrl: string }
   | { type: 'DECODE_SUCCESS'; imageInput: ImageInput }
   | { type: 'DECODE_ERROR'; error: string }
-  | { type: 'SET_CODEC'; codecId: CodecId; defaultOptions: Record<string, unknown> }
+  | {
+      type: 'SET_CODEC';
+      codecId: CodecId;
+      defaultOptions: Record<string, unknown>;
+    }
   | { type: 'SET_OPTIONS'; options: Record<string, unknown> }
   | { type: 'SET_RESIZE_ENABLED'; enabled: boolean }
   | { type: 'SET_RESIZE_OPTIONS'; options: ResizeOptions }

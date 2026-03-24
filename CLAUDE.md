@@ -46,7 +46,7 @@ bun run clean
 
 ## Architecture
 
-Squoosh Kit is a Bun-first monorepo providing thin TypeScript wrappers around Google Squoosh's WASM image codecs (WebP encoding, image resizing). The WASM binaries are sourced directly from the official Squoosh repo without modification via `sync-codecs`.
+Squoosh-Kit is a Bun-first monorepo providing thin TypeScript wrappers around Google Squoosh's WASM image codecs (WebP encoding, image resizing). The WASM binaries are sourced directly from the official Squoosh repo without modification via `sync-codecs`.
 
 ### Package Structure
 

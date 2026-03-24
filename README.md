@@ -1,4 +1,4 @@
-# Squoosh Kit
+# Squoosh-Kit
 
 [![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
@@ -8,11 +8,11 @@
 
 **High-performance image processing for modern JavaScript applications**
 
-Squoosh Kit brings Google's Squoosh image optimization technology directly to your JavaScript projects. Built from the ground up for Bun with full TypeScript support, it offers lightning-fast image encoding and resizing through WebAssembly, all while keeping your main thread responsive with intelligent worker management.
+Squoosh-Kit brings Google's Squoosh image optimization technology directly to your JavaScript projects. Built from the ground up for Bun with full TypeScript support, it offers lightning-fast image encoding and resizing through WebAssembly, all while keeping your main thread responsive with intelligent worker management.
 
-Whether you're building a web application, a Node.js service, or a desktop app with Bun, Squoosh Kit gives you the power of professional image processing without the complexity.
+Whether you're building a web application, a Node.js service, or a desktop app with Bun, Squoosh-Kit gives you the power of professional image processing without the complexity.
 
-## The Squoosh Kit Approach
+## The Squoosh-Kit Approach
 
 - **Blazing Fast**: WebAssembly codecs from Google Squoosh
 - **Non-blocking**: Web Workers keep your UI responsive
@@ -59,7 +59,7 @@ npm install @squoosh-kit/core
 
 ## Package Size & Download Reduction
 
-Squoosh Kit includes WebAssembly binaries for WASM codecs (~30-50KB gzipped per package). These enable fast processing through Web Workers and are essential for optimal performance.
+Squoosh-Kit includes WebAssembly binaries for WASM codecs (~30-50KB gzipped per package). These enable fast processing through Web Workers and are essential for optimal performance.
 
 ### Size Breakdown
 
@@ -69,7 +69,7 @@ Squoosh Kit includes WebAssembly binaries for WASM codecs (~30-50KB gzipped per 
 
 ### Client-Only Usage
 
-If you're using Squoosh Kit in **client mode only** (direct encoding/resizing without workers) and want to reduce the download size, you can optionally remove the WASM files:
+If you're using Squoosh-Kit in **client mode only** (direct encoding/resizing without workers) and want to reduce the download size, you can optionally remove the WASM files:
 
 ```bash
 # After installation

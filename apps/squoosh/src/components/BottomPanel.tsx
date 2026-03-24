@@ -10,40 +10,40 @@ import ResizePanel from './ResizePanel';
 
 type Token = { text: string; color: string };
 
-const kw    = (t: string): Token => ({ text: t, color: '#c792ea' });
-const fn    = (t: string): Token => ({ text: t, color: '#82aaff' });
-const str   = (t: string): Token => ({ text: t, color: '#c3e88d' });
-const num   = (t: string): Token => ({ text: t, color: '#f78c6c' });
-const pun   = (t: string): Token => ({ text: t, color: '#89ddff' });
-const prop  = (t: string): Token => ({ text: t, color: '#f07178' });
+const kw = (t: string): Token => ({ text: t, color: '#c792ea' });
+const fn = (t: string): Token => ({ text: t, color: '#82aaff' });
+const str = (t: string): Token => ({ text: t, color: '#c3e88d' });
+const num = (t: string): Token => ({ text: t, color: '#f78c6c' });
+const pun = (t: string): Token => ({ text: t, color: '#89ddff' });
+const prop = (t: string): Token => ({ text: t, color: '#f07178' });
 const plain = (t: string): Token => ({ text: t, color: '#eeffff' });
-const cmt   = (t: string): Token => ({ text: t, color: '#546e7a' });
+const cmt = (t: string): Token => ({ text: t, color: '#546e7a' });
 
 // ── codec metadata ─────────────────────────────────────────────────────────────
 
 const FACTORY: Record<CodecId, string> = {
-  webp:    'createWebpEncoder',
-  avif:    'createAvifEncoder',
+  webp: 'createWebpEncoder',
+  avif: 'createAvifEncoder',
   mozjpeg: 'createMozjpegEncoder',
-  jxl:     'createJxlEncoder',
-  oxipng:  'createOxipngOptimizer',
-  png:     'createPngEncoder',
+  jxl: 'createJxlEncoder',
+  oxipng: 'createOxipngOptimizer',
+  png: 'createPngEncoder',
 };
 
 const FN: Record<CodecId, string> = {
-  webp:    'encode',
-  avif:    'encode',
+  webp: 'encode',
+  avif: 'encode',
   mozjpeg: 'encode',
-  jxl:     'encode',
-  oxipng:  'optimize',
-  png:     'encode',
+  jxl: 'encode',
+  oxipng: 'optimize',
+  png: 'encode',
 };
 
 // ── token builders ─────────────────────────────────────────────────────────────
 
 function valToken(val: unknown): Token {
   if (typeof val === 'boolean') return num(String(val));
-  if (typeof val === 'number')  return num(String(val));
+  if (typeof val === 'number') return num(String(val));
   return str(`'${String(val)}'`);
 }
 
@@ -51,26 +51,59 @@ function optBlock(options: Record<string, unknown>, indent = '  '): Token[][] {
   const entries = Object.entries(options);
   if (entries.length === 0) return [];
   return entries.map(([key, val], i) => [
-    plain(indent), prop(key), pun(': '), valToken(val),
+    plain(indent),
+    prop(key),
+    pun(': '),
+    valToken(val),
     ...(i < entries.length - 1 ? [pun(',')] : []),
   ]);
 }
 
 function importLine(names: string[]): Token[] {
   const inner = names.join(', ');
-  return [kw('import'), plain(' '), pun('{'), plain(` ${inner} `), pun('}'), plain(' '), kw('from'), plain(' '), str("'@squoosh-kit/core'"), pun(';')];
+  return [
+    kw('import'),
+    plain(' '),
+    pun('{'),
+    plain(` ${inner} `),
+    pun('}'),
+    plain(' '),
+    kw('from'),
+    plain(' '),
+    str("'@squoosh-kit/core'"),
+    pun(';'),
+  ];
 }
 
 /** Lines for a resize step, used across all snippet types. */
-function resizeLines(ro: ResizeOptions, inputVar: string, outputVar: string): Token[][] {
-  const entries = Object.entries(ro).filter(([, v]) => v !== undefined) as [string, unknown][];
+function resizeLines(
+  ro: ResizeOptions,
+  inputVar: string,
+  outputVar: string
+): Token[][] {
+  const entries = Object.entries(ro).filter(([, v]) => v !== undefined) as [
+    string,
+    unknown,
+  ][];
   return [
     [
-      kw('const'), plain(` ${outputVar} `), pun('='), plain(' '), kw('await'), plain(' '),
-      fn('resize.resize'), pun('('), plain(inputVar), pun(', '), pun('{'),
+      kw('const'),
+      plain(` ${outputVar} `),
+      pun('='),
+      plain(' '),
+      kw('await'),
+      plain(' '),
+      fn('resize.resize'),
+      pun('('),
+      plain(inputVar),
+      pun(', '),
+      pun('{'),
     ],
     ...entries.map(([key, val], i) => [
-      plain('  '), prop(key), pun(': '), valToken(val),
+      plain('  '),
+      prop(key),
+      pun(': '),
+      valToken(val),
       ...(i < entries.length - 1 ? [pun(',')] : []),
     ]),
     [pun('}'), pun(')')],
@@ -83,9 +116,9 @@ function buildSimple(
   codecId: CodecId,
   options: Record<string, unknown>,
   resizeEnabled: boolean,
-  resizeOptions: ResizeOptions,
+  resizeOptions: ResizeOptions
 ): Token[][] {
-  const hasPng  = codecId === 'png';
+  const hasPng = codecId === 'png';
   const hasOpts = !hasPng && Object.keys(options).length > 0;
   const imports = resizeEnabled ? ['resize', codecId] : [codecId];
   const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
@@ -93,18 +126,25 @@ function buildSimple(
   const lines: Token[][] = [importLine(imports), []];
 
   if (resizeEnabled) {
-    const ro = Object.fromEntries(Object.entries(resizeOptions).filter(([, v]) => v !== undefined));
+    const ro = Object.fromEntries(
+      Object.entries(resizeOptions).filter(([, v]) => v !== undefined)
+    );
     lines.push(...resizeLines(ro as ResizeOptions, 'imageInput', 'resized'));
     lines[lines.length - 1] = [...(lines[lines.length - 1] ?? []), pun(';')];
     lines.push([]);
   }
 
   lines.push([
-    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
-    fn(`${codecId}.${FN[codecId]}`), pun('('), plain(encodeInput),
-    ...(hasOpts  ? [pun(', '), pun('{')]
-      : hasPng   ? []
-      :            [pun(')')]),
+    kw('const'),
+    plain(' result '),
+    pun('='),
+    plain(' '),
+    kw('await'),
+    plain(' '),
+    fn(`${codecId}.${FN[codecId]}`),
+    pun('('),
+    plain(encodeInput),
+    ...(hasOpts ? [pun(', '), pun('{')] : hasPng ? [] : [pun(')')]),
   ]);
 
   if (hasOpts) {
@@ -120,47 +160,107 @@ function buildAdvanced(
   codecId: CodecId,
   options: Record<string, unknown>,
   resizeEnabled: boolean,
-  resizeOptions: ResizeOptions,
+  resizeOptions: ResizeOptions
 ): Token[][] {
-  const factory   = FACTORY[codecId];
-  const hasPng    = codecId === 'png';
-  const hasOpts   = !hasPng && Object.keys(options).length > 0;
-  const imports   = resizeEnabled ? ['resize', codecId] : [codecId];
+  const factory = FACTORY[codecId];
+  const hasPng = codecId === 'png';
+  const hasOpts = !hasPng && Object.keys(options).length > 0;
+  const imports = resizeEnabled ? ['resize', codecId] : [codecId];
   const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
 
-  const lines: Token[][] = [
-    importLine(imports),
-    [],
-  ];
+  const lines: Token[][] = [importLine(imports), []];
 
   if (resizeEnabled) {
-    lines.push(
-      [kw('const'), plain(' resizer '), pun('='), plain(' '), fn('resize.createResizer'), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
-    );
+    lines.push([
+      kw('const'),
+      plain(' resizer '),
+      pun('='),
+      plain(' '),
+      fn('resize.createResizer'),
+      pun("('worker',"),
+      plain(' '),
+      pun('{'),
+      plain(' '),
+      prop('assetPath'),
+      pun(': '),
+      str("'/squoosh-kit'"),
+      plain(' '),
+      pun('});'),
+    ]);
   }
 
   lines.push(
-    [kw('const'), plain(' encoder '), pun('='), plain(' '), fn(`${codecId}.${factory}`), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
+    [
+      kw('const'),
+      plain(' encoder '),
+      pun('='),
+      plain(' '),
+      fn(`${codecId}.${factory}`),
+      pun("('worker',"),
+      plain(' '),
+      pun('{'),
+      plain(' '),
+      prop('assetPath'),
+      pun(': '),
+      str("'/squoosh-kit'"),
+      plain(' '),
+      pun('});'),
+    ],
     [],
-    [kw('const'), plain(' controller '), pun('='), plain(' '), kw('new'), plain(' '), fn('AbortController'), pun('();')],
-    [],
+    [
+      kw('const'),
+      plain(' controller '),
+      pun('='),
+      plain(' '),
+      kw('new'),
+      plain(' '),
+      fn('AbortController'),
+      pun('();'),
+    ],
+    []
   );
 
   if (resizeEnabled) {
-    const ro = Object.fromEntries(Object.entries(resizeOptions).filter(([, v]) => v !== undefined));
+    const ro = Object.fromEntries(
+      Object.entries(resizeOptions).filter(([, v]) => v !== undefined)
+    );
     const resLines = resizeLines(ro as ResizeOptions, 'imageInput', 'resized');
-    resLines[0] = [kw('const'), plain(' resized '), pun('='), plain(' '), kw('await'), plain(' '), fn('resizer'), pun('('), plain('imageInput'), pun(', '), pun('{')];
+    resLines[0] = [
+      kw('const'),
+      plain(' resized '),
+      pun('='),
+      plain(' '),
+      kw('await'),
+      plain(' '),
+      fn('resizer'),
+      pun('('),
+      plain('imageInput'),
+      pun(', '),
+      pun('{'),
+    ];
     resLines.push([pun('},'), plain(' controller.signal'), pun(')')]);
-    resLines[resLines.length - 1] = [...(resLines[resLines.length - 1] ?? []), pun(';')];
+    resLines[resLines.length - 1] = [
+      ...(resLines[resLines.length - 1] ?? []),
+      pun(';'),
+    ];
     lines.push(...resLines, []);
   }
 
   lines.push([
-    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
-    fn('encoder'), pun('('), plain(encodeInput),
-    ...(hasOpts  ? [pun(', '), pun('{')]
-      : hasPng   ? [pun(', '), plain('controller.signal'), pun(')')]
-      :            [pun(', '), plain('controller.signal'), pun(')')]),
+    kw('const'),
+    plain(' result '),
+    pun('='),
+    plain(' '),
+    kw('await'),
+    plain(' '),
+    fn('encoder'),
+    pun('('),
+    plain(encodeInput),
+    ...(hasOpts
+      ? [pun(', '), pun('{')]
+      : hasPng
+        ? [pun(', '), plain('controller.signal'), pun(')')]
+        : [pun(', '), plain('controller.signal'), pun(')')]),
   ]);
 
   if (hasOpts) {
@@ -172,8 +272,10 @@ function buildAdvanced(
   lines.push(
     [],
     [cmt('// reuse for multiple images, then clean up:')],
-    ...(resizeEnabled ? [[kw('await'), plain(' '), fn('resizer.terminate'), pun('();')]] : []) as Token[][],
-    [kw('await'), plain(' '), fn('encoder.terminate'), pun('();')],
+    ...((resizeEnabled
+      ? [[kw('await'), plain(' '), fn('resizer.terminate'), pun('();')]]
+      : []) as Token[][]),
+    [kw('await'), plain(' '), fn('encoder.terminate'), pun('();')]
   );
 
   return lines;
@@ -183,16 +285,18 @@ function buildRuntimes(
   codecId: CodecId,
   options: Record<string, unknown>,
   resizeEnabled: boolean,
-  resizeOptions: ResizeOptions,
+  resizeOptions: ResizeOptions
 ): Token[][] {
-  const hasPng    = codecId === 'png';
-  const hasOpts   = !hasPng && Object.keys(options).length > 0;
-  const factory   = FACTORY[codecId];
-  const imports   = resizeEnabled ? ['resize', codecId] : [codecId];
+  const hasPng = codecId === 'png';
+  const hasOpts = !hasPng && Object.keys(options).length > 0;
+  const factory = FACTORY[codecId];
+  const imports = resizeEnabled ? ['resize', codecId] : [codecId];
   const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
 
   const ro = resizeEnabled
-    ? Object.fromEntries(Object.entries(resizeOptions).filter(([, v]) => v !== undefined)) as ResizeOptions
+    ? (Object.fromEntries(
+        Object.entries(resizeOptions).filter(([, v]) => v !== undefined)
+      ) as ResizeOptions)
     : null;
 
   // ─ Node / Bun ──────────────────────────────────────────────────────────────
@@ -209,17 +313,25 @@ function buildRuntimes(
   }
 
   nodeLines.push([
-    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
-    fn(`${codecId}.${FN[codecId]}`), pun('('), plain(encodeInput),
-    ...(hasOpts  ? [pun(', '), pun('{')]
-      : hasPng   ? []
-      :            [pun(')')]),
+    kw('const'),
+    plain(' result '),
+    pun('='),
+    plain(' '),
+    kw('await'),
+    plain(' '),
+    fn(`${codecId}.${FN[codecId]}`),
+    pun('('),
+    plain(encodeInput),
+    ...(hasOpts ? [pun(', '), pun('{')] : hasPng ? [] : [pun(')')]),
   ]);
   if (hasOpts) {
     nodeLines.push(...optBlock(options));
     nodeLines.push([pun('}'), pun(')')]);
   }
-  nodeLines[nodeLines.length - 1] = [...(nodeLines[nodeLines.length - 1] ?? []), pun(';')];
+  nodeLines[nodeLines.length - 1] = [
+    ...(nodeLines[nodeLines.length - 1] ?? []),
+    pun(';'),
+  ];
 
   // ─ Browser ─────────────────────────────────────────────────────────────────
   const browserLines: Token[][] = [
@@ -228,43 +340,116 @@ function buildRuntimes(
   ];
 
   if (ro) {
-    browserLines.push(
-      [kw('const'), plain(' resizer '), pun('='), plain(' '), fn('resize.createResizer'), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
-    );
+    browserLines.push([
+      kw('const'),
+      plain(' resizer '),
+      pun('='),
+      plain(' '),
+      fn('resize.createResizer'),
+      pun("('worker',"),
+      plain(' '),
+      pun('{'),
+      plain(' '),
+      prop('assetPath'),
+      pun(': '),
+      str("'/squoosh-kit'"),
+      plain(' '),
+      pun('});'),
+    ]);
   }
 
   browserLines.push(
-    [kw('const'), plain(' encoder '), pun('='), plain(' '), fn(`${codecId}.${factory}`), pun("('worker',"), plain(' '), pun('{'), plain(' '), prop('assetPath'), pun(': '), str("'/squoosh-kit'"), plain(' '), pun('});')],
-    [kw('const'), plain(' signal '), pun('='), plain(' '), pun('('), kw('new'), plain(' '), fn('AbortController'), pun(')'), pun('.signal;')],
-    [],
+    [
+      kw('const'),
+      plain(' encoder '),
+      pun('='),
+      plain(' '),
+      fn(`${codecId}.${factory}`),
+      pun("('worker',"),
+      plain(' '),
+      pun('{'),
+      plain(' '),
+      prop('assetPath'),
+      pun(': '),
+      str("'/squoosh-kit'"),
+      plain(' '),
+      pun('});'),
+    ],
+    [
+      kw('const'),
+      plain(' signal '),
+      pun('='),
+      plain(' '),
+      pun('('),
+      kw('new'),
+      plain(' '),
+      fn('AbortController'),
+      pun(')'),
+      pun('.signal;'),
+    ],
+    []
   );
 
   if (ro) {
     const rl = resizeLines(ro, 'imageInput', 'resized');
-    rl[0] = [kw('const'), plain(' resized '), pun('='), plain(' '), kw('await'), plain(' '), fn('resizer'), pun('('), plain('imageInput'), pun(', '), pun('{')];
+    rl[0] = [
+      kw('const'),
+      plain(' resized '),
+      pun('='),
+      plain(' '),
+      kw('await'),
+      plain(' '),
+      fn('resizer'),
+      pun('('),
+      plain('imageInput'),
+      pun(', '),
+      pun('{'),
+    ];
     rl.push([pun('},'), plain(' signal'), pun(')')]);
     rl[rl.length - 1] = [...(rl[rl.length - 1] ?? []), pun(';')];
     browserLines.push(...rl, []);
   }
 
   browserLines.push([
-    kw('const'), plain(' result '), pun('='), plain(' '), kw('await'), plain(' '),
-    fn('encoder'), pun('('), plain(encodeInput),
-    ...(hasOpts  ? [pun(', '), pun('{')]
-      : hasPng   ? [pun(', '), plain('signal'), pun(')')]
-      :            [pun(', '), plain('signal'), pun(')')]),
+    kw('const'),
+    plain(' result '),
+    pun('='),
+    plain(' '),
+    kw('await'),
+    plain(' '),
+    fn('encoder'),
+    pun('('),
+    plain(encodeInput),
+    ...(hasOpts
+      ? [pun(', '), pun('{')]
+      : hasPng
+        ? [pun(', '), plain('signal'), pun(')')]
+        : [pun(', '), plain('signal'), pun(')')]),
   ]);
 
   if (hasOpts) {
     browserLines.push(...optBlock(options));
     browserLines.push([pun('},'), plain(' signal'), pun(')')]);
   }
-  browserLines[browserLines.length - 1] = [...(browserLines[browserLines.length - 1] ?? []) , pun(';')];
+  browserLines[browserLines.length - 1] = [
+    ...(browserLines[browserLines.length - 1] ?? []),
+    pun(';'),
+  ];
 
   if (ro) {
-    browserLines.push([kw('await'), plain(' '), fn('resizer.terminate'), pun('();')]);
+    browserLines.push([
+      kw('await'),
+      plain(' '),
+      fn('resizer.terminate'),
+      pun('();'),
+    ]);
   }
-  browserLines.push([kw('await'), plain(' '), fn('encoder.terminate'), pun('();')]);
+  browserLines.push([
+    kw('await'),
+    plain(' '),
+    fn('encoder.terminate'),
+    pun('();'),
+  ]);
 
   return [...nodeLines, ...browserLines];
 }
@@ -273,7 +458,7 @@ function buildRuntimes(
 
 type Tab = 'simple' | 'advanced' | 'runtimes';
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'simple',   label: 'Simple'   },
+  { id: 'simple', label: 'Simple' },
   { id: 'advanced', label: 'Advanced' },
   { id: 'runtimes', label: 'Runtimes' },
 ];
@@ -294,13 +479,22 @@ function formatBytes(bytes: number): string {
 
 function compressionRatio(original: number, compressed: number): string {
   const ratio = ((original - compressed) / original) * 100;
-  return ratio >= 0 ? `↓${ratio.toFixed(1)}%` : `↑${Math.abs(ratio).toFixed(1)}%`;
+  return ratio >= 0
+    ? `↓${ratio.toFixed(1)}%`
+    : `↑${Math.abs(ratio).toFixed(1)}%`;
 }
 
 export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
   const {
-    sourceFile, imageInput, encodeResult, encodeError,
-    codecId, codecOptions, resizeEnabled, resizeOptions, phase,
+    sourceFile,
+    imageInput,
+    encodeResult,
+    encodeError,
+    codecId,
+    codecOptions,
+    resizeEnabled,
+    resizeOptions,
+    phase,
   } = state;
   const [activeTab, setActiveTab] = useState<Tab>('simple');
 
@@ -315,12 +509,17 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
   const isEncoding = phase === 'encoding';
 
   const lines =
-    activeTab === 'simple'   ? buildSimple(codecId, codecOptions, resizeEnabled, resizeOptions) :
-    activeTab === 'advanced' ? buildAdvanced(codecId, codecOptions, resizeEnabled, resizeOptions) :
-                               buildRuntimes(codecId, codecOptions, resizeEnabled, resizeOptions);
+    activeTab === 'simple'
+      ? buildSimple(codecId, codecOptions, resizeEnabled, resizeOptions)
+      : activeTab === 'advanced'
+        ? buildAdvanced(codecId, codecOptions, resizeEnabled, resizeOptions)
+        : buildRuntimes(codecId, codecOptions, resizeEnabled, resizeOptions);
 
   return (
-    <div className="flex gap-4 justify-center text-white p-4" style={{ background: '#09f' }}>
+    <div
+      className="flex gap-4 justify-center text-white p-4"
+      style={{ background: '#09f' }}
+    >
       {/* Left — code snippet (stays dark) */}
       <div className="h-[300px] flex flex-col grow min-w-0 max-w-200 border-r border-white/10 overflow-hidden bg-gray-900 rounded-lg">
         {/* Tab bar */}
@@ -331,9 +530,11 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
               onClick={() => setActiveTab(tab.id)}
               className={`
                 px-4 py-2 text-xs font-mono transition-colors
-                ${activeTab === tab.id
-                  ? 'text-white border-b border-white -mb-px'
-                  : 'text-white/40 hover:text-white/70'}
+                ${
+                  activeTab === tab.id
+                    ? 'text-white border-b border-white -mb-px'
+                    : 'text-white/40 hover:text-white/70'
+                }
               `}
             >
               {tab.label}
@@ -345,8 +546,18 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
               title="Upload new image"
               className="p-1 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -357,14 +568,19 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
           <pre
             key={activeTab}
             className="code-fade h-full overflow-y-auto text-xs font-mono leading-relaxed rounded-lg px-4 py-3 bg-gray-950"
-            style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(255,255,255,0.15) transparent',
+            }}
           >
             {lines.map((line, li) => (
               <div key={li}>
                 {line.length === 0
                   ? '\u00a0'
                   : line.map((tok, ti) => (
-                      <span key={ti} style={{ color: tok.color }}>{tok.text}</span>
+                      <span key={ti} style={{ color: tok.color }}>
+                        {tok.text}
+                      </span>
                     ))}
               </div>
             ))}
@@ -379,13 +595,31 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
 
           <div className="ml-auto text-right">
             {isEncoding ? (
-              <svg className="animate-spin h-5 w-5 text-white/80 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <svg
+                className="animate-spin h-5 w-5 text-white/80 ml-auto"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
             ) : encodeResult ? (
               <div className="flex flex-col items-end">
-                <span className="text-sm font-bold text-white">{formatBytes(encodeResult.sizeBytes)}</span>
+                <span className="text-sm font-bold text-white">
+                  {formatBytes(encodeResult.sizeBytes)}
+                </span>
                 {sourceFile && (
                   <span className="text-xs text-white/70">
                     {compressionRatio(sourceFile.size, encodeResult.sizeBytes)}
@@ -408,8 +642,12 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
             options={resizeOptions}
             originalWidth={imageInput?.width ?? 0}
             originalHeight={imageInput?.height ?? 0}
-            onToggle={(enabled) => dispatch({ type: 'SET_RESIZE_ENABLED', enabled })}
-            onChange={(options) => dispatch({ type: 'SET_RESIZE_OPTIONS', options })}
+            onToggle={(enabled) =>
+              dispatch({ type: 'SET_RESIZE_ENABLED', enabled })
+            }
+            onChange={(options) =>
+              dispatch({ type: 'SET_RESIZE_OPTIONS', options })
+            }
           />
         </div>
 

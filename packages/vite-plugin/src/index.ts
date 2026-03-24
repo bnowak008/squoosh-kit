@@ -40,7 +40,9 @@ function copyBrowserFiles(srcDir: string, destDir: string) {
   }
 }
 
-export default function squooshVitePlugin(squooshKitRoot: string): PluginOption {
+export default function squooshVitePlugin(
+  squooshKitRoot: string
+): PluginOption {
   const viteRoot = process.cwd();
   const publicDir = join(viteRoot, 'public', 'squoosh-kit');
   const webpDist = join(squooshKitRoot, 'webp', 'dist');

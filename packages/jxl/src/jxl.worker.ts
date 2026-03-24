@@ -34,129 +34,137 @@ async function loadJxlEncModule(): Promise<JXLModule> {
   if (cachedEncModule) return cachedEncModule;
   if (loadEncModulePromise) return loadEncModulePromise;
   loadEncModulePromise = (async () => {
-  // Emscripten polyfills
-  const globalSelf = typeof self !== 'undefined' ? self : globalThis;
-  if (!globalSelf.location) {
-    (globalSelf as { location?: { href: string } }).location = {
-      href: import.meta.url,
-    };
-  }
-  if (typeof self === 'undefined' && typeof globalThis !== 'undefined') {
-    (globalThis as { self?: typeof globalThis }).self = globalThis;
-  }
-
-  const useNode = isNodeOrBun();
-  // Node/Bun: use jxl_node_enc.js; Browser: use jxl_enc.js (single-threaded)
-  const modulePath = useNode ? 'jxl-enc/jxl_node_enc.js' : 'jxl-enc/jxl_enc.js';
-
-  try {
-    console.log('[JXL Worker] Initializing encoder. Node/Bun:', useNode);
-    console.log(
-      `[JXL Worker] Attempting to import encoder module from path: ${modulePath}`
-    );
-
-    let moduleFactory;
-    const isSource = import.meta.url.includes('/src/');
-    const pathsToTry = isSource
-      ? ['../wasm/' + modulePath, './wasm/' + modulePath]
-      : ['./wasm/' + modulePath, '../wasm/' + modulePath];
-
-    let lastError: Error | null = null;
-    for (const importPath of pathsToTry) {
-      try {
-        moduleFactory = (await import(/* @vite-ignore */ importPath)).default;
-        console.log(
-          `[JXL Worker] Successfully loaded encoder module from: ${importPath}`
-        );
-        break;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(
-          `[JXL Worker] Failed to load encoder from ${importPath}, trying next path...`
-        );
-      }
+    // Emscripten polyfills
+    const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+    if (!globalSelf.location) {
+      (globalSelf as { location?: { href: string } }).location = {
+        href: import.meta.url,
+      };
+    }
+    if (typeof self === 'undefined' && typeof globalThis !== 'undefined') {
+      (globalThis as { self?: typeof globalThis }).self = globalThis;
     }
 
-    if (!moduleFactory) {
-      throw (
-        lastError ||
-        new Error('Could not load JXL encoder module from any path')
+    const useNode = isNodeOrBun();
+    // Node/Bun: use jxl_node_enc.js; Browser: use jxl_enc.js (single-threaded)
+    const modulePath = useNode
+      ? 'jxl-enc/jxl_node_enc.js'
+      : 'jxl-enc/jxl_enc.js';
+
+    try {
+      console.log('[JXL Worker] Initializing encoder. Node/Bun:', useNode);
+      console.log(
+        `[JXL Worker] Attempting to import encoder module from path: ${modulePath}`
       );
-    }
 
-    console.log('[JXL Worker] Encoder module factory loaded successfully.');
+      let moduleFactory;
+      const isSource = import.meta.url.includes('/src/');
+      const pathsToTry = isSource
+        ? ['../wasm/' + modulePath, './wasm/' + modulePath]
+        : ['./wasm/' + modulePath, '../wasm/' + modulePath];
 
-    const wasmFile = useNode ? 'jxl_node_enc.wasm' : 'jxl_enc.wasm';
-    const wasmPathsToTry = isSource
-      ? [`../wasm/jxl-enc/${wasmFile}`, `./wasm/jxl-enc/${wasmFile}`]
-      : [`./wasm/jxl-enc/${wasmFile}`, `../wasm/jxl-enc/${wasmFile}`];
-
-    console.log(
-      `[JXL Worker] Preparing to load encoder WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
-    );
-
-    const initModuleWithBinary = async (
-      factory: (config: {
-        noInitialRun: boolean;
-        wasmBinary?: ArrayBuffer;
-      }) => Promise<JXLModule>,
-      wasmPaths: string[]
-    ): Promise<JXLModule> => {
-      const workerBaseUrl = new URL('.', import.meta.url);
       let lastError: Error | null = null;
-      for (const wasmPath of wasmPaths) {
+      for (const importPath of pathsToTry) {
         try {
+          moduleFactory = (await import(/* @vite-ignore */ importPath)).default;
           console.log(
-            `[JXL Worker] Calling loadWasmBinary with path: ${wasmPath}`
+            `[JXL Worker] Successfully loaded encoder module from: ${importPath}`
           );
-          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
-          console.log(
-            `[JXL Worker] Successfully fetched encoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`
-          );
-
-          const globalSelf = typeof self !== 'undefined' ? self : globalThis;
-          if (!globalSelf.location) {
-            (globalSelf as { location?: { href: string } }).location = {
-              href: import.meta.url,
-            };
-          }
-          if (
-            typeof self === 'undefined' &&
-            typeof globalThis !== 'undefined'
-          ) {
-            (globalThis as { self?: typeof globalThis }).self = globalThis;
-          }
-
-          return await factory({
-            noInitialRun: true,
-            wasmBinary,
-          });
-        } catch (err) {
-          lastError = err instanceof Error ? err : new Error(String(err));
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
           console.warn(
-            `[JXL Worker] Failed to load encoder WASM from ${wasmPath}, trying next path...`
+            `[JXL Worker] Failed to load encoder from ${importPath}, trying next path...`
           );
         }
       }
-      throw (
-        lastError ||
-        new Error(
-          'Could not load encoder WASM binary from any of the attempted paths'
-        )
-      );
-    };
 
-    cachedEncModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
-    console.log('[JXL Worker] JXL encoder module initialized successfully.');
-    return cachedEncModule;
-  } catch (err) {
-    console.error(
-      `[JXL Worker] CRITICAL: Failed to load JXL encoder module from path: ${modulePath}`,
-      err
-    );
+      if (!moduleFactory) {
+        throw (
+          lastError ||
+          new Error('Could not load JXL encoder module from any path')
+        );
+      }
+
+      console.log('[JXL Worker] Encoder module factory loaded successfully.');
+
+      const wasmFile = useNode ? 'jxl_node_enc.wasm' : 'jxl_enc.wasm';
+      const wasmPathsToTry = isSource
+        ? [`../wasm/jxl-enc/${wasmFile}`, `./wasm/jxl-enc/${wasmFile}`]
+        : [`./wasm/jxl-enc/${wasmFile}`, `../wasm/jxl-enc/${wasmFile}`];
+
+      console.log(
+        `[JXL Worker] Preparing to load encoder WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
+      );
+
+      const initModuleWithBinary = async (
+        factory: (config: {
+          noInitialRun: boolean;
+          wasmBinary?: ArrayBuffer;
+        }) => Promise<JXLModule>,
+        wasmPaths: string[]
+      ): Promise<JXLModule> => {
+        const workerBaseUrl = new URL('.', import.meta.url);
+        let lastError: Error | null = null;
+        for (const wasmPath of wasmPaths) {
+          try {
+            console.log(
+              `[JXL Worker] Calling loadWasmBinary with path: ${wasmPath}`
+            );
+            const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+            console.log(
+              `[JXL Worker] Successfully fetched encoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`
+            );
+
+            const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+            if (!globalSelf.location) {
+              (globalSelf as { location?: { href: string } }).location = {
+                href: import.meta.url,
+              };
+            }
+            if (
+              typeof self === 'undefined' &&
+              typeof globalThis !== 'undefined'
+            ) {
+              (globalThis as { self?: typeof globalThis }).self = globalThis;
+            }
+
+            return await factory({
+              noInitialRun: true,
+              wasmBinary,
+            });
+          } catch (err) {
+            lastError = err instanceof Error ? err : new Error(String(err));
+            console.warn(
+              `[JXL Worker] Failed to load encoder WASM from ${wasmPath}, trying next path...`
+            );
+          }
+        }
+        throw (
+          lastError ||
+          new Error(
+            'Could not load encoder WASM binary from any of the attempted paths'
+          )
+        );
+      };
+
+      cachedEncModule = await initModuleWithBinary(
+        moduleFactory,
+        wasmPathsToTry
+      );
+      console.log('[JXL Worker] JXL encoder module initialized successfully.');
+      return cachedEncModule;
+    } catch (err) {
+      console.error(
+        `[JXL Worker] CRITICAL: Failed to load JXL encoder module from path: ${modulePath}`,
+        err
+      );
+      throw err;
+    }
+  })().catch((err: unknown) => {
+    loadEncModulePromise = null;
     throw err;
-  }
-  })().catch((err: unknown) => { loadEncModulePromise = null; throw err; });
+  });
   return loadEncModulePromise;
 }
 
@@ -164,132 +172,140 @@ async function loadJxlDecModule(): Promise<JXLDecModule> {
   if (cachedDecModule) return cachedDecModule;
   if (loadDecModulePromise) return loadDecModulePromise;
   loadDecModulePromise = (async () => {
-  // Emscripten polyfills
-  const globalSelf = typeof self !== 'undefined' ? self : globalThis;
-  if (!globalSelf.location) {
-    (globalSelf as { location?: { href: string } }).location = {
-      href: import.meta.url,
-    };
-  }
-  if (typeof self === 'undefined' && typeof globalThis !== 'undefined') {
-    (globalThis as { self?: typeof globalThis }).self = globalThis;
-  }
-
-  // Polyfill ImageData for Node/Bun environments
-  polyfillImageData();
-
-  const useNode = isNodeOrBun();
-  // Node/Bun: use jxl_node_dec.js; Browser: use jxl_dec.js
-  const modulePath = useNode ? 'jxl-dec/jxl_node_dec.js' : 'jxl-dec/jxl_dec.js';
-
-  try {
-    console.log('[JXL Worker] Initializing decoder. Node/Bun:', useNode);
-    console.log(
-      `[JXL Worker] Attempting to import decoder module from path: ${modulePath}`
-    );
-
-    let moduleFactory;
-    const isSource = import.meta.url.includes('/src/');
-    const pathsToTry = isSource
-      ? ['../wasm/' + modulePath, './wasm/' + modulePath]
-      : ['./wasm/' + modulePath, '../wasm/' + modulePath];
-
-    let lastError: Error | null = null;
-    for (const importPath of pathsToTry) {
-      try {
-        moduleFactory = (await import(/* @vite-ignore */ importPath)).default;
-        console.log(
-          `[JXL Worker] Successfully loaded decoder module from: ${importPath}`
-        );
-        break;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(
-          `[JXL Worker] Failed to load decoder from ${importPath}, trying next path...`
-        );
-      }
+    // Emscripten polyfills
+    const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+    if (!globalSelf.location) {
+      (globalSelf as { location?: { href: string } }).location = {
+        href: import.meta.url,
+      };
+    }
+    if (typeof self === 'undefined' && typeof globalThis !== 'undefined') {
+      (globalThis as { self?: typeof globalThis }).self = globalThis;
     }
 
-    if (!moduleFactory) {
-      throw (
-        lastError ||
-        new Error('Could not load JXL decoder module from any path')
+    // Polyfill ImageData for Node/Bun environments
+    polyfillImageData();
+
+    const useNode = isNodeOrBun();
+    // Node/Bun: use jxl_node_dec.js; Browser: use jxl_dec.js
+    const modulePath = useNode
+      ? 'jxl-dec/jxl_node_dec.js'
+      : 'jxl-dec/jxl_dec.js';
+
+    try {
+      console.log('[JXL Worker] Initializing decoder. Node/Bun:', useNode);
+      console.log(
+        `[JXL Worker] Attempting to import decoder module from path: ${modulePath}`
       );
-    }
 
-    console.log('[JXL Worker] Decoder module factory loaded successfully.');
+      let moduleFactory;
+      const isSource = import.meta.url.includes('/src/');
+      const pathsToTry = isSource
+        ? ['../wasm/' + modulePath, './wasm/' + modulePath]
+        : ['./wasm/' + modulePath, '../wasm/' + modulePath];
 
-    const wasmFile = useNode ? 'jxl_node_dec.wasm' : 'jxl_dec.wasm';
-    const wasmPathsToTry = isSource
-      ? [`../wasm/jxl-dec/${wasmFile}`, `./wasm/jxl-dec/${wasmFile}`]
-      : [`./wasm/jxl-dec/${wasmFile}`, `../wasm/jxl-dec/${wasmFile}`];
-
-    console.log(
-      `[JXL Worker] Preparing to load decoder WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
-    );
-
-    const initModuleWithBinary = async (
-      factory: (config: {
-        noInitialRun: boolean;
-        wasmBinary?: ArrayBuffer;
-      }) => Promise<JXLDecModule>,
-      wasmPaths: string[]
-    ): Promise<JXLDecModule> => {
-      const workerBaseUrl = new URL('.', import.meta.url);
       let lastError: Error | null = null;
-      for (const wasmPath of wasmPaths) {
+      for (const importPath of pathsToTry) {
         try {
+          moduleFactory = (await import(/* @vite-ignore */ importPath)).default;
           console.log(
-            `[JXL Worker] Calling loadWasmBinary with path: ${wasmPath}`
+            `[JXL Worker] Successfully loaded decoder module from: ${importPath}`
           );
-          const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
-          console.log(
-            `[JXL Worker] Successfully fetched decoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`
-          );
-
-          const globalSelf = typeof self !== 'undefined' ? self : globalThis;
-          if (!globalSelf.location) {
-            (globalSelf as { location?: { href: string } }).location = {
-              href: import.meta.url,
-            };
-          }
-          if (
-            typeof self === 'undefined' &&
-            typeof globalThis !== 'undefined'
-          ) {
-            (globalThis as { self?: typeof globalThis }).self = globalThis;
-          }
-
-          return await factory({
-            noInitialRun: true,
-            wasmBinary,
-          });
-        } catch (err) {
-          lastError = err instanceof Error ? err : new Error(String(err));
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
           console.warn(
-            `[JXL Worker] Failed to load decoder WASM from ${wasmPath}, trying next path...`
+            `[JXL Worker] Failed to load decoder from ${importPath}, trying next path...`
           );
         }
       }
-      throw (
-        lastError ||
-        new Error(
-          'Could not load decoder WASM binary from any of the attempted paths'
-        )
-      );
-    };
 
-    cachedDecModule = await initModuleWithBinary(moduleFactory, wasmPathsToTry);
-    console.log('[JXL Worker] JXL decoder module initialized successfully.');
-    return cachedDecModule;
-  } catch (err) {
-    console.error(
-      `[JXL Worker] CRITICAL: Failed to load JXL decoder module from path: ${modulePath}`,
-      err
-    );
+      if (!moduleFactory) {
+        throw (
+          lastError ||
+          new Error('Could not load JXL decoder module from any path')
+        );
+      }
+
+      console.log('[JXL Worker] Decoder module factory loaded successfully.');
+
+      const wasmFile = useNode ? 'jxl_node_dec.wasm' : 'jxl_dec.wasm';
+      const wasmPathsToTry = isSource
+        ? [`../wasm/jxl-dec/${wasmFile}`, `./wasm/jxl-dec/${wasmFile}`]
+        : [`./wasm/jxl-dec/${wasmFile}`, `../wasm/jxl-dec/${wasmFile}`];
+
+      console.log(
+        `[JXL Worker] Preparing to load decoder WASM binary. Will try paths: ${wasmPathsToTry.join(', ')}`
+      );
+
+      const initModuleWithBinary = async (
+        factory: (config: {
+          noInitialRun: boolean;
+          wasmBinary?: ArrayBuffer;
+        }) => Promise<JXLDecModule>,
+        wasmPaths: string[]
+      ): Promise<JXLDecModule> => {
+        const workerBaseUrl = new URL('.', import.meta.url);
+        let lastError: Error | null = null;
+        for (const wasmPath of wasmPaths) {
+          try {
+            console.log(
+              `[JXL Worker] Calling loadWasmBinary with path: ${wasmPath}`
+            );
+            const wasmBinary = await loadWasmBinary(wasmPath, workerBaseUrl);
+            console.log(
+              `[JXL Worker] Successfully fetched decoder WASM binary from ${wasmPath}. Size: ${wasmBinary.byteLength} bytes.`
+            );
+
+            const globalSelf = typeof self !== 'undefined' ? self : globalThis;
+            if (!globalSelf.location) {
+              (globalSelf as { location?: { href: string } }).location = {
+                href: import.meta.url,
+              };
+            }
+            if (
+              typeof self === 'undefined' &&
+              typeof globalThis !== 'undefined'
+            ) {
+              (globalThis as { self?: typeof globalThis }).self = globalThis;
+            }
+
+            return await factory({
+              noInitialRun: true,
+              wasmBinary,
+            });
+          } catch (err) {
+            lastError = err instanceof Error ? err : new Error(String(err));
+            console.warn(
+              `[JXL Worker] Failed to load decoder WASM from ${wasmPath}, trying next path...`
+            );
+          }
+        }
+        throw (
+          lastError ||
+          new Error(
+            'Could not load decoder WASM binary from any of the attempted paths'
+          )
+        );
+      };
+
+      cachedDecModule = await initModuleWithBinary(
+        moduleFactory,
+        wasmPathsToTry
+      );
+      console.log('[JXL Worker] JXL decoder module initialized successfully.');
+      return cachedDecModule;
+    } catch (err) {
+      console.error(
+        `[JXL Worker] CRITICAL: Failed to load JXL decoder module from path: ${modulePath}`,
+        err
+      );
+      throw err;
+    }
+  })().catch((err: unknown) => {
+    loadDecModulePromise = null;
     throw err;
-  }
-  })().catch((err: unknown) => { loadDecModulePromise = null; throw err; });
+  });
   return loadDecModulePromise;
 }
 

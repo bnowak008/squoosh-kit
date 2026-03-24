@@ -49,11 +49,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       const f = webp.createWebpEncoder('worker', BRIDGE_OPTIONS);
       return {
         encode: (image, options, signal) =>
-          f(
-            image,
-            options as Parameters<typeof f>[1],
-            signal
-          ),
+          f(image, options as Parameters<typeof f>[1], signal),
         terminate: () => f.terminate(),
       };
     }
@@ -61,11 +57,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       const f = avif.createAvifEncoder('worker', BRIDGE_OPTIONS);
       return {
         encode: (image, options, signal) =>
-          f(
-            image,
-            options as Parameters<typeof f>[1],
-            signal
-          ),
+          f(image, options as Parameters<typeof f>[1], signal),
         terminate: () => f.terminate(),
       };
     }
@@ -73,11 +65,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       const f = mozjpeg.createMozjpegEncoder('worker', BRIDGE_OPTIONS);
       return {
         encode: (image, options, signal) =>
-          f(
-            image,
-            options as Parameters<typeof f>[1],
-            signal
-          ),
+          f(image, options as Parameters<typeof f>[1], signal),
         terminate: () => f.terminate(),
       };
     }
@@ -85,11 +73,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       const f = jxl.createJxlEncoder('worker', BRIDGE_OPTIONS);
       return {
         encode: (image, options, signal) =>
-          f(
-            image,
-            options as Parameters<typeof f>[1],
-            signal
-          ),
+          f(image, options as Parameters<typeof f>[1], signal),
         terminate: () => f.terminate(),
       };
     }
@@ -97,11 +81,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       const f = oxipng.createOxipngOptimizer('worker', BRIDGE_OPTIONS);
       return {
         encode: (image, options, signal) =>
-          f(
-            image,
-            options as Parameters<typeof f>[1],
-            signal
-          ),
+          f(image, options as Parameters<typeof f>[1], signal),
         terminate: () => f.terminate(),
       };
     }
@@ -146,7 +126,9 @@ export function prewarmCodec(codecId: CodecId): void {
   warmupPromises.set(codecId, warmup);
 }
 
-export function getCodecWarmupState(codecId: CodecId): 'warm' | 'warming' | 'cold' {
+export function getCodecWarmupState(
+  codecId: CodecId
+): 'warm' | 'warming' | 'cold' {
   if (warmedCodecs.has(codecId)) return 'warm';
   if (warmupPromises.has(codecId)) return 'warming';
   return 'cold';

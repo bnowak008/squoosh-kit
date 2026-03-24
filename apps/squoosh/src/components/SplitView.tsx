@@ -16,8 +16,7 @@ export default function SplitView({
   codecId,
   isEncoding,
 }: Props) {
-  const { containerRef, splitPercent, handlePointerDown } =
-    useSplitPane(50);
+  const { containerRef, splitPercent, handlePointerDown } = useSplitPane(50);
   const hasEncodedOutput = Boolean(encodeResult);
 
   return (
@@ -29,9 +28,13 @@ export default function SplitView({
       {/* Right pane — compressed (bottom layer, full size) */}
       <div className="absolute inset-0">
         <ImagePane
-          objectUrl={hasEncodedOutput ? encodeResult?.objectUrl ?? null : sourceObjectUrl}
+          objectUrl={
+            hasEncodedOutput
+              ? (encodeResult?.objectUrl ?? null)
+              : sourceObjectUrl
+          }
           codecId={hasEncodedOutput ? codecId : undefined}
-          encodedBytes={hasEncodedOutput ? encodeResult?.bytes ?? null : null}
+          encodedBytes={hasEncodedOutput ? (encodeResult?.bytes ?? null) : null}
           isEncodedPreview={hasEncodedOutput}
           label="Compressed"
           side="right"
@@ -44,11 +47,7 @@ export default function SplitView({
         className="absolute inset-0"
         style={{ clipPath: 'inset(0 calc(100% - var(--split, 50%)) 0 0)' }}
       >
-        <ImagePane
-          objectUrl={sourceObjectUrl}
-          label="Original"
-          side="left"
-        />
+        <ImagePane objectUrl={sourceObjectUrl} label="Original" side="left" />
       </div>
 
       <DragHandle onPointerDown={handlePointerDown} />

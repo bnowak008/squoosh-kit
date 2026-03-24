@@ -1,4 +1,4 @@
-# Squoosh Kit Vite + React Demo
+# Squoosh-Kit Vite + React Demo
 
 This is a demo application showing how to use `@squoosh-kit` in a Vite + React project. It demonstrates image resizing and WebP encoding with Web Workers.
 

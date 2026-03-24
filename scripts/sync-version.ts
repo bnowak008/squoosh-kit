@@ -3,7 +3,7 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 
 /**
- * Version Sync Script for Squoosh Kit
+ * Version Sync Script for Squoosh-Kit
  *
  * This script automatically bumps and synchronizes version numbers across all packages
  * in the monorepo, following semantic versioning principles.
@@ -161,7 +161,7 @@ function main(): void {
 
   if (!command || command === '--help' || command === '-h') {
     console.log(`
-Version Sync Script for Squoosh Kit
+Version Sync Script for Squoosh-Kit
 
 Usage:
   bun run scripts/sync-version.ts <command>

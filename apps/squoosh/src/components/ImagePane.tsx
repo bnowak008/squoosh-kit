@@ -77,30 +77,33 @@ export default function ImagePane({
     let cancelled = false;
     const decoder = jxl.createJxlDecoder('worker', BRIDGE_OPTIONS);
 
-    void decoder(encodedBytes).then((imgData: ImageData) => {
-      if (cancelled || !canvasRef.current) return;
-      const canvas = canvasRef.current;
-      canvas.width = imgData.width;
-      canvas.height = imgData.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      ctx.putImageData(
-        new ImageData(
-          imgData.data instanceof Uint8ClampedArray
-            ? imgData.data
-            : new Uint8ClampedArray(imgData.data),
-          imgData.width,
-          imgData.height
-        ),
-        0,
-        0
-      );
-      onEncodedOutputLoaded();
-    }).catch(() => {
-      // JXL decode failed — canvas stays hidden
-    }).finally(() => {
-      void decoder.terminate();
-    });
+    void decoder(encodedBytes)
+      .then((imgData: ImageData) => {
+        if (cancelled || !canvasRef.current) return;
+        const canvas = canvasRef.current;
+        canvas.width = imgData.width;
+        canvas.height = imgData.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.putImageData(
+          new ImageData(
+            imgData.data instanceof Uint8ClampedArray
+              ? imgData.data
+              : new Uint8ClampedArray(imgData.data),
+            imgData.width,
+            imgData.height
+          ),
+          0,
+          0
+        );
+        onEncodedOutputLoaded();
+      })
+      .catch(() => {
+        // JXL decode failed — canvas stays hidden
+      })
+      .finally(() => {
+        void decoder.terminate();
+      });
 
     return () => {
       cancelled = true;

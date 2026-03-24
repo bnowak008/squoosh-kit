@@ -5,11 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-![Squoosh Kit](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)
+![Squoosh-Kit](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)
 
-## Squoosh Kit
+## Squoosh-Kit
 
-Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project.
+Squoosh-Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project.
 
 **Directly from the Source**
 We don't modify the core codecs. The WebAssembly (`.wasm`) binaries for WebP encoding and image resizing are taken directly from the official Squoosh repository builds. This means you get the exact same performance, quality, and reliability you'd expect from Squoosh.
@@ -18,7 +18,7 @@ We don't modify the core codecs. The WebAssembly (`.wasm`) binaries for WebP enc
 Our goal is to provide a minimal, modern JavaScript wrapper around these codecs. We handle the tricky parts—like loading WASM, managing web workers, and providing a clean, type-safe API—so you can focus on your application. The library is designed to be a thin bridge, not a heavy framework.
 
 **Modular by Design**
-While this `core` package bundles everything for convenience, the Squoosh Kit philosophy is to provide small, focused packages (e.g., `@squoosh-kit/webp`, `@squoosh-kit/resize`) so you only install what you need.
+While this `core` package bundles everything for convenience, the Squoosh-Kit philosophy is to provide small, focused packages (e.g., `@squoosh-kit/webp`, `@squoosh-kit/resize`) so you only install what you need.
 
 ## Installation
 
@@ -90,4 +90,4 @@ All functions follow the same patterns as the individual packages. For detailed 
 
 ## License
 
-MIT - part of the Squoosh Kit family
+MIT - part of the Squoosh-Kit family

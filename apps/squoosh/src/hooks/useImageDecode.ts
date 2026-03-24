@@ -128,10 +128,7 @@ function decodeWithWorker(
           reject(new DOMException('Aborted', 'AbortError'));
           return;
         }
-        worker.postMessage(
-          { id, buffer, mimeType: file.type },
-          [buffer]
-        );
+        worker.postMessage({ id, buffer, mimeType: file.type }, [buffer]);
       })
       .catch((error: unknown) => {
         cleanup();
@@ -197,10 +194,18 @@ export function useImageDecode(
 
         if (!cancelled) {
           mark('squoosh.decode_end');
-          measure('squoosh.decode_duration', 'squoosh.decode_start', 'squoosh.decode_end');
+          measure(
+            'squoosh.decode_duration',
+            'squoosh.decode_start',
+            'squoosh.decode_end'
+          );
           dispatch({
             type: 'DECODE_SUCCESS',
-            imageInput: { data: result.data, width: result.width, height: result.height },
+            imageInput: {
+              data: result.data,
+              width: result.width,
+              height: result.height,
+            },
           });
         }
       } catch (err) {

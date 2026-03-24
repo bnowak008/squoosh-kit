@@ -43,8 +43,19 @@ export default function DropZone({ state, dispatch, isDragging }: Props) {
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
           </svg>
           <span className="text-white font-medium drop-shadow">Decoding…</span>
         </div>
@@ -57,13 +68,22 @@ export default function DropZone({ state, dispatch, isDragging }: Props) {
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16 12l-4-4m0 0l-4 4m4-4v9" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16 12l-4-4m0 0l-4 4m4-4v9"
+            />
           </svg>
           <span className="text-lg font-semibold text-white drop-shadow-md tracking-wide">
-            {isDragging
-              ? 'Release to drop!'
-              : <>Drop OR <span className="underline underline-offset-2">Paste</span></>
-            }
+            {isDragging ? (
+              'Release to drop!'
+            ) : (
+              <>
+                Drop OR{' '}
+                <span className="underline underline-offset-2">Paste</span>
+              </>
+            )}
           </span>
           <span className="text-xs text-white/70 mt-1 tracking-widest uppercase">
             JPEG · PNG · WebP · AVIF · JXL · GIF

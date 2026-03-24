@@ -13,6 +13,7 @@ export default [
       '**/*.d.ts',
       '**/public/squoosh-kit/**',
       '.squoosh-temp/**',
+      "**/public/**"
     ],
   },
   js.configs.recommended,

@@ -5,11 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-A Vite plugin for Squoosh Kit that handles asset copying and WebAssembly configuration.
+A Vite plugin for Squoosh-Kit that handles asset copying and WebAssembly configuration.
 
 ## Overview
 
-The `@squoosh-kit/vite-plugin` simplifies integrating Squoosh Kit codecs into Vite projects by:
+The `@squoosh-kit/vite-plugin` simplifies integrating Squoosh-Kit codecs into Vite projects by:
 
 - **Automatically copying browser-compatible assets** from `@squoosh-kit/webp` and `@squoosh-kit/resize` packages
 - **Configuring WASM module handling** with proper MIME types and CORS headers
@@ -41,7 +41,7 @@ export default defineConfig({
 
 That's it! The plugin will:
 
-1. Copy Squoosh Kit browser assets to your `public/squoosh-kit` directory
+1. Copy Squoosh-Kit browser assets to your `public/squoosh-kit` directory
 2. Configure Vite to properly handle WASM files
 3. Set necessary CORS headers for cross-origin embedder policy
 4. Exclude heavy dependencies from optimization
@@ -79,7 +79,7 @@ In development mode, the plugin:
 
 ## Usage Example
 
-After setting up the plugin, you can use Squoosh Kit as normal:
+After setting up the plugin, you can use Squoosh-Kit as normal:
 
 ```typescript
 import { createWebpEncoder, createResizer } from '@squoosh-kit/core';
@@ -102,7 +102,7 @@ const resizedImage = await resizer(imageData, { width: 800 });
 
 ### `squooshVitePlugin(squooshKitRoot)`
 
-Returns a Vite plugin that configures Squoosh Kit integration.
+Returns a Vite plugin that configures Squoosh-Kit integration.
 
 **Parameters:**
 
@@ -183,7 +183,7 @@ Check that:
 
 ### Build fails with "dist not found"
 
-Ensure you've built the Squoosh Kit packages first:
+Ensure you've built the Squoosh-Kit packages first:
 
 ```bash
 bun run build
@@ -198,7 +198,7 @@ bun run build
 
 ## Architecture
 
-The plugin follows Squoosh Kit principles:
+The plugin follows Squoosh-Kit principles:
 
 - **Minimal and focused**: Handles only WASM and asset configuration
 - **Framework agnostic**: Works with any Vite-based framework
@@ -207,4 +207,4 @@ The plugin follows Squoosh Kit principles:
 
 ## License
 
-MIT - part of the Squoosh Kit family
+MIT - part of the Squoosh-Kit family

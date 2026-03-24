@@ -38,22 +38,56 @@ function generateBlobs(count: number): BlobConfig[] {
 
 // Multi-layer blob — large enough to feel dominant, matching Squoosh scale
 const BIG_BLOB_LAYERS = [
-  { size: 600, opacity: 0.05, morph: 'blob-morph-a', duration: '22s', delay: '0s',    blur: 18 },
-  { size: 550, opacity: 0.10, morph: 'blob-morph-b', duration: '28s', delay: '-6s',   blur: 0  },
-  { size: 500, opacity: 0.55, morph: 'blob-morph-c', duration: '18s', delay: '-3s',   blur: 0  },
-  { size: 450, opacity: 0.88, morph: 'blob-morph-d', duration: '24s', delay: '-10s',  blur: 0  },
+  {
+    size: 600,
+    opacity: 0.05,
+    morph: 'blob-morph-a',
+    duration: '22s',
+    delay: '0s',
+    blur: 18,
+  },
+  {
+    size: 550,
+    opacity: 0.1,
+    morph: 'blob-morph-b',
+    duration: '28s',
+    delay: '-6s',
+    blur: 0,
+  },
+  {
+    size: 500,
+    opacity: 0.55,
+    morph: 'blob-morph-c',
+    duration: '18s',
+    delay: '-3s',
+    blur: 0,
+  },
+  {
+    size: 450,
+    opacity: 0.88,
+    morph: 'blob-morph-d',
+    duration: '24s',
+    delay: '-10s',
+    blur: 0,
+  },
 ] as const;
 
-function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVisible: boolean }) {
+function BigBlob({
+  isDragging,
+  editorVisible,
+}: {
+  isDragging: boolean;
+  editorVisible: boolean;
+}) {
   // dragRef: translates + skews toward cursor (no React re-renders — direct DOM)
-  const dragRef  = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<HTMLDivElement>(null);
   // jiggleRef: fires squash-and-stretch on drop
   const jiggleRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const floatRef   = useRef<HTMLDivElement>(null);
+  const floatRef = useRef<HTMLDivElement>(null);
 
   const rafRef = useRef(0);
-  const pos    = useRef({ cx: 0, cy: 0, tx: 0, ty: 0 });
+  const pos = useRef({ cx: 0, cy: 0, tx: 0, ty: 0 });
 
   // rAF loop — lerp current → target, write directly to DOM
   const startRaf = () => {
@@ -65,8 +99,7 @@ function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVis
       if (dragRef.current) {
         const skX = (p.cx * 0.013).toFixed(3);
         const skY = (p.cy * 0.013).toFixed(3);
-        dragRef.current.style.transform =
-          `translate(${p.cx.toFixed(2)}px,${p.cy.toFixed(2)}px) skewX(${skX}deg) skewY(${skY}deg)`;
+        dragRef.current.style.transform = `translate(${p.cx.toFixed(2)}px,${p.cy.toFixed(2)}px) skewX(${skX}deg) skewY(${skY}deg)`;
       }
       if (Math.abs(p.cx - p.tx) > 0.05 || Math.abs(p.cy - p.ty) > 0.05) {
         rafRef.current = requestAnimationFrame(tick);
@@ -80,7 +113,7 @@ function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVis
   // Track cursor during dragover
   useEffect(() => {
     const onDragOver = (e: DragEvent) => {
-      const blobX = window.innerWidth  * 0.75;
+      const blobX = window.innerWidth * 0.75;
       const blobY = window.innerHeight * 0.44;
       const dx = e.clientX - blobX;
       const dy = e.clientY - blobY;
@@ -108,8 +141,11 @@ function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVis
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             if (el) {
-              el.style.animation = 'blob-jiggle 0.9s cubic-bezier(0.36,0.07,0.19,0.97) forwards';
-              setTimeout(() => { if (el) el.style.animation = ''; }, 950);
+              el.style.animation =
+                'blob-jiggle 0.9s cubic-bezier(0.36,0.07,0.19,0.97) forwards';
+              setTimeout(() => {
+                if (el) el.style.animation = '';
+              }, 950);
             }
           });
         });
@@ -126,14 +162,17 @@ function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVis
       el.style.opacity = '0';
       const onEnd = () => {
         el.style.visibility = 'hidden';
-        if (floatRef.current) floatRef.current.style.animationPlayState = 'paused';
+        if (floatRef.current)
+          floatRef.current.style.animationPlayState = 'paused';
       };
       el.addEventListener('transitionend', onEnd, { once: true });
       return () => el.removeEventListener('transitionend', onEnd);
     } else {
       el.style.visibility = '';
       if (floatRef.current) floatRef.current.style.animationPlayState = '';
-      requestAnimationFrame(() => { if (wrapperRef.current) wrapperRef.current.style.opacity = '1'; });
+      requestAnimationFrame(() => {
+        if (wrapperRef.current) wrapperRef.current.style.opacity = '1';
+      });
     }
   }, [editorVisible]);
 
@@ -158,7 +197,13 @@ function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVis
         {/* Jiggle layer (squash-and-stretch on drop) */}
         <div ref={jiggleRef}>
           {/* Float layer (slow ambient drift) */}
-          <div ref={floatRef} style={{ animation: 'blob-float 17s linear infinite', willChange: 'transform' }}>
+          <div
+            ref={floatRef}
+            style={{
+              animation: 'blob-float 17s linear infinite',
+              willChange: 'transform',
+            }}
+          >
             {BIG_BLOB_LAYERS.map((layer, i) => (
               <div
                 key={i}
@@ -171,7 +216,9 @@ function BigBlob({ isDragging, editorVisible }: { isDragging: boolean; editorVis
                   backgroundColor: '#ff2d78',
                   animation: `${layer.morph} ${layer.duration} ease-in-out ${layer.delay} infinite`,
                   willChange: 'border-radius',
-                  ...(layer.blur > 0 ? { filter: `blur(${layer.blur}px)` } : {}),
+                  ...(layer.blur > 0
+                    ? { filter: `blur(${layer.blur}px)` }
+                    : {}),
                 }}
               />
             ))}
@@ -259,7 +306,8 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case 'SET_OPTIONS': {
       const nextCodecOptions = { ...state.codecOptions, ...action.options };
-      if (shallowEqualObjects(state.codecOptions, nextCodecOptions)) return state;
+      if (shallowEqualObjects(state.codecOptions, nextCodecOptions))
+        return state;
       return {
         ...state,
         codecOptions: nextCodecOptions,
@@ -269,7 +317,8 @@ function reducer(state: AppState, action: Action): AppState {
       if (state.resizeEnabled === action.enabled) return state;
       return { ...state, resizeEnabled: action.enabled, encodeResult: null };
     case 'SET_RESIZE_OPTIONS':
-      if (shallowEqualObjects(state.resizeOptions, action.options)) return state;
+      if (shallowEqualObjects(state.resizeOptions, action.options))
+        return state;
       return { ...state, resizeOptions: action.options, encodeResult: null };
     case 'ENCODE_START':
       return { ...state, phase: 'encoding', encodeError: null };
@@ -322,17 +371,20 @@ function useGlobalDrop(dispatch: Dispatch<Action>) {
     function onDrop(e: DragEvent) {
       e.preventDefault();
       e.stopPropagation();
-      if (clearTimer !== null) { clearTimeout(clearTimer); clearTimer = null; }
+      if (clearTimer !== null) {
+        clearTimeout(clearTimer);
+        clearTimer = null;
+      }
       setIsDragging(false);
       const file = e.dataTransfer?.files[0];
       if (file) dispatch({ type: 'SET_FILE', file });
     }
 
     window.addEventListener('dragover', onDragOver);
-    window.addEventListener('drop',     onDrop);
+    window.addEventListener('drop', onDrop);
     return () => {
       window.removeEventListener('dragover', onDragOver);
-      window.removeEventListener('drop',     onDrop);
+      window.removeEventListener('drop', onDrop);
       if (clearTimer !== null) clearTimeout(clearTimer);
     };
   }, [dispatch]);
@@ -350,7 +402,7 @@ function WaveSeparator() {
     el.setAttribute('wave-color', '#09f');
     el.setAttribute('wave-count', '3');
   }, []);
-  
+
   return <animated-waves ref={ref} />;
 }
 
@@ -386,7 +438,11 @@ export default function App() {
 
   function handleSetCodec(codecId: CodecId) {
     const codec = getCodec(codecId);
-    dispatch({ type: 'SET_CODEC', codecId, defaultOptions: codec.defaultOptions });
+    dispatch({
+      type: 'SET_CODEC',
+      codecId,
+      defaultOptions: codec.defaultOptions,
+    });
   }
 
   // Transition starts as soon as the file is dropped (decoding phase),
@@ -411,13 +467,18 @@ export default function App() {
       typeof PerformanceObserver !== 'undefined'
         ? new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
-              console.info(`[perf] squoosh.longtask: ${entry.duration.toFixed(2)}ms @ start=${entry.startTime.toFixed(0)}ms`);
+              console.info(
+                `[perf] squoosh.longtask: ${entry.duration.toFixed(2)}ms @ start=${entry.startTime.toFixed(0)}ms`
+              );
             }
           })
         : null;
 
     try {
-      observer?.observe({ type: 'longtask', buffered: true } as PerformanceObserverInit);
+      observer?.observe({
+        type: 'longtask',
+        buffered: true,
+      } as PerformanceObserverInit);
     } catch {
       observer?.disconnect();
     }
@@ -485,7 +546,11 @@ export default function App() {
                 pointerEvents: showingEditor ? 'none' : 'auto',
               }}
             >
-              <DropZone state={state} dispatch={dispatch} isDragging={isDragging} />
+              <DropZone
+                state={state}
+                dispatch={dispatch}
+                isDragging={isDragging}
+              />
             </div>
 
             <div
@@ -500,7 +565,9 @@ export default function App() {
                 sourceObjectUrl={state.sourceObjectUrl}
                 encodeResult={state.encodeResult}
                 codecId={state.codecId}
-                isEncoding={state.phase === 'decoding' || state.phase === 'encoding'}
+                isEncoding={
+                  state.phase === 'decoding' || state.phase === 'encoding'
+                }
               />
             </div>
           </div>
@@ -513,7 +580,9 @@ export default function App() {
       {/* BOTTOM ZONE — always rendered */}
       <div className="shrink-0 bg-[#09f] relative">
         {/* Spacer matching wave height */}
-        <div className={`${showingEditor ? 'h-0' : 'h-[15vh] '} transition-height duration-200 ease-out`} />
+        <div
+          className={`${showingEditor ? 'h-0' : 'h-[15vh] '} transition-height duration-200 ease-out`}
+        />
 
         <div className="max-w-[1920px] mx-auto">
           {/* Codec panel — instant layout switch, content fades in */}
@@ -553,11 +622,20 @@ export default function App() {
             >
               bnowak.dev
             </a>
-            <span className="ml-auto text-white">Built on the shoulders of <a href="https://github.com/GoogleChromeLabs/squoosh" target="_blank" rel="noreferrer" className="hover:text-gray-300 transition-colors underline">Squoosh</a></span>
+            <span className="ml-auto text-white">
+              Built on the shoulders of{' '}
+              <a
+                href="https://github.com/GoogleChromeLabs/squoosh"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-gray-300 transition-colors underline"
+              >
+                Squoosh
+              </a>
+            </span>
           </footer>
         </div>
       </div>
-
     </div>
   );
 }
