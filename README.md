@@ -22,13 +22,24 @@ Whether you're building a web application, a Node.js service, or a desktop app w
 
 ## What You Get
 
-| Package                                              | What's Inside                                | Best For                                                                                 |
-| ---------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| [`@squoosh-kit/webp`](./packages/webp)               | WebP encoding with quality control           | Next-gen image formats, file size optimization                                           |
-| [`@squoosh-kit/resize`](./packages/resize)           | Flexible resizing with 4 algorithms          | Thumbnails, responsive images, batch processing (triangular, catrom, mitchell, lanczos3) |
-| [`@squoosh-kit/core`](./packages/core)               | Everything bundled together                  | Quick prototyping, simple projects                                                       |
-| [`@squoosh-kit/vite-plugin`](./packages/vite-plugin) | Vite plugin for WASM assets and CORS headers | Vite-based apps (React, Vue, Svelte, etc.)                                               |
-| [`@squoosh-kit/runtime`](./packages/runtime)         | Internal runtime utilities                   | Advanced customization                                                                   |
+| Package                                              | What's Inside                                | Best For                                                               |
+| ---------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| [`@squoosh-kit/core`](./packages/core)               | All codecs bundled together                  | Quick start, projects needing multiple codecs                          |
+| [`@squoosh-kit/webp`](./packages/webp)               | WebP encoding/decoding                       | Modern web images, file size optimization                              |
+| [`@squoosh-kit/avif`](./packages/avif)               | AVIF encoding/decoding                       | Best compression for modern browsers                                   |
+| [`@squoosh-kit/mozjpeg`](./packages/mozjpeg)         | Optimized JPEG encoding/decoding             | JPEG compatibility with 10–20% smaller files                           |
+| [`@squoosh-kit/jxl`](./packages/jxl)                 | JPEG XL encoding/decoding                    | Next-gen format, excellent compression                                 |
+| [`@squoosh-kit/wp2`](./packages/wp2)                 | WP2 encoding/decoding                        | Experimental WebP successor (research use)                             |
+| [`@squoosh-kit/png`](./packages/png)                 | Lossless PNG encoding/decoding               | Pixel-perfect lossless images                                          |
+| [`@squoosh-kit/qoi`](./packages/qoi)                 | QOI lossless encoding/decoding               | Fast lossless intermediate storage                                     |
+| [`@squoosh-kit/resize`](./packages/resize)           | Resizing with 4 algorithms                   | Thumbnails, responsive images (triangular, catrom, mitchell, lanczos3) |
+| [`@squoosh-kit/rotate`](./packages/rotate)           | 90°/180°/270° rotation                       | EXIF orientation correction                                            |
+| [`@squoosh-kit/oxipng`](./packages/oxipng)           | Lossless PNG optimization                    | Reducing PNG file sizes by 10–30%                                      |
+| [`@squoosh-kit/imagequant`](./packages/imagequant)   | Palette quantization (PNG-8)                 | Icons, logos, indexed-color PNGs                                       |
+| [`@squoosh-kit/hqx`](./packages/hqx)                 | Pixel-art upscaling (2x/3x/4x)               | Retro game sprites, pixel art                                          |
+| [`@squoosh-kit/visdif`](./packages/visdif)           | Butteraugli perceptual comparison            | Quality assurance, codec tuning                                        |
+| [`@squoosh-kit/vite-plugin`](./packages/vite-plugin) | Vite plugin for WASM assets and CORS headers | Vite-based apps (React, Vue, Svelte, etc.)                             |
+| [`@squoosh-kit/runtime`](./packages/runtime)         | Internal runtime utilities                   | Advanced customization                                                 |
 
 ## Quick Example
 
@@ -93,9 +104,21 @@ const encoder = createWebpEncoder('worker'); // ❌ WASM files missing
 
 Each package has its own comprehensive documentation:
 
-- [WebP Encoding](./packages/webp/README.md) - Advanced WebP options and examples
-- [Image Resizing](./packages/resize/README.md) - Resize algorithms and configuration
-- [Core Package](./packages/core/README.md) - Meta-package documentation
+- [WebP Encoding](./packages/webp/README.md) — encode, decode, quality options
+- [AVIF Encoding](./packages/avif/README.md) — encode, decode, speed/tune options
+- [MozJPEG Encoding](./packages/mozjpeg/README.md) — encode, decode, progressive options
+- [JPEG XL Encoding](./packages/jxl/README.md) — encode, decode, effort options
+- [WP2 Encoding](./packages/wp2/README.md) — encode, decode, UVMode/Csp options
+- [PNG Encoding](./packages/png/README.md) — lossless encode, decode
+- [QOI Encoding](./packages/qoi/README.md) — fast lossless encode, decode
+- [Image Resizing](./packages/resize/README.md) — resize algorithms and configuration
+- [Image Rotation](./packages/rotate/README.md) — 0/90/180/270° rotation
+- [OxiPNG Optimization](./packages/oxipng/README.md) — lossless PNG compression
+- [ImageQuant Quantization](./packages/imagequant/README.md) — palette reduction
+- [HQX Upscaling](./packages/hqx/README.md) — pixel-art 2x/3x/4x upscale
+- [VisDif Comparison](./packages/visdif/README.md) — Butteraugli perceptual diff
+- [Core Package](./packages/core/README.md) — all codecs, namespaced imports
+- [Vite Plugin](./packages/vite-plugin/README.md) — WASM assets and CORS setup
 
 ## Vite Integration
 
@@ -138,16 +161,20 @@ bun test             # Run tests
 
 ## Publishing to npm
 
-CI deploys the demo site to Cloudflare on every push to `main`. **npm packages are not published on branch pushes.**
+Every push to `main` runs the deploy workflow, which:
 
-To release, bump versions (for example `bun run version:patch` at the repo root), commit, create a **tag whose name matches that version with a `v` prefix**, and push the tag:
+1. Builds the project and deploys the demo site to Cloudflare Pages
+2. Checks whether the current `package.json` version is already published on npm — if not, publishes all packages, creates a git tag, and creates a GitHub Release automatically
+
+To release a new version, bump versions in a PR (for example `bun run version:patch` at the repo root), then merge:
 
 ```bash
-git tag v0.1.19
-git push origin v0.1.19
+bun run version:patch   # updates all package.json files, commits, creates a local tag
+git push                # push the branch, open a PR as normal
+# merge the PR → deploy workflow auto-detects the new version and publishes
 ```
 
-The workflow runs tests, then the **Publish to NPM** job publishes packages and creates a GitHub release. The tag (without `v`) must match the root `package.json` version and the package versions enforced in the workflow’s **Verify version consistency** step. Add an `NPM_TOKEN` secret in the repo’s GitHub **Settings → Secrets and variables → Actions**.
+All package versions must match the root `package.json` version (enforced in the workflow’s **Verify all package versions match** step). Add an `NPM_TOKEN` secret in the repo’s GitHub **Settings → Secrets and variables → Actions**.
 
 ## License
 
