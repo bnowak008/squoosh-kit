@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/core",
-  "version": "1.0.0-rc.1",
+  "version": "0.9.0",
   "type": "module",
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

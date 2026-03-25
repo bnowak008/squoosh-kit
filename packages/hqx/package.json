@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/hqx",
-  "version": "1.0.0-rc.1",
+  "version": "0.9.0",
   "type": "module",
   "description": "HQX upscaler codec for squoosh-kit, providing wasm-bindgen-based image upscaling.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
