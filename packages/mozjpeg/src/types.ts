@@ -5,7 +5,7 @@ import type {
 
 type MozjpegEncodeOptions = Partial<EncodeOptions>;
 
-export interface MozJPEGDecModule extends EmscriptenWasm.Module {
+export interface MozJPEGDecModule {
   decode(data: BufferSource): ImageData | null;
 }
 

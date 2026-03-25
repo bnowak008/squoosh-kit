@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/png",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
   "description": "PNG codec for squoosh-kit, providing lossless PNG encoding and decoding.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

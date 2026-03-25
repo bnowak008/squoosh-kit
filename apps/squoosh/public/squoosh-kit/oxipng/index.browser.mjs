@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
@@ -425,7 +429,9 @@ var init_oxipng_worker = __esm(() => {
           const result = await oxipngOptimizeClient(request.payload.image, request.payload.options);
           response.ok = true;
           response.data = result;
-          self.postMessage(response, [result.buffer]);
+          self.postMessage(response, {
+            transfer: [result.buffer]
+          });
         } else {
           response.error = `Unknown message type: ${request.type}`;
           self.postMessage(response);
@@ -511,4 +517,4 @@ export {
   createOxipngOptimizer
 };
 
-//# debugId=A0C81ED9AC0128DF64756E2164756E21
+//# debugId=13FB5F09382946B464756E2164756E21

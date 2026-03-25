@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
@@ -649,7 +653,9 @@ var init_jxl_worker = __esm(() => {
           const result = await jxlEncodeClient(image, options);
           response.ok = true;
           response.data = result;
-          self.postMessage(response, [result.buffer]);
+          self.postMessage(response, {
+            transfer: [result.buffer]
+          });
         } catch (error) {
           response.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response);
@@ -664,7 +670,9 @@ var init_jxl_worker = __esm(() => {
           const result = await jxlDecodeClient(request.payload.data);
           response.ok = true;
           response.data = result;
-          self.postMessage(response, [result.data.buffer]);
+          self.postMessage(response, {
+            transfer: [result.data.buffer]
+          });
         } catch (error) {
           response.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response);
@@ -688,4 +696,4 @@ export {
   jxlDecodeClient
 };
 
-//# debugId=BF4ADCA00A2F482564756E2164756E21
+//# debugId=C3154BA72089C6CD64756E2164756E21

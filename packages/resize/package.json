@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/resize",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
   "description": "Image resize module for squoosh-kit.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

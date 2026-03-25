@@ -94,16 +94,11 @@ async function loadVisDifModule(): Promise<VisDifModuleInstance> {
 function imageToString(image: ImageInput): string {
   // Convert RGBA pixel data to a string (Emscripten std::string format)
   const { data } = image;
-  const bytes =
-    data instanceof Uint8ClampedArray
-      ? data
-      : data instanceof Uint8Array
-        ? data
-        : new Uint8Array(
-            data.buffer as ArrayBuffer,
-            data.byteOffset,
-            data.byteLength
-          );
+  const bytes = new Uint8Array(
+    data.buffer as ArrayBuffer,
+    data.byteOffset,
+    data.byteLength
+  );
 
   // Build string from char codes
   let result = '';

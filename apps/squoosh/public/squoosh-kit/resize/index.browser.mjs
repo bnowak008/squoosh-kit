@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
@@ -550,7 +554,7 @@ var init_resize_worker = __esm(() => {
         response.ok = true;
         response.data = resultImage;
         const transferBuffer = resultImage.data.buffer instanceof ArrayBuffer ? resultImage.data.buffer : resultImage.data.slice().buffer;
-        self.postMessage(response, [transferBuffer]);
+        self.postMessage(response, { transfer: [transferBuffer] });
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -638,4 +642,4 @@ export {
   createResizer
 };
 
-//# debugId=3D72D3834007DA4264756E2164756E21
+//# debugId=E7B981B6F40DA2DA64756E2164756E21

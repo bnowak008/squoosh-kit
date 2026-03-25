@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/visdif",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
   "description": "Butteraugli perceptual image comparison for squoosh-kit, using Emscripten VisDif.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

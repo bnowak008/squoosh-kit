@@ -182,7 +182,9 @@ if (typeof self !== 'undefined') {
         );
         response.ok = true;
         response.data = result;
-        self.postMessage(response, [result.buffer]);
+        self.postMessage(response, {
+          transfer: [result.buffer as ArrayBuffer],
+        });
       } else {
         response.error = `Unknown message type: ${request.type}`;
         self.postMessage(response);
