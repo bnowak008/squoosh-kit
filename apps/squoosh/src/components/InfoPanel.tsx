@@ -19,28 +19,28 @@ export default function InfoPanel() {
   }, []);
 
   return (
-    <div className="h-full shrink-0 flex flex-col items-center justify-center px-6 z-10">
-      <div className="w-full max-w-[400px] flex flex-col items-start">
+    <div className="h-full min-w-0 w-full shrink-0 flex flex-col items-center justify-center px-4 sm:px-6 z-10">
+      <div className="w-full min-w-0 max-w-[400px] flex flex-col items-center lg:items-start">
         {/* Logo row */}
-        <div className="flex items-center gap-3 mb-5">
-          <span className="text-4xl">🧰</span>
-          <span className="text-4xl font-black tracking-tight text-gray-900">
+        <div className="flex items-center gap-3 mb-3 lg:mb-5 pt-3">
+          <span className="text-3xl lg:text-4xl">🧰</span>
+          <span className="text-3xl lg:text-4xl font-black tracking-tight text-gray-900">
             Squoosh <span style={{ color: '#ff2d78' }}>Kit</span>
           </span>
         </div>
 
         {/* Tagline */}
-        <p className="text-gray-700 text-base leading-relaxed mb-4 max-w-[340px]">
+        <p className="text-gray-700 text-base leading-relaxed text-center lg:text-left mb-3 lg:mb-4 max-w-[340px]">
           The battle-tested image codecs from Google Squoosh, packaged as a
           modular library that works in any JavaScript app.
         </p>
 
         {/* Feature list */}
-        <ul className="flex flex-col gap-3 mb-8">
+        <ul className="flex flex-col gap-2 lg:gap-3 mb-5 lg:mb-8">
           {FEATURES.map((f) => (
             <li
               key={f}
-              className="flex items-start gap-3 text-base text-gray-700"
+              className="flex items-start gap-3 text-sm lg:text-base text-gray-700"
             >
               <svg
                 className="shrink-0 mt-0.5"
@@ -70,9 +70,9 @@ export default function InfoPanel() {
         </ul>
 
         {/* Install block — terminal style */}
-        <div className="w-full bg-gray-950 rounded-xl overflow-hidden border border-gray-800 shadow-sm mb-6">
-          <div className="flex items-center justify-between gap-2 px-4 py-3.5">
-            <code className="font-mono text-sm text-green-400 select-all">
+        <div className="w-full min-w-0 bg-gray-950 rounded-xl overflow-hidden border border-gray-800 shadow-sm mb-2 lg:mb-6">
+          <div className="flex min-w-0 items-center justify-between gap-2 px-4 py-2">
+            <code className="min-w-0 font-mono text-sm text-green-400 select-all break-all">
               <span className="text-gray-500 mr-2 select-none">$</span>bun add
               @squoosh-kit/core
             </code>

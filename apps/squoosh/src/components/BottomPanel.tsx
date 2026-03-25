@@ -484,7 +484,115 @@ function compressionRatio(original: number, compressed: number): string {
     : `↑${Math.abs(ratio).toFixed(1)}%`;
 }
 
-export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
+// ── CodePanel ──────────────────────────────────────────────────────────────────
+
+type CodePanelProps = {
+  codecId: CodecId;
+  codecOptions: Record<string, unknown>;
+  resizeEnabled: boolean;
+  resizeOptions: ResizeOptions;
+  onReset: () => void;
+};
+
+export function CodePanel({
+  codecId,
+  codecOptions,
+  resizeEnabled,
+  resizeOptions,
+  onReset,
+}: CodePanelProps) {
+  const [activeTab, setActiveTab] = useState<Tab>('simple');
+
+  const lines =
+    activeTab === 'simple'
+      ? buildSimple(codecId, codecOptions, resizeEnabled, resizeOptions)
+      : activeTab === 'advanced'
+        ? buildAdvanced(codecId, codecOptions, resizeEnabled, resizeOptions)
+        : buildRuntimes(codecId, codecOptions, resizeEnabled, resizeOptions);
+
+  return (
+    <div className="h-full md:h-[300px] flex flex-col md:grow min-w-0 md:max-w-200 border-r border-white/10 overflow-hidden bg-gray-900 md:rounded-lg">
+      {/* Tab bar */}
+      <div className="flex items-center border-b border-white/10 shrink-0">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`
+              px-4 py-2 text-xs font-mono transition-colors
+              ${
+                activeTab === tab.id
+                  ? 'text-white border-b border-white -mb-px'
+                  : 'text-white/40 hover:text-white/70'
+              }
+            `}
+          >
+            {tab.label}
+          </button>
+        ))}
+        <div className="ml-auto pr-2">
+          <button
+            onClick={onReset}
+            title="Upload new image"
+            className="p-1 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Code */}
+      <div className="flex-1 overflow-hidden p-3 min-h-0">
+        <pre
+          key={activeTab}
+          className="code-fade h-full overflow-y-auto text-xs font-mono leading-relaxed rounded-lg px-4 py-3 bg-gray-950"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255,255,255,0.15) transparent',
+          }}
+        >
+          {lines.map((line, li) => (
+            <div key={li}>
+              {line.length === 0
+                ? '\u00a0'
+                : line.map((tok, ti) => (
+                    <span key={ti} style={{ color: tok.color }}>
+                      {tok.text}
+                    </span>
+                  ))}
+            </div>
+          ))}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+// ── SettingsPanel ──────────────────────────────────────────────────────────────
+
+type SettingsPanelProps = {
+  state: AppState;
+  dispatch: Dispatch<Action>;
+  onSetCodec: (codecId: CodecId) => void;
+};
+
+export function SettingsPanel({
+  state,
+  dispatch,
+  onSetCodec,
+}: SettingsPanelProps) {
   const {
     sourceFile,
     imageInput,
@@ -496,175 +604,108 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
     resizeOptions,
     phase,
   } = state;
-  const [activeTab, setActiveTab] = useState<Tab>('simple');
+  const isEncoding = phase === 'encoding';
 
-  function handleOptionsChange(patch: Record<string, unknown>) {
-    dispatch({ type: 'SET_OPTIONS', options: patch });
-  }
+  return (
+    <div className="flex flex-col gap-3 px-5 py-4 w-full md:w-72 md:flex-shrink-0 overflow-y-auto">
+      <div className="flex items-center gap-3">
+        <FormatSelector value={codecId} onChange={onSetCodec} />
 
+        <div className="ml-auto text-right">
+          {isEncoding ? (
+            <svg
+              className="animate-spin h-5 w-5 text-white/80 ml-auto"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          ) : encodeResult ? (
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-bold text-white">
+                {formatBytes(encodeResult.sizeBytes)}
+              </span>
+              {sourceFile && (
+                <span className="text-xs text-white/70">
+                  {compressionRatio(sourceFile.size, encodeResult.sizeBytes)}
+                </span>
+              )}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <OptionsPanel
+        codecId={codecId}
+        options={codecOptions}
+        onChange={(patch) => dispatch({ type: 'SET_OPTIONS', options: patch })}
+      />
+
+      <div className="border-t border-white/20 pt-3">
+        <ResizePanel
+          enabled={resizeEnabled}
+          options={resizeOptions}
+          originalWidth={imageInput?.width ?? 0}
+          originalHeight={imageInput?.height ?? 0}
+          onToggle={(enabled) =>
+            dispatch({ type: 'SET_RESIZE_ENABLED', enabled })
+          }
+          onChange={(options) =>
+            dispatch({ type: 'SET_RESIZE_OPTIONS', options })
+          }
+        />
+      </div>
+
+      {encodeError && (
+        <div className="text-xs text-white bg-white/20 border border-white/30 rounded px-2 py-1.5 break-words">
+          {encodeError}
+        </div>
+      )}
+
+      <div className="mt-auto pt-1">
+        <DownloadButton
+          bytes={encodeResult?.bytes ?? null}
+          codecId={codecId}
+          sourceFileName={sourceFile?.name ?? null}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── BottomPanel (desktop) ──────────────────────────────────────────────────────
+
+export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
   function handleReset() {
     dispatch({ type: 'RESET' });
   }
-
-  const isEncoding = phase === 'encoding';
-
-  const lines =
-    activeTab === 'simple'
-      ? buildSimple(codecId, codecOptions, resizeEnabled, resizeOptions)
-      : activeTab === 'advanced'
-        ? buildAdvanced(codecId, codecOptions, resizeEnabled, resizeOptions)
-        : buildRuntimes(codecId, codecOptions, resizeEnabled, resizeOptions);
 
   return (
     <div
       className="flex gap-4 justify-center text-white p-4"
       style={{ background: '#09f' }}
     >
-      {/* Left — code snippet (stays dark) */}
-      <div className="h-[300px] flex flex-col grow min-w-0 max-w-200 border-r border-white/10 overflow-hidden bg-gray-900 rounded-lg">
-        {/* Tab bar */}
-        <div className="flex items-center border-b border-white/10">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                px-4 py-2 text-xs font-mono transition-colors
-                ${
-                  activeTab === tab.id
-                    ? 'text-white border-b border-white -mb-px'
-                    : 'text-white/40 hover:text-white/70'
-                }
-              `}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <div className="ml-auto pr-2">
-            <button
-              onClick={handleReset}
-              title="Upload new image"
-              className="p-1 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Code */}
-        <div className="flex-1 overflow-hidden p-3 min-h-0">
-          <pre
-            key={activeTab}
-            className="code-fade h-full overflow-y-auto text-xs font-mono leading-relaxed rounded-lg px-4 py-3 bg-gray-950"
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(255,255,255,0.15) transparent',
-            }}
-          >
-            {lines.map((line, li) => (
-              <div key={li}>
-                {line.length === 0
-                  ? '\u00a0'
-                  : line.map((tok, ti) => (
-                      <span key={ti} style={{ color: tok.color }}>
-                        {tok.text}
-                      </span>
-                    ))}
-              </div>
-            ))}
-          </pre>
-        </div>
-      </div>
-
-      {/* Right — codec controls on #09f blue */}
-      <div className="flex flex-col gap-3 px-5 py-4 w-72 flex-shrink-0 overflow-y-auto">
-        <div className="flex items-center gap-3">
-          <FormatSelector value={codecId} onChange={onSetCodec} />
-
-          <div className="ml-auto text-right">
-            {isEncoding ? (
-              <svg
-                className="animate-spin h-5 w-5 text-white/80 ml-auto"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-            ) : encodeResult ? (
-              <div className="flex flex-col items-end">
-                <span className="text-sm font-bold text-white">
-                  {formatBytes(encodeResult.sizeBytes)}
-                </span>
-                {sourceFile && (
-                  <span className="text-xs text-white/70">
-                    {compressionRatio(sourceFile.size, encodeResult.sizeBytes)}
-                  </span>
-                )}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <OptionsPanel
-          codecId={codecId}
-          options={codecOptions}
-          onChange={handleOptionsChange}
-        />
-
-        <div className="border-t border-white/20 pt-3">
-          <ResizePanel
-            enabled={resizeEnabled}
-            options={resizeOptions}
-            originalWidth={imageInput?.width ?? 0}
-            originalHeight={imageInput?.height ?? 0}
-            onToggle={(enabled) =>
-              dispatch({ type: 'SET_RESIZE_ENABLED', enabled })
-            }
-            onChange={(options) =>
-              dispatch({ type: 'SET_RESIZE_OPTIONS', options })
-            }
-          />
-        </div>
-
-        {encodeError && (
-          <div className="text-xs text-white bg-white/20 border border-white/30 rounded px-2 py-1.5 break-words">
-            {encodeError}
-          </div>
-        )}
-
-        <div className="mt-auto pt-1">
-          <DownloadButton
-            bytes={encodeResult?.bytes ?? null}
-            codecId={codecId}
-            sourceFileName={sourceFile?.name ?? null}
-          />
-        </div>
-      </div>
+      <CodePanel
+        codecId={state.codecId}
+        codecOptions={state.codecOptions}
+        resizeEnabled={state.resizeEnabled}
+        resizeOptions={state.resizeOptions}
+        onReset={handleReset}
+      />
+      <SettingsPanel state={state} dispatch={dispatch} onSetCodec={onSetCodec} />
     </div>
   );
 }

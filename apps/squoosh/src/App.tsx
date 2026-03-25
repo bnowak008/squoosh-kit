@@ -6,6 +6,7 @@ import InfoPanel from './components/InfoPanel';
 import DropZone from './components/DropZone';
 import SplitView from './components/SplitView';
 import BottomPanel from './components/BottomPanel';
+import MobileBottomSheet from './components/MobileBottomSheet';
 import { useImageDecode } from './hooks/useImageDecode';
 import { useEncoder } from './hooks/useEncoder';
 import { prewarmCodec } from './codec/encode';
@@ -110,11 +111,14 @@ function BigBlob({
     rafRef.current = requestAnimationFrame(tick);
   };
 
-  // Track cursor during dragover
+  // Track cursor during dragover (center matches DropZone: column box from getBoundingClientRect)
   useEffect(() => {
     const onDragOver = (e: DragEvent) => {
-      const blobX = window.innerWidth * 0.75;
-      const blobY = window.innerHeight * 0.44;
+      const el = wrapperRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const blobX = r.left + r.width / 2;
+      const blobY = r.top + r.height / 2;
       const dx = e.clientX - blobX;
       const dy = e.clientY - blobY;
       const dist = Math.hypot(dx, dy) || 1;
@@ -179,12 +183,8 @@ function BigBlob({
   return (
     <div
       ref={wrapperRef}
+      className="big-blob-wrapper"
       style={{
-        position: 'absolute',
-        top: '50%',
-        left: '66%',
-        width: 0,
-        height: 0,
         zIndex: 0,
         pointerEvents: 'none',
         opacity: 1,
@@ -204,24 +204,26 @@ function BigBlob({
               willChange: 'transform',
             }}
           >
-            {BIG_BLOB_LAYERS.map((layer, i) => (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  width: layer.size,
-                  height: layer.size,
-                  transform: 'translate(-50%, -50%)',
-                  opacity: layer.opacity,
-                  backgroundColor: '#ff2d78',
-                  animation: `${layer.morph} ${layer.duration} ease-in-out ${layer.delay} infinite`,
-                  willChange: 'border-radius',
-                  ...(layer.blur > 0
-                    ? { filter: `blur(${layer.blur}px)` }
-                    : {}),
-                }}
-              />
-            ))}
+            <div className="big-blob-scale">
+              {BIG_BLOB_LAYERS.map((layer, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    width: layer.size,
+                    height: layer.size,
+                    transform: 'translate(-50%, -50%)',
+                    opacity: layer.opacity,
+                    backgroundColor: '#ff2d78',
+                    animation: `${layer.morph} ${layer.duration} ease-in-out ${layer.delay} infinite`,
+                    willChange: 'border-radius',
+                    ...(layer.blur > 0
+                      ? { filter: `blur(${layer.blur}px)` }
+                      : {}),
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -426,6 +428,17 @@ export default function App() {
   const isDragging = useGlobalDrop(dispatch);
   const blobs = useMemo(() => generateBlobs(AMBIENT_BLOB_COUNT), []);
 
+  // Track mobile breakpoint — fixed-position bottom sheet only renders on mobile
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia('(max-width: 767px)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   useImageDecode(state.sourceFile, dispatch);
   useEncoder(
     state.imageInput,
@@ -528,114 +541,133 @@ export default function App() {
       </div>
 
       {/* TOP PANE */}
-      <div className="flex flex-1 relative min-h-0 w-full max-w-[1920px] mx-auto">
-        {/* Big multi-layer blob centered on drop zone */}
-        <BigBlob isDragging={isDragging} editorVisible={editorVisible} />
-
-        {/* Two-column split */}
-        <div className="absolute inset-0 flex z-10">
-          <div className="w-1/3 overflow-hidden shrink-0 flex items-center justify-center">
+      <div className="flex flex-1 relative min-h-0 w-full max-w-[1440px] mx-auto">
+        {/* Layout: stacked on mobile, two-column on desktop */}
+        <div className="absolute inset-0 flex min-w-0 flex-col lg:flex-row z-10">
+          {/* Desktop: InfoPanel */}
+          <div className="flex min-w-0 w-full lg:w-1/2 overflow-hidden shrink-0 items-center justify-center">
             <InfoPanel />
           </div>
-          <div className="w-2/3 shrink-0 relative overflow-hidden flex items-center justify-center p-6">
-            <div
-              className="absolute inset-0 flex items-center justify-center p-6"
-              style={{
-                opacity: showingEditor ? 0 : 1,
-                transition: 'opacity 250ms ease-in-out',
-                pointerEvents: showingEditor ? 'none' : 'auto',
-              }}
-            >
-              <DropZone
-                state={state}
-                dispatch={dispatch}
-                isDragging={isDragging}
-              />
-            </div>
 
-            <div
-              className="absolute inset-0 flex items-center justify-center p-6"
-              style={{
-                opacity: showingEditor ? 1 : 0,
-                transition: 'opacity 250ms ease-in-out',
-                pointerEvents: showingEditor ? 'auto' : 'none',
-              }}
-            >
-              <SplitView
-                sourceObjectUrl={state.sourceObjectUrl}
-                encodeResult={state.encodeResult}
-                codecId={state.codecId}
-                isEncoding={
-                  state.phase === 'decoding' || state.phase === 'encoding'
-                }
-              />
+          <div className="flex flex-1 lg:flex-none w-full lg:w-1/2 lg:shrink-0 min-h-0 flex-col relative p-4 lg:p-6">
+            <div className="relative isolate flex flex-1 min-h-0 w-full items-center justify-center">
+              <BigBlob isDragging={isDragging} editorVisible={editorVisible} />
+
+              {/* DropZone: crossfades out when editor opens */}
+              <div
+                className="absolute inset-0 z-10 flex items-center justify-center"
+                style={{
+                  opacity: showingEditor ? 0 : 1,
+                  transition: 'opacity 250ms ease-in-out',
+                  pointerEvents: showingEditor ? 'none' : 'auto',
+                }}
+              >
+                <DropZone
+                  state={state}
+                  dispatch={dispatch}
+                  isDragging={isDragging}
+                />
+              </div>
+
+              {/* SplitView */}
+              <div
+                className="absolute inset-0 z-10 flex items-center justify-center"
+                style={{
+                  opacity: showingEditor ? 1 : 0,
+                  transition: 'opacity 250ms ease-in-out',
+                  pointerEvents: showingEditor ? 'auto' : 'none',
+                }}
+              >
+                <SplitView
+                  sourceObjectUrl={state.sourceObjectUrl}
+                  encodeResult={state.encodeResult}
+                  codecId={state.codecId}
+                  isEncoding={
+                    state.phase === 'decoding' || state.phase === 'encoding'
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Waves capping the top of the dark zone */}
-      <WaveSeparator />
-
-      {/* BOTTOM ZONE — always rendered */}
-      <div className="shrink-0 bg-[#09f] relative">
-        {/* Spacer matching wave height */}
-        <div
-          className={`${showingEditor ? 'h-0' : 'h-[15vh] '} transition-height duration-200 ease-out`}
-        />
-
-        <div className="max-w-[1920px] mx-auto">
-          {/* Codec panel — instant layout switch, content fades in */}
-          {showingEditor && (
-            <div className="fade-in-editor">
-              <BottomPanel
-                state={state}
-                dispatch={dispatch}
-                onSetCodec={handleSetCodec}
-              />
-            </div>
-          )}
-
-          {/* Footer — always visible */}
-          <footer className="relative z-10 flex items-center gap-5 px-6 py-3 text-xs text-white flex-wrap">
-            <a
-              href="https://npmjs.com/package/@squoosh-kit/core"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-gray-300 transition-colors"
-            >
-              npm
-            </a>
-            <a
-              href="https://github.com/bnowak008/squoosh-kit"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-gray-300 transition-colors"
-            >
-              GitHub
-            </a>
-            <a
-              href="https://bnowak.dev"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-gray-300 transition-colors"
-            >
-              bnowak.dev
-            </a>
-            <span className="ml-auto text-white">
-              Built on the shoulders of{' '}
-              <a
-                href="https://github.com/GoogleChromeLabs/squoosh"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-gray-300 transition-colors underline"
-              >
-                Squoosh
-              </a>
-            </span>
-          </footer>
-        </div>
+      {/* Wave — hidden on mobile when editor is open */}
+      <div className={showingEditor ? 'hidden lg:block' : ''}>
+        <WaveSeparator />
       </div>
+
+      {/* Bottom zone — hidden on mobile when editor is open (bottom sheet takes over) */}
+      <div className={`shrink-0 bg-[#09f] relative ${showingEditor ? 'hidden lg:block' : ''}`}>
+          <div
+            className={`${showingEditor ? 'h-0' : 'h-0 lg:h-[15vh]'}  transition-[height] duration-200 ease-out`}
+          />
+
+          <div className="max-w-[1440px] mx-auto">
+            {showingEditor && (
+              <div className="fade-in-editor">
+                <BottomPanel
+                  state={state}
+                  dispatch={dispatch}
+                  onSetCodec={handleSetCodec}
+                />
+              </div>
+            )}
+
+            <footer className="relative z-10 flex flex-col md:flex-row items-center gap-2 px-6 py-3 text-xs text-white flex-wrap">
+              <div className="flex items-center gap-5">
+                <a
+                  href="https://npmjs.com/package/@squoosh-kit/core"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  npm
+                </a>
+                <a
+                  href="https://github.com/bnowak008/squoosh-kit"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  
+                  GitHub
+                </a>
+                <a
+                  href="https://ccc-dev.cc"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  ccc-dev.cc
+                </a>
+              </div>
+              <div className="flex grow items-center justify-center md:justify-end gap-5">
+                <span className="text-white">
+                  Built on the shoulders of{' '}
+                  <a
+                    href="https://github.com/GoogleChromeLabs/squoosh"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-gray-300 transition-colors underline"
+                  >
+                    Squoosh
+                  </a>
+                </span>
+              </div>
+            </footer>
+          </div>
+        </div>
+
+      {/* Mobile bottom sheet — conditionally rendered via JS since position:fixed
+          bypasses display:none on ancestor elements */}
+      {showingEditor && isMobile && (
+        <MobileBottomSheet
+          state={state}
+          dispatch={dispatch}
+          onSetCodec={handleSetCodec}
+        />
+      )}
     </div>
   );
 }

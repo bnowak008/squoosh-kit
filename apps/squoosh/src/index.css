@@ -181,3 +181,26 @@ body,
 .processing-active animated-waves {
   opacity: 0.4;
 }
+
+/* BigBlob — fills the drop column; flex centers stack on the same point as DropZone */
+.big-blob-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.big-blob-scale {
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 1024px) {
+  /* Scale down BigBlob layers on mobile */
+  .big-blob-scale {
+    transform: scale(0.55);
+    transform-origin: center;
+  }
+}

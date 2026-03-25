@@ -85,7 +85,7 @@ export default function DropZone({ state, dispatch, isDragging }: Props) {
               </>
             )}
           </span>
-          <span className="text-xs text-white/70 mt-1 tracking-widest uppercase">
+          <span className="text-xs text-white/70 mt-1 tracking-wide uppercase text-center px-4 leading-relaxed">
             JPEG · PNG · WebP · AVIF · JXL · GIF
           </span>
         </div>
