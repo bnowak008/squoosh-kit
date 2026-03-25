@@ -24,5 +24,6 @@ export * as hqx from '@squoosh-kit/hqx';
 export * as rotate from '@squoosh-kit/rotate';
 export * as visdif from '@squoosh-kit/visdif';
 
-// Re-export common types from runtime
+// Re-export common types
 export type { ImageInput } from '@squoosh-kit/runtime';
+export type { ResizeOptions } from '@squoosh-kit/resize';

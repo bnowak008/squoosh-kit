@@ -491,7 +491,9 @@ if (typeof self !== 'undefined') {
           result.buffer instanceof ArrayBuffer
             ? result.buffer
             : result.slice().buffer;
-        self.postMessage(response, [transferBuffer]);
+        self.postMessage(response, {
+          transfer: [transferBuffer as ArrayBuffer],
+        });
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -515,7 +517,9 @@ if (typeof self !== 'undefined') {
           result.data.buffer instanceof ArrayBuffer
             ? result.data.buffer
             : result.data.slice().buffer;
-        self.postMessage(response, [transferBuffer]);
+        self.postMessage(response, {
+          transfer: [transferBuffer as ArrayBuffer],
+        });
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);

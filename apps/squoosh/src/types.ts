@@ -1,5 +1,4 @@
-import type { ImageInput } from '@squoosh-kit/core';
-import type { ResizeOptions } from '@squoosh-kit/resize';
+import type { ImageInput, ResizeOptions } from '@squoosh-kit/core';
 
 export type { ImageInput, ResizeOptions };
 

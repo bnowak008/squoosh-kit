@@ -10,6 +10,17 @@
   "references": [
     { "path": "../runtime" },
     { "path": "../webp" },
-    { "path": "../resize" }
+    { "path": "../resize" },
+    { "path": "../avif" },
+    { "path": "../hqx" },
+    { "path": "../imagequant" },
+    { "path": "../jxl" },
+    { "path": "../mozjpeg" },
+    { "path": "../oxipng" },
+    { "path": "../png" },
+    { "path": "../qoi" },
+    { "path": "../wp2" },
+    { "path": "../rotate" },
+    { "path": "../visdif" }
   ]
 }

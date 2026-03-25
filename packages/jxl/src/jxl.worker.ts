@@ -395,7 +395,7 @@ export async function jxlDecodeClient(
     throw new DOMException('Aborted', 'AbortError');
   }
 
-  const result = module.decode(data);
+  const result = module.decode(data as unknown as BufferSource);
 
   if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -439,7 +439,9 @@ if (typeof self !== 'undefined') {
         const result = await jxlEncodeClient(image, options);
         response.ok = true;
         response.data = result;
-        self.postMessage(response, [result.buffer]);
+        self.postMessage(response, {
+          transfer: [result.buffer as ArrayBuffer],
+        });
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -456,7 +458,9 @@ if (typeof self !== 'undefined') {
         const result = await jxlDecodeClient(request.payload.data);
         response.ok = true;
         response.data = result;
-        self.postMessage(response, [result.data.buffer]);
+        self.postMessage(response, {
+          transfer: [result.data.buffer as ArrayBuffer],
+        });
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);

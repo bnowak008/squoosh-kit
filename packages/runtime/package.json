@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/runtime",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Core runtime logic for squoosh-kit, including the worker bridge and environment utilities.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

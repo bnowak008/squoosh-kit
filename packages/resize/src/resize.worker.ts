@@ -233,7 +233,7 @@ if (typeof self !== 'undefined') {
         resultImage.data.buffer instanceof ArrayBuffer
           ? resultImage.data.buffer
           : resultImage.data.slice().buffer;
-      self.postMessage(response, [transferBuffer]);
+      self.postMessage(response, { transfer: [transferBuffer] });
     } catch (error) {
       response.error = error instanceof Error ? error.message : String(error);
       self.postMessage(response);

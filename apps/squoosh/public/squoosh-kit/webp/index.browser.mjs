@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
@@ -650,7 +654,9 @@ var init_webp_worker = __esm(() => {
           response2.ok = true;
           response2.data = result;
           const transferBuffer = result.buffer instanceof ArrayBuffer ? result.buffer : result.slice().buffer;
-          self.postMessage(response2, [transferBuffer]);
+          self.postMessage(response2, {
+            transfer: [transferBuffer]
+          });
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -668,7 +674,9 @@ var init_webp_worker = __esm(() => {
           response2.ok = true;
           response2.data = result;
           const transferBuffer = result.data.buffer instanceof ArrayBuffer ? result.data.buffer : result.data.slice().buffer;
-          self.postMessage(response2, [transferBuffer]);
+          self.postMessage(response2, {
+            transfer: [transferBuffer]
+          });
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -790,4 +798,4 @@ export {
   createWebpDecoder
 };
 
-//# debugId=F10FBF81523EFC1264756E2164756E21
+//# debugId=6AA4C9F1161E6E1D64756E2164756E21

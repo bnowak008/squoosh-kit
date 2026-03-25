@@ -94,9 +94,9 @@ try {
   ]).exited;
   if (typesResult !== 0) {
     console.error('TypeScript declaration build failed');
-  } else {
-    console.log('TypeScript declaration build completed successfully');
+    process.exit(1);
   }
+  console.log('TypeScript declaration build completed successfully');
 } catch (error) {
   console.error(error);
 }

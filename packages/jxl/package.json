@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/jxl",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "JPEG XL codec for squoosh-kit.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

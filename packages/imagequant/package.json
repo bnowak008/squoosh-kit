@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/imagequant",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "ImageQuant palette quantizer for squoosh-kit, providing lossy PNG compression via palette quantization.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

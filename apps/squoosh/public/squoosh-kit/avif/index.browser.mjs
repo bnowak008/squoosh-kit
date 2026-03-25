@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
@@ -677,7 +681,9 @@ var init_avif_worker = __esm(() => {
           const result = await avifEncodeClient(image, options);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2, [result.buffer]);
+          self.postMessage(response2, {
+            transfer: [result.buffer]
+          });
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -694,7 +700,9 @@ var init_avif_worker = __esm(() => {
           const result = await avifDecodeClient(request2.payload.data);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2, [result.data.buffer]);
+          self.postMessage(response2, {
+            transfer: [result.data.buffer]
+          });
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -818,4 +826,4 @@ export {
   AVIFTune2 as AVIFTune
 };
 
-//# debugId=9AD97F1760E11A1B64756E2164756E21
+//# debugId=44F809D96B46412564756E2164756E21

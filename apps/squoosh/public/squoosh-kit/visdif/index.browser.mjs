@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
@@ -353,7 +357,7 @@ async function loadVisDifModule() {
 }
 function imageToString(image) {
   const { data } = image;
-  const bytes = data instanceof Uint8ClampedArray ? data : data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+  const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   let result = "";
   for (let i = 0;i < bytes.length; i++) {
     result += String.fromCharCode(bytes[i]);
@@ -477,4 +481,4 @@ export {
   compare
 };
 
-//# debugId=CA52AE4F374A029E64756E2164756E21
+//# debugId=CB02CF224CBFCE7464756E2164756E21

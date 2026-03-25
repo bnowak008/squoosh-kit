@@ -179,7 +179,9 @@ if (typeof self !== 'undefined') {
         const result = await pngEncodeClient(request.payload.image);
         response.ok = true;
         response.data = result;
-        self.postMessage(response, [result.buffer]);
+        self.postMessage(response, {
+          transfer: [result.buffer as ArrayBuffer],
+        });
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);
@@ -197,7 +199,9 @@ if (typeof self !== 'undefined') {
         const result = await pngDecodeClient(request.payload.data);
         response.ok = true;
         response.data = result;
-        self.postMessage(response, [result.data.buffer]);
+        self.postMessage(response, {
+          transfer: [result.data.buffer as ArrayBuffer],
+        });
       } catch (error) {
         response.error = error instanceof Error ? error.message : String(error);
         self.postMessage(response);

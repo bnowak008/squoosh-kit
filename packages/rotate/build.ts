@@ -100,9 +100,9 @@ try {
   ]).exited;
   if (typesResult !== 0) {
     console.error('TypeScript declaration build failed');
-  } else {
-    console.log('TypeScript declaration build completed successfully');
+    process.exit(1);
   }
+  console.log('TypeScript declaration build completed successfully');
 
   // Copy WASM files to dist directory for npm packaging
   const wasmSrcDir = join('.', 'wasm');

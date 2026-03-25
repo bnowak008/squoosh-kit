@@ -107,6 +107,26 @@ bun run build
 bun run release:publish
 ```
 
+### Prerelease (RC) and npm `@rc`
+
+For a semver **prerelease** (version contains a hyphen after `X.Y.Z`, e.g. `1.0.0-rc.1`):
+
+1. Sync versions, commit, push, then tag and push the tag (e.g. `v1.0.0-rc.1`).
+2. CI publishes all workspace packages to the **`rc`** dist-tag (not `latest`).
+3. Consumers install with:
+
+```bash
+npm install @squoosh-kit/core@rc
+```
+
+Stable tags like `v1.0.0` publish to the default **`latest`** channel.
+
+Local publish to `rc` (after `npm login` or `NPM_CONFIG_TOKEN`):
+
+```bash
+NPM_PUBLISH_TAG=rc bun run release:publish
+```
+
 ## Error Handling
 
 The script validates input and will display helpful error messages:

@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
@@ -650,7 +654,9 @@ var init_mozjpeg_worker = __esm(() => {
           const result = await mozjpegEncodeClient(image, options);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2, [result.buffer]);
+          self.postMessage(response2, {
+            transfer: [result.buffer]
+          });
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -667,7 +673,9 @@ var init_mozjpeg_worker = __esm(() => {
           const result = await mozjpegDecodeClient(request2.payload.data);
           response2.ok = true;
           response2.data = result;
-          self.postMessage(response2, [result.data.buffer]);
+          self.postMessage(response2, {
+            transfer: [result.data.buffer]
+          });
         } catch (error) {
           response2.error = error instanceof Error ? error.message : String(error);
           self.postMessage(response2);
@@ -789,4 +797,4 @@ export {
   createMozjpegDecoder
 };
 
-//# debugId=BE4CB9C8F24FEDC264756E2164756E21
+//# debugId=A318F7E52158E18464756E2164756E21

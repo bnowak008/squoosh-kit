@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/vite-plugin",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Vite plugin for Squoosh-Kit - handles asset copying and WASM configuration",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
