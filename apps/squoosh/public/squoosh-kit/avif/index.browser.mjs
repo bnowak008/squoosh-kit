@@ -456,7 +456,13 @@ async function loadAvifEncModule() {
       }
       console.log("[AVIF Worker] Encoder module factory loaded successfully.");
       const wasmFileName = useNode ? "avif_node_enc.wasm" : "avif_enc.wasm";
-      const wasmPathsToTry = isSource ? [`../wasm/avif-enc/${wasmFileName}`, `./wasm/avif-enc/${wasmFileName}`] : [`./wasm/avif-enc/${wasmFileName}`, `../wasm/avif-enc/${wasmFileName}`];
+      const wasmPathsToTry = isSource ? [
+        `../wasm/avif-enc/${wasmFileName}`,
+        `./wasm/avif-enc/${wasmFileName}`
+      ] : [
+        `./wasm/avif-enc/${wasmFileName}`,
+        `../wasm/avif-enc/${wasmFileName}`
+      ];
       console.log(`[AVIF Worker] Preparing to load encoder WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
       const initModuleWithBinary = async (factory, wasmPaths) => {
         const workerBaseUrl = new URL(".", import.meta.url);
@@ -539,7 +545,13 @@ async function loadAvifDecModule() {
       }
       console.log("[AVIF Worker] Decoder module factory loaded successfully.");
       const wasmFileName = useNode ? "avif_node_dec.wasm" : "avif_dec.wasm";
-      const wasmPathsToTry = isSource ? [`../wasm/avif-dec/${wasmFileName}`, `./wasm/avif-dec/${wasmFileName}`] : [`./wasm/avif-dec/${wasmFileName}`, `../wasm/avif-dec/${wasmFileName}`];
+      const wasmPathsToTry = isSource ? [
+        `../wasm/avif-dec/${wasmFileName}`,
+        `./wasm/avif-dec/${wasmFileName}`
+      ] : [
+        `./wasm/avif-dec/${wasmFileName}`,
+        `../wasm/avif-dec/${wasmFileName}`
+      ];
       console.log(`[AVIF Worker] Preparing to load decoder WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
       const initModuleWithBinary = async (factory, wasmPaths) => {
         const workerBaseUrl = new URL(".", import.meta.url);
@@ -806,4 +818,4 @@ export {
   AVIFTune2 as AVIFTune
 };
 
-//# debugId=8F4DF4484853D8F264756E2164756E21
+//# debugId=9AD97F1760E11A1B64756E2164756E21

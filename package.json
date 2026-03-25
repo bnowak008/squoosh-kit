@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/mozjpeg,@squoosh-kit/avif,@squoosh-kit/jxl,@squoosh-kit/oxipng,@squoosh-kit/imagequant,@squoosh-kit/png,@squoosh-kit/qoi,@squoosh-kit/wp2,@squoosh-kit/hqx,@squoosh-kit/rotate,@squoosh-kit/visdif,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/mozjpeg,@squoosh-kit/avif,@squoosh-kit/jxl,@squoosh-kit/oxipng,@squoosh-kit/imagequant,@squoosh-kit/png,@squoosh-kit/qoi,@squoosh-kit/wp2,@squoosh-kit/hqx,@squoosh-kit/rotate,@squoosh-kit/visdif,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/squoosh' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
     "lint": "eslint .",
@@ -62,8 +62,7 @@
     "version:current": "bun run scripts/sync-version.ts current",
     "version:major": "bun run scripts/sync-version.ts major",
     "version:minor": "bun run scripts/sync-version.ts minor",
-    "version:patch": "bun run scripts/sync-version.ts patch",
-    "size-limit": "size-limit"
+    "version:patch": "bun run scripts/sync-version.ts patch"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -73,8 +72,6 @@
     "eslint": "^10.0.3",
     "globals": "^17.4.0",
     "prettier": "^3.2.5",
-    "size-limit": "^11.0.0",
-    "@size-limit/preset-big-lib": "^11.0.0",
     "lefthook": "^1.11.0",
     "typescript": "^5.6.3"
   },

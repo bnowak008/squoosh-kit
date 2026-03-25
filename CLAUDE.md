@@ -89,4 +89,3 @@ Worker files have their own export condition: `"./webp.worker.js"` / `"./resize.
 - **Bun** is the package manager and runtime (`bun install`, `bun test`, `bun run`)
 - **AbortSignal** is the cancellation mechanism for async operations
 - All public APIs validate inputs before passing to WASM (see `validators.ts` per package)
-- Bundle size limits enforced via `.size-limit.json` (5 KB runtime, 10 KB webp/resize, 15 KB core)

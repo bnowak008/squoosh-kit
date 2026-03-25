@@ -412,7 +412,13 @@ async function loadWebPModule() {
         throw lastError || new Error("Could not load WebP module from any path");
       }
       console.log("[WebP Worker] Module factory loaded successfully.");
-      const wasmPathsToTry = simdSupported2 ? isSource ? ["../wasm/webp/webp_enc_simd.wasm", "./wasm/webp/webp_enc_simd.wasm"] : ["./wasm/webp/webp_enc_simd.wasm", "../wasm/webp/webp_enc_simd.wasm"] : isSource ? ["../wasm/webp/webp_enc.wasm", "./wasm/webp/webp_enc.wasm"] : ["./wasm/webp/webp_enc.wasm", "../wasm/webp/webp_enc.wasm"];
+      const wasmPathsToTry = simdSupported2 ? isSource ? [
+        "../wasm/webp/webp_enc_simd.wasm",
+        "./wasm/webp/webp_enc_simd.wasm"
+      ] : [
+        "./wasm/webp/webp_enc_simd.wasm",
+        "../wasm/webp/webp_enc_simd.wasm"
+      ] : isSource ? ["../wasm/webp/webp_enc.wasm", "./wasm/webp/webp_enc.wasm"] : ["./wasm/webp/webp_enc.wasm", "../wasm/webp/webp_enc.wasm"];
       console.log(`[WebP Worker] Preparing to load WASM binary. Will try paths: ${wasmPathsToTry.join(", ")}`);
       const initModuleWithBinary = async (moduleFactory2, wasmPaths) => {
         const workerBaseUrl = new URL(".", import.meta.url);
@@ -784,4 +790,4 @@ export {
   createWebpDecoder
 };
 
-//# debugId=34E0949656F5588764756E2164756E21
+//# debugId=F10FBF81523EFC1264756E2164756E21

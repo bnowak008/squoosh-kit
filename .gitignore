@@ -6,6 +6,10 @@ out
 dist
 *.tgz
 
+# tsc should emit declarations to dist/ only; ignore stray emits in src
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
+
 # code coverage
 coverage
 *.lcov

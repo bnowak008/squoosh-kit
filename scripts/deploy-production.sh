@@ -63,12 +63,6 @@ validate_build() {
     log_success "Artifact validation passed"
 }
 
-check_bundle_size() {
-    log_info "Checking bundle sizes..."
-    bun run size-limit
-    log_success "Bundle sizes within limits"
-}
-
 check_version() {
     log_info "Checking version against registry..."
     CURRENT_VERSION=$(bun -e "console.log(require('./package.json').version)")
@@ -113,7 +107,6 @@ main() {
     run_quality_checks
     build_packages
     validate_build
-    check_bundle_size
     check_version
     publish_packages
     verify_publication

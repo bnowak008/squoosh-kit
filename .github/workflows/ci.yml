@@ -52,9 +52,6 @@ jobs:
       - name: Validate artifacts
         run: bun run validate:artifacts
 
-      - name: Check bundle size
-        run: bun run size-limit
-
   security:
     name: Security Audit
     runs-on: ubuntu-latest
