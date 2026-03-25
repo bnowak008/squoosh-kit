@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/oxipng",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "description": "OxiPNG codec for squoosh-kit, providing PNG optimization functionality.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

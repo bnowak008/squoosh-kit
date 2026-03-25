@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/qoi",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "description": "QOI (Quite OK Image) codec for squoosh-kit, providing lossless encoding and decoding.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
