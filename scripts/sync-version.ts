@@ -31,10 +31,31 @@ import { execSync } from 'child_process';
  *   set <version>    Set a specific version (must be in X.Y.Z format)
  *   current          Display the current version
  *   --help, -h       Show this help message
+ *
+ * Flags (after any command, e.g. set 1.0.0 --force):
+ *   --no-git         Only write package.json versions; no commit or tag (skips tag-exists check)
+ *   --force          Allow replacing an existing local tag (uses git tag -f)
  */
 
 const WORKSPACE_ROOT = import.meta.dir + '/..';
-const PACKAGES = ['core', 'resize', 'runtime', 'webp', 'vite-plugin'];
+const PACKAGES = [
+  'core',
+  'resize',
+  'runtime',
+  'webp',
+  'vite-plugin',
+  'avif',
+  'hqx',
+  'imagequant',
+  'jxl',
+  'mozjpeg',
+  'oxipng',
+  'png',
+  'qoi',
+  'rotate',
+  'visdif',
+  'wp2',
+];
 
 type BumpType = 'major' | 'minor' | 'patch';
 
@@ -108,20 +129,38 @@ function tagExists(tag: string): boolean {
   }
 }
 
-function syncVersions(newVersion: string): void {
-  // Guard: clean working tree
-  if (!isWorkingTreeClean()) {
+type SyncOptions = { noGit: boolean; force: boolean };
+
+function stripFlags(argv: string[]): {
+  argv: string[];
+  noGit: boolean;
+  force: boolean;
+} {
+  const out: string[] = [];
+  let noGit = false;
+  let force = false;
+  for (const a of argv) {
+    if (a === '--no-git') noGit = true;
+    else if (a === '--force') force = true;
+    else out.push(a);
+  }
+  return { argv: out, noGit, force };
+}
+
+function syncVersions(newVersion: string, options: SyncOptions): void {
+  const { noGit, force } = options;
+  const tag = `v${newVersion}`;
+
+  if (!noGit && !isWorkingTreeClean()) {
     console.error(
       '❌ Working tree is not clean. Commit or stash your changes before bumping the version.'
     );
     process.exit(1);
   }
 
-  // Guard: tag must not already exist
-  const tag = `v${newVersion}`;
-  if (tagExists(tag)) {
+  if (!noGit && !force && tagExists(tag)) {
     console.error(
-      `❌ Tag ${tag} already exists. Choose a different version or delete the existing tag first.`
+      `❌ Tag ${tag} already exists. Delete it (git tag -d ${tag}), push --force if on remote, or re-run with --force (git tag -f) or --no-git (files only).`
     );
     process.exit(1);
   }
@@ -143,20 +182,40 @@ function syncVersions(newVersion: string): void {
 
   console.log(`\n✨ All versions synced to ${newVersion}`);
 
-  // Stage only the specific files we modified — never git add -A
+  if (noGit) {
+    console.log(
+      '\n📦 Wrote versions only (--no-git). Commit and tag when ready, e.g.:'
+    );
+    console.log(
+      `   git add package.json packages/*/package.json && git commit -m "chore: release ${tag}" && git tag ${tag}`
+    );
+    return;
+  }
+
   execSync(`git add package.json`);
   for (const pkg of PACKAGES) {
     execSync(`git add packages/${pkg}/package.json`);
   }
 
   execSync(`git commit -m "chore: release ${tag}"`);
-  execSync(`git tag ${tag}`);
-  console.log(`\n🏷️  Created commit and tag ${tag}`);
+  if (force && tagExists(tag)) {
+    execSync(`git tag -f ${tag}`);
+    console.log(
+      `\n🏷️  Created commit and replaced local tag ${tag} (git tag -f)`
+    );
+    console.log(
+      'If the tag exists on the remote: git push origin ' + tag + ' --force'
+    );
+  } else {
+    execSync(`git tag ${tag}`);
+    console.log(`\n🏷️  Created commit and tag ${tag}`);
+  }
   console.log('Run: git push --follow-tags');
 }
 
 function main(): void {
-  const args = process.argv.slice(2);
+  const rawArgs = process.argv.slice(2);
+  const { argv: args, noGit, force } = stripFlags(rawArgs);
   const command = args[0];
 
   if (!command || command === '--help' || command === '-h') {
@@ -164,7 +223,7 @@ function main(): void {
 Version Sync Script for Squoosh-Kit
 
 Usage:
-  bun run scripts/sync-version.ts <command>
+  bun run scripts/sync-version.ts <command> [--no-git] [--force]
 
 Commands:
   major           Bump major version (0.0.6 → 1.0.0)
@@ -173,11 +232,14 @@ Commands:
   set <version>   Set a specific version (e.g., set 1.2.3)
   current         Show current version
 
+Flags:
+  --no-git        Only update package.json files (no commit/tag; skips tag-exists check)
+  --force         If tag vX.Y.Z exists locally, replace it (git tag -f) after commit
+
 Examples:
   bun run scripts/sync-version.ts major
-  bun run scripts/sync-version.ts minor
-  bun run scripts/sync-version.ts patch
-  bun run scripts/sync-version.ts set 1.0.0
+  bun run scripts/sync-version.ts set 1.0.0 --force
+  bun run scripts/sync-version.ts set 1.0.0 --no-git
   bun run scripts/sync-version.ts current
     `);
     process.exit(0);
@@ -195,7 +257,7 @@ Examples:
       const parsed = parseVersion(currentVersion);
       const bumped = bumpVersion(parsed, command);
       const newVersion = versionToString(bumped);
-      syncVersions(newVersion);
+      syncVersions(newVersion, { noGit, force });
       process.exit(0);
     }
 
@@ -204,7 +266,9 @@ Examples:
 
       if (!newVersion) {
         console.error('❌ Error: version argument required for "set" command');
-        console.error('Usage: bun run scripts/sync-version.ts set <version>');
+        console.error(
+          'Usage: bun run scripts/sync-version.ts set <version> [--no-git] [--force]'
+        );
         process.exit(1);
       }
 
@@ -216,7 +280,7 @@ Examples:
         process.exit(1);
       }
 
-      syncVersions(newVersion);
+      syncVersions(newVersion, { noGit, force });
       process.exit(0);
     }
 

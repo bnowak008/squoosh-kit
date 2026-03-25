@@ -136,6 +136,19 @@ bun run build        # Build all packages
 bun test             # Run tests
 ```
 
+## Publishing to npm
+
+CI deploys the demo site to Cloudflare on every push to `main`. **npm packages are not published on branch pushes.**
+
+To release, bump versions (for example `bun run version:patch` at the repo root), commit, create a **tag whose name matches that version with a `v` prefix**, and push the tag:
+
+```bash
+git tag v0.1.19
+git push origin v0.1.19
+```
+
+The workflow runs tests, then the **Publish to NPM** job publishes packages and creates a GitHub release. The tag (without `v`) must match the root `package.json` version and the package versions enforced in the workflow’s **Verify version consistency** step. Add an `NPM_TOKEN` secret in the repo’s GitHub **Settings → Secrets and variables → Actions**.
+
 ## License
 
 The squoosh-kit source code (TypeScript wrappers, worker bridge, build tooling) is licensed under the **MIT License** — see [LICENSE](./LICENSE).

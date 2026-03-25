@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/webp",
-  "version": "0.1.18",
+  "version": "1.0.0",
   "type": "module",
   "description": "WebP codec for squoosh-kit, providing encoding functionality.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",

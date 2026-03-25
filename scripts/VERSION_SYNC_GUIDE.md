@@ -52,6 +52,18 @@ bun run version:current
 bun run scripts/sync-version.ts set 1.5.3
 ```
 
+If **`v1.5.3` already exists** as a git tag, either delete it (`git tag -d v1.5.3`) and run `set` again, or replace the tag after syncing:
+
+```bash
+bun run scripts/sync-version.ts set 1.0.0 --force
+```
+
+To **only bump `package.json` files** (no commit/tag), for example before you handle git yourself:
+
+```bash
+bun run scripts/sync-version.ts set 1.0.0 --no-git
+```
+
 **Show help**:
 
 ```bash
