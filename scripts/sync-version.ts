@@ -34,7 +34,8 @@ import { execSync } from 'child_process';
  */
 
 const WORKSPACE_ROOT = import.meta.dir + '/..';
-const PACKAGES = ['core', 'resize', 'runtime', 'webp', 'vite-plugin'];
+// const PACKAGES = ['core', 'resize', 'runtime', 'webp', 'vite-plugin'];
+const PACKAGES = ['avif', 'hqx', 'imagequant', 'jxl', 'mozjpeg', 'oxipng', 'png', 'qoi', 'rotate', 'visdif', 'wp2'];
 
 type BumpType = 'major' | 'minor' | 'patch';
 
