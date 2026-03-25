@@ -38,7 +38,24 @@ import { execSync } from 'child_process';
  */
 
 const WORKSPACE_ROOT = import.meta.dir + '/..';
-const PACKAGES = ['core', 'resize', 'runtime', 'webp', 'vite-plugin', 'avif', 'hqx', 'imagequant', 'jxl', 'mozjpeg', 'oxipng', 'png', 'qoi', 'rotate', 'visdif', 'wp2'];
+const PACKAGES = [
+  'core',
+  'resize',
+  'runtime',
+  'webp',
+  'vite-plugin',
+  'avif',
+  'hqx',
+  'imagequant',
+  'jxl',
+  'mozjpeg',
+  'oxipng',
+  'png',
+  'qoi',
+  'rotate',
+  'visdif',
+  'wp2',
+];
 
 type BumpType = 'major' | 'minor' | 'patch';
 
@@ -114,7 +131,11 @@ function tagExists(tag: string): boolean {
 
 type SyncOptions = { noGit: boolean; force: boolean };
 
-function stripFlags(argv: string[]): { argv: string[]; noGit: boolean; force: boolean } {
+function stripFlags(argv: string[]): {
+  argv: string[];
+  noGit: boolean;
+  force: boolean;
+} {
   const out: string[] = [];
   let noGit = false;
   let force = false;
@@ -162,8 +183,12 @@ function syncVersions(newVersion: string, options: SyncOptions): void {
   console.log(`\n✨ All versions synced to ${newVersion}`);
 
   if (noGit) {
-    console.log('\n📦 Wrote versions only (--no-git). Commit and tag when ready, e.g.:');
-    console.log(`   git add package.json packages/*/package.json && git commit -m "chore: release ${tag}" && git tag ${tag}`);
+    console.log(
+      '\n📦 Wrote versions only (--no-git). Commit and tag when ready, e.g.:'
+    );
+    console.log(
+      `   git add package.json packages/*/package.json && git commit -m "chore: release ${tag}" && git tag ${tag}`
+    );
     return;
   }
 
@@ -175,8 +200,12 @@ function syncVersions(newVersion: string, options: SyncOptions): void {
   execSync(`git commit -m "chore: release ${tag}"`);
   if (force && tagExists(tag)) {
     execSync(`git tag -f ${tag}`);
-    console.log(`\n🏷️  Created commit and replaced local tag ${tag} (git tag -f)`);
-    console.log('If the tag exists on the remote: git push origin ' + tag + ' --force');
+    console.log(
+      `\n🏷️  Created commit and replaced local tag ${tag} (git tag -f)`
+    );
+    console.log(
+      'If the tag exists on the remote: git push origin ' + tag + ' --force'
+    );
   } else {
     execSync(`git tag ${tag}`);
     console.log(`\n🏷️  Created commit and tag ${tag}`);
@@ -237,7 +266,9 @@ Examples:
 
       if (!newVersion) {
         console.error('❌ Error: version argument required for "set" command');
-        console.error('Usage: bun run scripts/sync-version.ts set <version> [--no-git] [--force]');
+        console.error(
+          'Usage: bun run scripts/sync-version.ts set <version> [--no-git] [--force]'
+        );
         process.exit(1);
       }
 
