@@ -22,24 +22,24 @@ Whether you're building a web application, a Node.js service, or a desktop app w
 
 ## What You Get
 
-| Package                                                    | What's Inside                                | Best For                                                                                 |
-| ---------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| [`@squoosh-kit/core`](./packages/core)                     | All codecs bundled together                  | Quick start, projects needing multiple codecs                                            |
-| [`@squoosh-kit/webp`](./packages/webp)                     | WebP encoding/decoding                       | Modern web images, file size optimization                                                |
-| [`@squoosh-kit/avif`](./packages/avif)                     | AVIF encoding/decoding                       | Best compression for modern browsers                                                     |
-| [`@squoosh-kit/mozjpeg`](./packages/mozjpeg)               | Optimized JPEG encoding/decoding             | JPEG compatibility with 10–20% smaller files                                             |
-| [`@squoosh-kit/jxl`](./packages/jxl)                       | JPEG XL encoding/decoding                    | Next-gen format, excellent compression                                                   |
-| [`@squoosh-kit/wp2`](./packages/wp2)                       | WP2 encoding/decoding                        | Experimental WebP successor (research use)                                               |
-| [`@squoosh-kit/png`](./packages/png)                       | Lossless PNG encoding/decoding               | Pixel-perfect lossless images                                                            |
-| [`@squoosh-kit/qoi`](./packages/qoi)                       | QOI lossless encoding/decoding               | Fast lossless intermediate storage                                                       |
-| [`@squoosh-kit/resize`](./packages/resize)                 | Resizing with 4 algorithms                   | Thumbnails, responsive images (triangular, catrom, mitchell, lanczos3)                   |
-| [`@squoosh-kit/rotate`](./packages/rotate)                 | 90°/180°/270° rotation                       | EXIF orientation correction                                                              |
-| [`@squoosh-kit/oxipng`](./packages/oxipng)                 | Lossless PNG optimization                    | Reducing PNG file sizes by 10–30%                                                        |
-| [`@squoosh-kit/imagequant`](./packages/imagequant)         | Palette quantization (PNG-8)                 | Icons, logos, indexed-color PNGs                                                         |
-| [`@squoosh-kit/hqx`](./packages/hqx)                       | Pixel-art upscaling (2x/3x/4x)              | Retro game sprites, pixel art                                                            |
-| [`@squoosh-kit/visdif`](./packages/visdif)                 | Butteraugli perceptual comparison            | Quality assurance, codec tuning                                                          |
-| [`@squoosh-kit/vite-plugin`](./packages/vite-plugin)       | Vite plugin for WASM assets and CORS headers | Vite-based apps (React, Vue, Svelte, etc.)                                               |
-| [`@squoosh-kit/runtime`](./packages/runtime)               | Internal runtime utilities                   | Advanced customization                                                                   |
+| Package                                              | What's Inside                                | Best For                                                               |
+| ---------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| [`@squoosh-kit/core`](./packages/core)               | All codecs bundled together                  | Quick start, projects needing multiple codecs                          |
+| [`@squoosh-kit/webp`](./packages/webp)               | WebP encoding/decoding                       | Modern web images, file size optimization                              |
+| [`@squoosh-kit/avif`](./packages/avif)               | AVIF encoding/decoding                       | Best compression for modern browsers                                   |
+| [`@squoosh-kit/mozjpeg`](./packages/mozjpeg)         | Optimized JPEG encoding/decoding             | JPEG compatibility with 10–20% smaller files                           |
+| [`@squoosh-kit/jxl`](./packages/jxl)                 | JPEG XL encoding/decoding                    | Next-gen format, excellent compression                                 |
+| [`@squoosh-kit/wp2`](./packages/wp2)                 | WP2 encoding/decoding                        | Experimental WebP successor (research use)                             |
+| [`@squoosh-kit/png`](./packages/png)                 | Lossless PNG encoding/decoding               | Pixel-perfect lossless images                                          |
+| [`@squoosh-kit/qoi`](./packages/qoi)                 | QOI lossless encoding/decoding               | Fast lossless intermediate storage                                     |
+| [`@squoosh-kit/resize`](./packages/resize)           | Resizing with 4 algorithms                   | Thumbnails, responsive images (triangular, catrom, mitchell, lanczos3) |
+| [`@squoosh-kit/rotate`](./packages/rotate)           | 90°/180°/270° rotation                       | EXIF orientation correction                                            |
+| [`@squoosh-kit/oxipng`](./packages/oxipng)           | Lossless PNG optimization                    | Reducing PNG file sizes by 10–30%                                      |
+| [`@squoosh-kit/imagequant`](./packages/imagequant)   | Palette quantization (PNG-8)                 | Icons, logos, indexed-color PNGs                                       |
+| [`@squoosh-kit/hqx`](./packages/hqx)                 | Pixel-art upscaling (2x/3x/4x)               | Retro game sprites, pixel art                                          |
+| [`@squoosh-kit/visdif`](./packages/visdif)           | Butteraugli perceptual comparison            | Quality assurance, codec tuning                                        |
+| [`@squoosh-kit/vite-plugin`](./packages/vite-plugin) | Vite plugin for WASM assets and CORS headers | Vite-based apps (React, Vue, Svelte, etc.)                             |
+| [`@squoosh-kit/runtime`](./packages/runtime)         | Internal runtime utilities                   | Advanced customization                                                 |
 
 ## Quick Example
 
@@ -162,6 +162,7 @@ bun test             # Run tests
 ## Publishing to npm
 
 Every push to `main` runs the deploy workflow, which:
+
 1. Builds the project and deploys the demo site to Cloudflare Pages
 2. Checks whether the current `package.json` version is already published on npm — if not, publishes all packages, creates a git tag, and creates a GitHub Release automatically
 
