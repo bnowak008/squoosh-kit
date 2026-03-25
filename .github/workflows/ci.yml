@@ -52,6 +52,14 @@ jobs:
       - name: Validate artifacts
         run: bun run validate:artifacts
 
+      - name: Upload Squoosh site (for Cloudflare Pages direct deploy)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: squoosh-pages-dist
+          path: apps/squoosh/dist
+          retention-days: 7
+
   security:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -144,3 +152,24 @@ jobs:
               draft: false,
               prerelease: false,
             });
+
+  deploy-pages:
+    name: Deploy site to Cloudflare Pages
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+    steps:
+      - name: Download built site
+        uses: actions/download-artifact@v4
+        with:
+          name: squoosh-pages-dist
+          path: site
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=squoosh-kit
