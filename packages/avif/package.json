@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/avif",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "type": "module",
   "description": "AVIF codec for squoosh-kit.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
