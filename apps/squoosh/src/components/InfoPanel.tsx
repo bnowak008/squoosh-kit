@@ -25,7 +25,7 @@ export default function InfoPanel() {
         <div className="flex items-center gap-3 mb-3 lg:mb-5 pt-3">
           <span className="text-3xl lg:text-4xl">🧰</span>
           <span className="text-3xl lg:text-4xl font-black tracking-tight text-gray-900">
-            Squoosh <span style={{ color: '#ff2d78' }}>Kit</span>
+            Squoosh<span style={{ color: '#ff2d78' }}>-Kit</span>
           </span>
         </div>
 

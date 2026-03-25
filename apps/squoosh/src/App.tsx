@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Dispatch } from 'react';
 import type { AppState, Action, CodecId } from './types';
+import cccDevIcon from '/ccc-dev-icon.webp';
 import { getCodec, CODECS } from './codec/registry';
 import InfoPanel from './components/InfoPanel';
 import DropZone from './components/DropZone';
 import SplitView from './components/SplitView';
 import BottomPanel from './components/BottomPanel';
-import MobileBottomSheet from './components/MobileBottomSheet';
+import MobileBottomSheet, {
+  SHEET_COLLAPSED_VH,
+} from './components/MobileBottomSheet';
 import { useImageDecode } from './hooks/useImageDecode';
 import { useEncoder } from './hooks/useEncoder';
 import { prewarmCodec } from './codec/encode';
@@ -400,9 +403,10 @@ function WaveSeparator() {
     const el = ref.current;
     if (!el) return;
     el.setAttribute('position', 'top');
-    el.setAttribute('speed', '0.35');
+    el.setAttribute('speed', '0.33');
     el.setAttribute('wave-color', '#09f');
     el.setAttribute('wave-count', '3');
+    el.setAttribute('opacity-range', '.33, 1');
   }, []);
 
   return <animated-waves ref={ref} />;
@@ -430,10 +434,10 @@ export default function App() {
 
   // Track mobile breakpoint — fixed-position bottom sheet only renders on mobile
   const [isMobile, setIsMobile] = useState(
-    () => window.matchMedia('(max-width: 767px)').matches
+    () => window.matchMedia('(max-width: 764px)').matches
   );
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
+    const mq = window.matchMedia('(max-width: 764px)');
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
@@ -516,7 +520,7 @@ export default function App() {
 
   return (
     <div
-      className={`h-screen flex flex-col w-full justify-center overflow-hidden checker-bg ${isProcessing ? 'processing-active' : ''}`}
+      className={`h-screen flex flex-col w-full justify-start lg:justify-center overflow-hidden checker-bg ${isProcessing ? 'processing-active' : ''}`}
     >
       {/* Procedural ambient blobs — stay visible; large blob (BigBlob) hides when editor opens */}
       <div style={{ pointerEvents: 'none' }}>
@@ -541,15 +545,42 @@ export default function App() {
       </div>
 
       {/* TOP PANE */}
-      <div className="flex flex-1 relative min-h-0 w-full max-w-[1440px] mx-auto">
+      <div
+        className={`flex relative min-h-0 w-full max-w-[1440px] mx-auto ${showingEditor && isMobile ? '' : 'flex-1'}`}
+        style={
+          showingEditor && isMobile
+            ? { height: `${100 - SHEET_COLLAPSED_VH}vh` }
+            : undefined
+        }
+      >
         {/* Layout: stacked on mobile, two-column on desktop */}
-        <div className="absolute inset-0 flex min-w-0 flex-col lg:flex-row z-10">
-          {/* Desktop: InfoPanel */}
-          <div className="flex min-w-0 w-full lg:w-1/2 overflow-hidden shrink-0 items-center justify-center">
+        <div className="absolute inset-0 flex min-w-0 flex-col md:flex-row z-10">
+          {/* Logo row */}
+          <div
+            className={`flex items-center justify-center gap-3 mb-2 lg:mb-5 pt-2 ${showingEditor && isMobile ? '' : 'hidden'}`}
+          >
+            <span className="text-3xl lg:text-4xl">🧰</span>
+            <span className="text-3xl lg:text-4xl font-black tracking-tight text-gray-900">
+              Squoosh<span style={{ color: '#ff2d78' }}>-Kit</span>
+            </span>
+          </div>
+
+          {/* InfoPanel — hidden on mobile when editor is open */}
+          <div
+            className={`flex flex-col min-w-0 overflow-hidden shrink-0 items-center justify-center ${
+              showingEditor && isMobile ? 'hidden' : 'w-full md:w-1/2'
+            }`}
+          >
             <InfoPanel />
           </div>
 
-          <div className="flex flex-1 lg:flex-none w-full lg:w-1/2 lg:shrink-0 min-h-0 flex-col relative p-4 lg:p-6">
+          <div
+            className={`flex min-h-0 flex-col relative md:p-6 ${
+              showingEditor && isMobile
+                ? 'w-full flex-1 p-2'
+                : 'flex-1 md:flex-none w-full md:w-1/2 md:shrink-0 p-4'
+            }`}
+          >
             <div className="relative isolate flex flex-1 min-h-0 w-full items-center justify-center">
               <BigBlob isDragging={isDragging} editorVisible={editorVisible} />
 
@@ -593,71 +624,86 @@ export default function App() {
       </div>
 
       {/* Wave — hidden on mobile when editor is open */}
-      <div className={showingEditor ? 'hidden lg:block' : ''}>
+      <div className={showingEditor ? 'hidden md:block' : ''}>
         <WaveSeparator />
       </div>
 
       {/* Bottom zone — hidden on mobile when editor is open (bottom sheet takes over) */}
-      <div className={`shrink-0 bg-[#09f] relative ${showingEditor ? 'hidden lg:block' : ''}`}>
-          <div
-            className={`${showingEditor ? 'h-0' : 'h-0 lg:h-[15vh]'}  transition-[height] duration-200 ease-out`}
-          />
+      <div
+        className={`shrink-0 bg-[#09f] relative ${showingEditor ? 'hidden md:block' : ''}`}
+      >
+        <div
+          className={`${showingEditor ? 'h-0' : 'h-0 md:h-[15vh]'}  transition-[height] duration-200 ease-out`}
+        />
 
-          <div className="max-w-[1440px] mx-auto">
-            {showingEditor && (
-              <div className="fade-in-editor">
-                <BottomPanel
-                  state={state}
-                  dispatch={dispatch}
-                  onSetCodec={handleSetCodec}
+        <div className="max-w-[1440px] mx-auto">
+          {showingEditor && (
+            <div className="fade-in-editor">
+              <BottomPanel
+                state={state}
+                dispatch={dispatch}
+                onSetCodec={handleSetCodec}
+              />
+            </div>
+          )}
+
+          <footer className="relative z-10 flex flex-col md:flex-row items-center gap-2 px-6 py-3 text-xs text-white flex-wrap">
+            <div className="flex items-center gap-5">
+              <a
+                href="https://npmjs.com/package/@squoosh-kit/core"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center opacity-90 hover:opacity-100 transition-opacity"
+              >
+                <img
+                  src="https://img.shields.io/npm/v/%40squoosh-kit%2Fcore?style=flat-square&label=npm&color=cb3837"
+                  alt="npm"
+                  className="h-5"
                 />
-              </div>
-            )}
-
-            <footer className="relative z-10 flex flex-col md:flex-row items-center gap-2 px-6 py-3 text-xs text-white flex-wrap">
-              <div className="flex items-center gap-5">
+              </a>
+              <a
+                href="https://github.com/bnowak008/squoosh-kit"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center opacity-90 hover:opacity-100 transition-opacity"
+              >
+                <img
+                  src="https://img.shields.io/badge/github-squoosh--kit-181717?style=flat-square&logo=github"
+                  alt="GitHub"
+                  className="h-5"
+                />
+              </a>
+              <a
+                href="https://ccc-dev.cc"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 hover:text-gray-300 transition-colors"
+              >
+                <img
+                  src={cccDevIcon}
+                  alt=""
+                  className="w-8 h-8 rounded-sm object-cover"
+                  aria-hidden="true"
+                />
+                ccc-dev.cc
+              </a>
+            </div>
+            <div className="flex grow items-center justify-center md:justify-end gap-5">
+              <span className="text-white">
+                Built on the shoulders of{' '}
                 <a
-                  href="https://npmjs.com/package/@squoosh-kit/core"
+                  href="https://github.com/GoogleChromeLabs/squoosh"
                   target="_blank"
                   rel="noreferrer"
-                  className="hover:text-gray-300 transition-colors"
+                  className="hover:text-gray-300 transition-colors underline"
                 >
-                  npm
+                  Squoosh
                 </a>
-                <a
-                  href="https://github.com/bnowak008/squoosh-kit"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-gray-300 transition-colors"
-                >
-                  
-                  GitHub
-                </a>
-                <a
-                  href="https://ccc-dev.cc"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-gray-300 transition-colors"
-                >
-                  ccc-dev.cc
-                </a>
-              </div>
-              <div className="flex grow items-center justify-center md:justify-end gap-5">
-                <span className="text-white">
-                  Built on the shoulders of{' '}
-                  <a
-                    href="https://github.com/GoogleChromeLabs/squoosh"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-gray-300 transition-colors underline"
-                  >
-                    Squoosh
-                  </a>
-                </span>
-              </div>
-            </footer>
-          </div>
+              </span>
+            </div>
+          </footer>
         </div>
+      </div>
 
       {/* Mobile bottom sheet — conditionally rendered via JS since position:fixed
           bypasses display:none on ancestor elements */}

@@ -59,7 +59,59 @@ function optBlock(options: Record<string, unknown>, indent = '  '): Token[][] {
   ]);
 }
 
-function importLine(names: string[]): Token[] {
+function importFromPackage(pkg: string, names: string[]): Token[] {
+  const inner = names.join(', ');
+  return [
+    kw('import'),
+    plain(' '),
+    pun('{'),
+    plain(` ${inner} `),
+    pun('}'),
+    plain(' '),
+    kw('from'),
+    plain(' '),
+    str(`'${pkg}'`),
+    pun(';'),
+  ];
+}
+
+function installComment(codecId: CodecId, resizeEnabled: boolean): Token[] {
+  const pkgs = resizeEnabled
+    ? ['@squoosh-kit/resize', `@squoosh-kit/${codecId}`]
+    : [`@squoosh-kit/${codecId}`];
+  return [cmt(`// bun add ${pkgs.join(' ')}`)];
+}
+
+function packageImportLines(
+  codecId: CodecId,
+  resizeEnabled: boolean
+): Token[][] {
+  const lines: Token[][] = [];
+  if (resizeEnabled) {
+    lines.push(
+      importFromPackage('@squoosh-kit/resize', ['resize', 'createResizer'])
+    );
+  }
+  lines.push(
+    importFromPackage(`@squoosh-kit/${codecId}`, [
+      FN[codecId],
+      FACTORY[codecId],
+    ])
+  );
+  return lines;
+}
+
+function snippetHeader(codecId: CodecId, resizeEnabled: boolean): Token[][] {
+  return [
+    installComment(codecId, resizeEnabled),
+    [],
+    ...packageImportLines(codecId, resizeEnabled),
+    [],
+  ];
+}
+
+function importCoreLine(codecId: CodecId, resizeEnabled: boolean): Token[] {
+  const names = resizeEnabled ? ['resize', codecId] : [codecId];
   const inner = names.join(', ');
   return [
     kw('import'),
@@ -79,7 +131,8 @@ function importLine(names: string[]): Token[] {
 function resizeLines(
   ro: ResizeOptions,
   inputVar: string,
-  outputVar: string
+  outputVar: string,
+  resizeCallee: 'resize' | 'resize.resize' = 'resize'
 ): Token[][] {
   const entries = Object.entries(ro).filter(([, v]) => v !== undefined) as [
     string,
@@ -93,7 +146,7 @@ function resizeLines(
       plain(' '),
       kw('await'),
       plain(' '),
-      fn('resize.resize'),
+      fn(resizeCallee),
       pun('('),
       plain(inputVar),
       pun(', '),
@@ -112,24 +165,26 @@ function resizeLines(
 
 // ── snippet builders ───────────────────────────────────────────────────────────
 
-function buildSimple(
+function simpleEncodeBlock(
   codecId: CodecId,
   options: Record<string, unknown>,
   resizeEnabled: boolean,
-  resizeOptions: ResizeOptions
+  resizeOptions: ResizeOptions,
+  resizeCallee: 'resize' | 'resize.resize',
+  encodeCallee: string
 ): Token[][] {
   const hasPng = codecId === 'png';
   const hasOpts = !hasPng && Object.keys(options).length > 0;
-  const imports = resizeEnabled ? ['resize', codecId] : [codecId];
   const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
-
-  const lines: Token[][] = [importLine(imports), []];
+  const lines: Token[][] = [];
 
   if (resizeEnabled) {
     const ro = Object.fromEntries(
       Object.entries(resizeOptions).filter(([, v]) => v !== undefined)
     );
-    lines.push(...resizeLines(ro as ResizeOptions, 'imageInput', 'resized'));
+    lines.push(
+      ...resizeLines(ro as ResizeOptions, 'imageInput', 'resized', resizeCallee)
+    );
     lines[lines.length - 1] = [...(lines[lines.length - 1] ?? []), pun(';')];
     lines.push([]);
   }
@@ -141,7 +196,7 @@ function buildSimple(
     plain(' '),
     kw('await'),
     plain(' '),
-    fn(`${codecId}.${FN[codecId]}`),
+    fn(encodeCallee),
     pun('('),
     plain(encodeInput),
     ...(hasOpts ? [pun(', '), pun('{')] : hasPng ? [] : [pun(')')]),
@@ -156,6 +211,41 @@ function buildSimple(
   return lines;
 }
 
+function buildSimple(
+  codecId: CodecId,
+  options: Record<string, unknown>,
+  resizeEnabled: boolean,
+  resizeOptions: ResizeOptions
+): Token[][] {
+  const coreEncode = `${codecId}.${FN[codecId]}`;
+  return [
+    ...snippetHeader(codecId, resizeEnabled),
+    ...simpleEncodeBlock(
+      codecId,
+      options,
+      resizeEnabled,
+      resizeOptions,
+      'resize',
+      FN[codecId]
+    ),
+    [],
+    [cmt('// @squoosh-kit/core — same flow, namespaced imports')],
+    [],
+    [cmt('// bun add @squoosh-kit/core')],
+    [],
+    importCoreLine(codecId, resizeEnabled),
+    [],
+    ...simpleEncodeBlock(
+      codecId,
+      options,
+      resizeEnabled,
+      resizeOptions,
+      'resize.resize',
+      coreEncode
+    ),
+  ];
+}
+
 function buildAdvanced(
   codecId: CodecId,
   options: Record<string, unknown>,
@@ -165,10 +255,9 @@ function buildAdvanced(
   const factory = FACTORY[codecId];
   const hasPng = codecId === 'png';
   const hasOpts = !hasPng && Object.keys(options).length > 0;
-  const imports = resizeEnabled ? ['resize', codecId] : [codecId];
   const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
 
-  const lines: Token[][] = [importLine(imports), []];
+  const lines: Token[][] = [...snippetHeader(codecId, resizeEnabled)];
 
   if (resizeEnabled) {
     lines.push([
@@ -176,7 +265,7 @@ function buildAdvanced(
       plain(' resizer '),
       pun('='),
       plain(' '),
-      fn('resize.createResizer'),
+      fn('createResizer'),
       pun("('worker',"),
       plain(' '),
       pun('{'),
@@ -195,7 +284,7 @@ function buildAdvanced(
       plain(' encoder '),
       pun('='),
       plain(' '),
-      fn(`${codecId}.${factory}`),
+      fn(factory),
       pun("('worker',"),
       plain(' '),
       pun('{'),
@@ -290,7 +379,6 @@ function buildRuntimes(
   const hasPng = codecId === 'png';
   const hasOpts = !hasPng && Object.keys(options).length > 0;
   const factory = FACTORY[codecId];
-  const imports = resizeEnabled ? ['resize', codecId] : [codecId];
   const encodeInput = resizeEnabled ? 'resized' : 'imageInput';
 
   const ro = resizeEnabled
@@ -302,7 +390,7 @@ function buildRuntimes(
   // ─ Node / Bun ──────────────────────────────────────────────────────────────
   const nodeLines: Token[][] = [
     [cmt('// ─── Node.js / Bun ──────────────────────────────────────')],
-    importLine(imports),
+    ...packageImportLines(codecId, resizeEnabled),
     [],
   ];
 
@@ -319,7 +407,7 @@ function buildRuntimes(
     plain(' '),
     kw('await'),
     plain(' '),
-    fn(`${codecId}.${FN[codecId]}`),
+    fn(FN[codecId]),
     pun('('),
     plain(encodeInput),
     ...(hasOpts ? [pun(', '), pun('{')] : hasPng ? [] : [pun(')')]),
@@ -345,7 +433,7 @@ function buildRuntimes(
       plain(' resizer '),
       pun('='),
       plain(' '),
-      fn('resize.createResizer'),
+      fn('createResizer'),
       pun("('worker',"),
       plain(' '),
       pun('{'),
@@ -364,7 +452,7 @@ function buildRuntimes(
       plain(' encoder '),
       pun('='),
       plain(' '),
-      fn(`${codecId}.${factory}`),
+      fn(factory),
       pun("('worker',"),
       plain(' '),
       pun('{'),
@@ -451,7 +539,12 @@ function buildRuntimes(
     pun('();'),
   ]);
 
-  return [...nodeLines, ...browserLines];
+  return [
+    installComment(codecId, resizeEnabled),
+    [],
+    ...nodeLines,
+    ...browserLines,
+  ];
 }
 
 // ── tab types ──────────────────────────────────────────────────────────────────
@@ -511,7 +604,10 @@ export function CodePanel({
         : buildRuntimes(codecId, codecOptions, resizeEnabled, resizeOptions);
 
   return (
-    <div className="h-full md:h-[300px] flex flex-col md:grow min-w-0 md:max-w-200 border-r border-white/10 overflow-hidden bg-gray-900 md:rounded-lg">
+    <div
+      className="h-full md:h-[300px] flex flex-col md:grow min-w-0 md:max-w-200 border-r border-white/10 overflow-hidden md:rounded-lg"
+      style={{ background: '#09f' }}
+    >
       {/* Tab bar */}
       <div className="flex items-center border-b border-white/10 shrink-0">
         {TABS.map((tab) => (
@@ -519,11 +615,11 @@ export function CodePanel({
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              px-4 py-2 text-xs font-mono transition-colors
+              px-4 py-2 text-xs font-mono transition-colors hover:cursor-pointer
               ${
                 activeTab === tab.id
                   ? 'text-white border-b border-white -mb-px'
-                  : 'text-white/40 hover:text-white/70'
+                  : 'text-white/60 hover:text-white/80'
               }
             `}
           >
@@ -534,7 +630,7 @@ export function CodePanel({
           <button
             onClick={onReset}
             title="Upload new image"
-            className="p-1 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors"
+            className="p-1 rounded text-white/60 hover:text-white/80 hover:bg-white/10 transition-colors"
           >
             <svg
               className="w-4 h-4"
@@ -607,47 +703,7 @@ export function SettingsPanel({
   const isEncoding = phase === 'encoding';
 
   return (
-    <div className="flex flex-col gap-3 px-5 py-4 w-full md:w-72 md:flex-shrink-0 overflow-y-auto">
-      <div className="flex items-center gap-3">
-        <FormatSelector value={codecId} onChange={onSetCodec} />
-
-        <div className="ml-auto text-right">
-          {isEncoding ? (
-            <svg
-              className="animate-spin h-5 w-5 text-white/80 ml-auto"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-          ) : encodeResult ? (
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-bold text-white">
-                {formatBytes(encodeResult.sizeBytes)}
-              </span>
-              {sourceFile && (
-                <span className="text-xs text-white/70">
-                  {compressionRatio(sourceFile.size, encodeResult.sizeBytes)}
-                </span>
-              )}
-            </div>
-          ) : null}
-        </div>
-      </div>
-
+    <div className="flex flex-col gap-3 px-5 py-4 w-full md:w-90 md:shrink-0 overflow-y-auto">
       <OptionsPanel
         codecId={codecId}
         options={codecOptions}
@@ -675,12 +731,49 @@ export function SettingsPanel({
         </div>
       )}
 
-      <div className="mt-auto pt-1">
+      <div className="mt-auto pt-2 flex items-center gap-3">
         <DownloadButton
           bytes={encodeResult?.bytes ?? null}
           codecId={codecId}
           sourceFileName={sourceFile?.name ?? null}
         />
+
+        <div className="ml-auto flex items-center gap-2">
+          <FormatSelector value={codecId} onChange={onSetCodec} />
+          {isEncoding ? (
+            <svg
+              className="animate-spin h-4 w-4 text-white/80 shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          ) : encodeResult ? (
+            <div className="flex flex-col items-end shrink-0">
+              <span className="text-sm font-bold text-white">
+                {formatBytes(encodeResult.sizeBytes)}
+              </span>
+              {sourceFile && (
+                <span className="text-xs text-white/70">
+                  {compressionRatio(sourceFile.size, encodeResult.sizeBytes)}
+                </span>
+              )}
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -705,7 +798,11 @@ export default function BottomPanel({ state, dispatch, onSetCodec }: Props) {
         resizeOptions={state.resizeOptions}
         onReset={handleReset}
       />
-      <SettingsPanel state={state} dispatch={dispatch} onSetCodec={onSetCodec} />
+      <SettingsPanel
+        state={state}
+        dispatch={dispatch}
+        onSetCodec={onSetCodec}
+      />
     </div>
   );
 }

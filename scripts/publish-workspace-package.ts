@@ -28,7 +28,10 @@ function readManifest(pkgRoot: string): PackageManifest {
   const pkgPath = resolve(pkgRoot, 'package.json');
   const raw = readFileSync(pkgPath, 'utf8');
   const manifest = JSON.parse(raw) as { name?: unknown; version?: unknown };
-  if (typeof manifest.name !== 'string' || typeof manifest.version !== 'string') {
+  if (
+    typeof manifest.name !== 'string' ||
+    typeof manifest.version !== 'string'
+  ) {
     console.error(`${pkgPath}: missing string name or version`);
     process.exit(1);
   }
@@ -36,10 +39,13 @@ function readManifest(pkgRoot: string): PackageManifest {
 }
 
 function isVersionPublishedOnRegistry(name: string, version: string): boolean {
-  const result = Bun.spawnSync(['npm', 'view', `${name}@${version}`, 'version'], {
-    stdout: 'pipe',
-    stderr: 'pipe',
-  });
+  const result = Bun.spawnSync(
+    ['npm', 'view', `${name}@${version}`, 'version'],
+    {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    }
+  );
   if (result.exitCode !== 0) {
     return false;
   }

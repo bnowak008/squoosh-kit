@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Dispatch } from 'react';
 import type { AppState, Action, CodecId } from '../types';
 import { CodePanel, SettingsPanel } from './BottomPanel';
@@ -11,71 +11,108 @@ type Props = {
   onSetCodec: (codecId: CodecId) => void;
 };
 
-const COLLAPSED_VH = 50;
+export const SHEET_COLLAPSED_VH = 38;
 const EXPANDED_VH = 93;
-const SNAP_VH = 68; // snap to expanded if released above this
+const SNAP_VH = 60;
 
-export default function MobileBottomSheet({ state, dispatch, onSetCodec }: Props) {
-  const [tab, setTab] = useState<SheetTab>('code');
-  const [heightVh, setHeightVh] = useState(COLLAPSED_VH);
+export default function MobileBottomSheet({
+  state,
+  dispatch,
+  onSetCodec,
+}: Props) {
+  const [tab, setTab] = useState<SheetTab>('settings');
+  const [heightVh, setHeightVh] = useState(SHEET_COLLAPSED_VH);
   const [animating, setAnimating] = useState(false);
-  const dragging = useRef(false);
+  const handleRef = useRef<HTMLDivElement>(null);
+  const waveRef = useRef<HTMLElement>(null);
+  const heightVhRef = useRef(heightVh);
   const startY = useRef(0);
-  const startHeight = useRef(COLLAPSED_VH);
+  const startHeight = useRef(SHEET_COLLAPSED_VH);
 
-  const onTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      dragging.current = true;
-      startY.current = e.touches[0]!.clientY;
-      startHeight.current = heightVh;
-      setAnimating(false);
-    },
-    [heightVh]
-  );
+  heightVhRef.current = heightVh;
 
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!dragging.current) return;
-    const dy = startY.current - e.touches[0]!.clientY;
-    const dvh = (dy / window.innerHeight) * 100;
-    setHeightVh(Math.max(25, Math.min(EXPANDED_VH, startHeight.current + dvh)));
+  useEffect(() => {
+    const el = waveRef.current;
+    if (!el) return;
+    el.setAttribute('position', 'top');
+    el.setAttribute('speed', '0.33');
+    el.setAttribute('wave-color', '#09f');
+    el.setAttribute('wave-count', '3');
+    el.setAttribute('opacity-range', '.33, 1');
   }, []);
 
-  const onTouchEnd = useCallback(() => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    setAnimating(true);
-    setHeightVh((h) => (h > SNAP_VH ? EXPANDED_VH : COLLAPSED_VH));
+  useEffect(() => {
+    const el = handleRef.current;
+    if (!el) return;
+
+    const onDown = (e: PointerEvent) => {
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      startY.current = e.clientY;
+      startHeight.current = heightVhRef.current;
+      setAnimating(false);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (!el.hasPointerCapture(e.pointerId)) return;
+      const dy = startY.current - e.clientY;
+      const dvh = (dy / window.innerHeight) * 100;
+      setHeightVh(
+        Math.max(25, Math.min(EXPANDED_VH, startHeight.current + dvh))
+      );
+    };
+
+    const onUp = (e: PointerEvent) => {
+      if (!el.hasPointerCapture(e.pointerId)) return;
+      setAnimating(true);
+      setHeightVh((h) => (h > SNAP_VH ? EXPANDED_VH : SHEET_COLLAPSED_VH));
+    };
+
+    el.addEventListener('pointerdown', onDown, { passive: false });
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
+    return () => {
+      el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+    };
   }, []);
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 flex flex-col bg-gray-900 rounded-t-2xl shadow-2xl text-white"
+      className="fixed bottom-0 left-0 right-0 z-50 flex flex-col text-white"
       style={{
         height: `${heightVh}vh`,
-        transition: animating ? 'height 300ms cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
+        transition: animating
+          ? 'height 300ms cubic-bezier(0.22, 1, 0.36, 1)'
+          : 'none',
       }}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
       onTransitionEnd={() => setAnimating(false)}
     >
-      {/* Drag handle */}
+      {/* Wave handle — negative margin floats it above the sheet top edge */}
       <div
-        className="shrink-0 flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing select-none touch-none"
-        onTouchStart={onTouchStart}
+        ref={handleRef}
+        className="relative shrink-0 touch-none select-none cursor-grab active:cursor-grabbing"
       >
-        <div className="w-10 h-1 rounded-full bg-white/30" />
+        <animated-waves
+          ref={waveRef}
+          style={{ display: 'block', width: '100%', height: '100%' }}
+        />
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/50 pointer-events-none" />
       </div>
 
       {/* Tab bar */}
-      <div className="shrink-0 flex items-center border-b border-white/10 px-1">
-        {(['code', 'settings'] as SheetTab[]).map((t) => (
+      <div className="shrink-0 flex items-center bg-[#09f] px-1">
+        {(['settings', 'code'] as SheetTab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-5 py-2.5 text-sm font-medium transition-colors capitalize ${
+            className={`px-5 py-2.5 text-sm font-medium transition-colors capitalize hover:cursor-pointer ${
               tab === t
-                ? 'text-white border-b-2 border-[#ff2d78] -mb-px'
-                : 'text-white/50 hover:text-white/80'
+                ? 'text-white border-b-2 border-white -mb-px'
+                : 'text-white/60 hover:text-white'
             }`}
           >
             {t === 'code' ? 'Code' : 'Settings'}
@@ -84,7 +121,7 @@ export default function MobileBottomSheet({ state, dispatch, onSetCodec }: Props
       </div>
 
       {/* Content — keep both mounted to preserve scroll / tab state */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden bg-[#09f] pt-2">
         <div className={`h-full ${tab === 'code' ? 'block' : 'hidden'}`}>
           <CodePanel
             codecId={state.codecId}
@@ -96,9 +133,12 @@ export default function MobileBottomSheet({ state, dispatch, onSetCodec }: Props
         </div>
         <div
           className={`h-full overflow-y-auto ${tab === 'settings' ? 'block' : 'hidden'}`}
-          style={{ background: '#09f' }}
         >
-          <SettingsPanel state={state} dispatch={dispatch} onSetCodec={onSetCodec} />
+          <SettingsPanel
+            state={state}
+            dispatch={dispatch}
+            onSetCodec={onSetCodec}
+          />
         </div>
       </div>
     </div>

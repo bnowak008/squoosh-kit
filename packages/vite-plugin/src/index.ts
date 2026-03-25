@@ -31,7 +31,9 @@ const SQUOOSH_CODEC_WORKSPACE_BROWSER_RE = new RegExp(
   `[/\\\\]packages[/\\\\](?:${SQUOOSH_CODEC_PACKAGE_NAMES.join('|')})[/\\\\]dist[/\\\\]index\\.browser\\.mjs`
 );
 
-function shouldSuppressSquooshKitDynamicImportAnalysisWarn(msg: string): boolean {
+function shouldSuppressSquooshKitDynamicImportAnalysisWarn(
+  msg: string
+): boolean {
   if (!msg.includes('dynamic import cannot be analyzed')) {
     return false;
   }
@@ -49,11 +51,7 @@ function withSquooshKitCodecImportWarningsFiltered(base: Logger): Logger {
           if (shouldSuppressSquooshKitDynamicImportAnalysisWarn(msg)) {
             return;
           }
-          return Reflect.get(target, prop, receiver).call(
-            target,
-            msg,
-            options
-          );
+          return Reflect.get(target, prop, receiver).call(target, msg, options);
         };
       }
       return Reflect.get(target, prop, receiver);

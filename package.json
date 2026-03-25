@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/mozjpeg,@squoosh-kit/avif,@squoosh-kit/jxl,@squoosh-kit/oxipng,@squoosh-kit/imagequant,@squoosh-kit/png,@squoosh-kit/qoi,@squoosh-kit/wp2,@squoosh-kit/hqx,@squoosh-kit/rotate,@squoosh-kit/visdif,@squoosh-kit/vite-plugin}' --sequential build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/squoosh' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/mozjpeg,@squoosh-kit/avif,@squoosh-kit/jxl,@squoosh-kit/oxipng,@squoosh-kit/imagequant,@squoosh-kit/png,@squoosh-kit/qoi,@squoosh-kit/wp2,@squoosh-kit/hqx,@squoosh-kit/rotate,@squoosh-kit/visdif,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/squoosh' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
     "lint": "eslint .",
