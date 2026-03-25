@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/hqx",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "type": "module",
   "description": "HQX upscaler codec for squoosh-kit, providing wasm-bindgen-based image upscaling.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -10,7 +10,7 @@
     "url": "https://github.com/bnowak008/squoosh-kit.git",
     "directory": "packages/hqx"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/hqx#readme",
+  "homepage": "http://squoosh-kit.dev",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/oxipng",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "type": "module",
   "description": "OxiPNG codec for squoosh-kit, providing PNG optimization functionality.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -10,7 +10,7 @@
     "url": "https://github.com/bnowak008/squoosh-kit.git",
     "directory": "packages/oxipng"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/oxipng#readme",
+  "homepage": "http://squoosh-kit.dev",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

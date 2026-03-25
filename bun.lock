@@ -64,14 +64,14 @@
     },
     "packages/avif": {
       "name": "@squoosh-kit/avif",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/core": {
       "name": "@squoosh-kit/core",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/avif": "workspace:*",
         "@squoosh-kit/hqx": "workspace:*",
@@ -91,70 +91,70 @@
     },
     "packages/hqx": {
       "name": "@squoosh-kit/hqx",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/imagequant": {
       "name": "@squoosh-kit/imagequant",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/jxl": {
       "name": "@squoosh-kit/jxl",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/mozjpeg": {
       "name": "@squoosh-kit/mozjpeg",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/oxipng": {
       "name": "@squoosh-kit/oxipng",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/png": {
       "name": "@squoosh-kit/png",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/qoi": {
       "name": "@squoosh-kit/qoi",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/resize": {
       "name": "@squoosh-kit/resize",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/rotate": {
       "name": "@squoosh-kit/rotate",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/runtime": {
       "name": "@squoosh-kit/runtime",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "wasm-feature-detect": "^1.0.0",
       },
@@ -164,14 +164,14 @@
     },
     "packages/visdif": {
       "name": "@squoosh-kit/visdif",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/vite-plugin": {
       "name": "@squoosh-kit/vite-plugin",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "~5.9.3",
@@ -180,14 +180,14 @@
     },
     "packages/webp": {
       "name": "@squoosh-kit/webp",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/wp2": {
       "name": "@squoosh-kit/wp2",
-      "version": "0.9.0",
+      "version": "0.2.2",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
@@ -627,7 +627,7 @@
 
     "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
 
-    "electron-to-chromium": ["electron-to-chromium@1.5.322", "", {}, "sha512-vFU34OcrvMcH66T+dYC3G4nURmgfDVewMIu6Q2urXpumAPSMmzvcn04KVVV8Opikq8Vs5nUbO/8laNhNRqSzYw=="],
+    "electron-to-chromium": ["electron-to-chromium@1.5.325", "", {}, "sha512-PwfIw7WQSt3xX7yOf5OE/unLzsK9CaN2f/FvV3WjPR1Knoc1T9vePRVV4W1EM301JzzysK51K7FNKcusCr0zYA=="],
 
     "enhanced-resolve": ["enhanced-resolve@5.20.1", "", { "dependencies": { "graceful-fs": "^4.2.4", "tapable": "^2.3.0" } }, "sha512-Qohcme7V1inbAfvjItgw0EaxVX5q2rdVEZHRBrEQdRZTssLDGsL8Lwrznl8oQ/6kuTJONLaDcGjkNP247XEhcA=="],
 

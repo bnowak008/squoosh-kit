@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/resize",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "type": "module",
   "description": "Image resize module for squoosh-kit.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -10,7 +10,7 @@
     "url": "https://github.com/bnowak008/squoosh-kit.git",
     "directory": "packages/resize"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/resize#readme",
+  "homepage": "http://squoosh-kit.dev",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

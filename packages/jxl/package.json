@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/jxl",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "type": "module",
   "description": "JPEG XL codec for squoosh-kit.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -10,6 +10,7 @@
     "url": "https://github.com/bnowak008/squoosh-kit.git",
     "directory": "packages/jxl"
   },
+  "homepage": "http://squoosh-kit.dev",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

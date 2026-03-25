@@ -1,6 +1,6 @@
 {
   "name": "squoosh-kit",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/bnowak008/squoosh-kit.git"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-kit#readme",
+  "homepage": "http://squoosh-kit.dev",
   "bugs": {
     "url": "https://github.com/bnowak008/squoosh-kit/issues"
   },
@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/mozjpeg,@squoosh-kit/avif,@squoosh-kit/jxl,@squoosh-kit/oxipng,@squoosh-kit/imagequant,@squoosh-kit/png,@squoosh-kit/qoi,@squoosh-kit/wp2,@squoosh-kit/hqx,@squoosh-kit/rotate,@squoosh-kit/visdif,@squoosh-kit/vite-plugin}' --sequential build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/squoosh' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/mozjpeg,@squoosh-kit/avif,@squoosh-kit/jxl,@squoosh-kit/oxipng,@squoosh-kit/imagequant,@squoosh-kit/png,@squoosh-kit/qoi,@squoosh-kit/wp2,@squoosh-kit/hqx,@squoosh-kit/rotate,@squoosh-kit/visdif,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/squoosh' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
     "lint": "eslint .",

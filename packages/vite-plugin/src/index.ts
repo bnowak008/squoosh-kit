@@ -8,7 +8,56 @@ import {
 } from 'fs';
 import { IncomingMessage, ServerResponse } from 'http';
 import { join } from 'path';
-import type { PluginOption, ViteDevServer } from 'vite';
+import { createLogger } from 'vite';
+import type { Logger, PluginOption, UserConfig, ViteDevServer } from 'vite';
+
+const SQUOOSH_CODEC_PACKAGE_NAMES = [
+  'webp',
+  'resize',
+  'avif',
+  'mozjpeg',
+  'jxl',
+  'oxipng',
+  'imagequant',
+  'png',
+  'qoi',
+  'wp2',
+  'hqx',
+  'rotate',
+  'visdif',
+] as const;
+
+const SQUOOSH_CODEC_WORKSPACE_BROWSER_RE = new RegExp(
+  `[/\\\\]packages[/\\\\](?:${SQUOOSH_CODEC_PACKAGE_NAMES.join('|')})[/\\\\]dist[/\\\\]index\\.browser\\.mjs`
+);
+
+function shouldSuppressSquooshKitDynamicImportAnalysisWarn(
+  msg: string
+): boolean {
+  if (!msg.includes('dynamic import cannot be analyzed')) {
+    return false;
+  }
+  if (msg.includes('@squoosh-kit')) {
+    return true;
+  }
+  return SQUOOSH_CODEC_WORKSPACE_BROWSER_RE.test(msg);
+}
+
+function withSquooshKitCodecImportWarningsFiltered(base: Logger): Logger {
+  return new Proxy(base, {
+    get(target, prop, receiver) {
+      if (prop === 'warn' || prop === 'warnOnce') {
+        return (msg: string, options?: Parameters<Logger['warn']>[1]) => {
+          if (shouldSuppressSquooshKitDynamicImportAnalysisWarn(msg)) {
+            return;
+          }
+          return Reflect.get(target, prop, receiver).call(target, msg, options);
+        };
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+}
 
 function copyBrowserFiles(srcDir: string, destDir: string) {
   if (!existsSync(srcDir)) {
@@ -107,7 +156,10 @@ export default function squooshVitePlugin(
 
       console.log('Squoosh assets copied successfully!');
     },
-    config: () => ({
+    config: (config: UserConfig) => ({
+      customLogger: withSquooshKitCodecImportWarningsFiltered(
+        config.customLogger ?? createLogger(config.logLevel)
+      ),
       server: {
         headers: {
           'Cross-Origin-Embedder-Policy': 'credentialless',
@@ -116,21 +168,9 @@ export default function squooshVitePlugin(
         },
       },
       optimizeDeps: {
-        exclude: [
-          '@squoosh-kit/webp',
-          '@squoosh-kit/resize',
-          '@squoosh-kit/avif',
-          '@squoosh-kit/mozjpeg',
-          '@squoosh-kit/jxl',
-          '@squoosh-kit/oxipng',
-          '@squoosh-kit/imagequant',
-          '@squoosh-kit/png',
-          '@squoosh-kit/qoi',
-          '@squoosh-kit/wp2',
-          '@squoosh-kit/hqx',
-          '@squoosh-kit/rotate',
-          '@squoosh-kit/visdif',
-        ],
+        exclude: SQUOOSH_CODEC_PACKAGE_NAMES.map(
+          (name) => `@squoosh-kit/${name}`
+        ),
       },
       assetsInclude: ['**/*.wasm'],
     }),

@@ -1,7 +1,7 @@
 {
   "name": "@squoosh-kit/squoosh",
   "private": true,
-  "homepage": "https://squoosh-kit.dev",
+  "homepage": "http://squoosh-kit.dev",
   "type": "module",
   "scripts": {
     "dev": "vite --force",
