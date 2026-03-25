@@ -8,6 +8,10 @@
 
 import { isBun } from './env';
 
+export type CreateWorkerOptions = {
+  assetPath?: string;
+};
+
 /**
  * Create a Web Worker for a specific codec
  *
@@ -18,7 +22,10 @@ import { isBun } from './env';
  * @returns Worker instance
  * @throws Error if worker creation fails with detailed error message
  */
-export function createCodecWorker(workerFilename: string): Worker {
+export function createCodecWorker(
+  workerFilename: string,
+  options?: CreateWorkerOptions
+): Worker {
   // Ensure filename has correct format
   const normalizedName = workerFilename.endsWith('.js')
     ? workerFilename
@@ -33,6 +40,50 @@ export function createCodecWorker(workerFilename: string): Worker {
     'webp.worker.js': {
       package: '@squoosh-kit/webp',
       specifier: 'webp.worker.js',
+    },
+    'avif.worker.js': {
+      package: '@squoosh-kit/avif',
+      specifier: 'avif.worker.js',
+    },
+    'mozjpeg.worker.js': {
+      package: '@squoosh-kit/mozjpeg',
+      specifier: 'mozjpeg.worker.js',
+    },
+    'jxl.worker.js': {
+      package: '@squoosh-kit/jxl',
+      specifier: 'jxl.worker.js',
+    },
+    'oxipng.worker.js': {
+      package: '@squoosh-kit/oxipng',
+      specifier: 'oxipng.worker.js',
+    },
+    'png.worker.js': {
+      package: '@squoosh-kit/png',
+      specifier: 'png.worker.js',
+    },
+    'imagequant.worker.js': {
+      package: '@squoosh-kit/imagequant',
+      specifier: 'imagequant.worker.js',
+    },
+    'qoi.worker.js': {
+      package: '@squoosh-kit/qoi',
+      specifier: 'qoi.worker.js',
+    },
+    'wp2.worker.js': {
+      package: '@squoosh-kit/wp2',
+      specifier: 'wp2.worker.js',
+    },
+    'hqx.worker.js': {
+      package: '@squoosh-kit/hqx',
+      specifier: 'hqx.worker.js',
+    },
+    'rotate.worker.js': {
+      package: '@squoosh-kit/rotate',
+      specifier: 'rotate.worker.js',
+    },
+    'visdif.worker.js': {
+      package: '@squoosh-kit/visdif',
+      specifier: 'visdif.worker.js',
     },
   };
 
@@ -50,6 +101,48 @@ export function createCodecWorker(workerFilename: string): Worker {
       const packageName = workerConfig.package.split('/')[1]; // Extract 'resize' or 'webp'
       const workerFile = normalizedName.replace('.js', '.browser.mjs');
 
+      console.log(
+        `[worker-helper] In browser environment. Trying to create worker:`
+      );
+      console.log(`[worker-helper]   - Package Name: ${packageName}`);
+      console.log(`[worker-helper]   - Worker File: ${workerFile}`);
+
+      // If a custom asset path is provided, use it directly
+      if (options?.assetPath) {
+        // Normalize the asset path - ensure it starts with / and ends without /
+        let normalizedAssetPath = options.assetPath;
+        if (!normalizedAssetPath.startsWith('/')) {
+          normalizedAssetPath = '/' + normalizedAssetPath;
+        }
+        if (normalizedAssetPath.endsWith('/')) {
+          normalizedAssetPath = normalizedAssetPath.slice(0, -1);
+        }
+
+        // Construct absolute URL: {origin}{assetPath}/{package}/{workerFile}
+        const workerPath = `${normalizedAssetPath}/${packageName}/${workerFile}`;
+        const workerUrl = new URL(workerPath, window.location.origin).href;
+
+        console.log(
+          `[worker-helper] Using provided assetPath. Full Worker URL: ${workerUrl}`
+        );
+        try {
+          const worker = new Worker(workerUrl, { type: 'module' });
+          console.log(
+            `[worker-helper] Successfully created worker with assetPath: ${workerUrl}`
+          );
+          return worker;
+        } catch (e) {
+          console.error(
+            `[worker-helper] Failed to load worker from assetPath URL: ${workerUrl}`,
+            e
+          );
+          throw new Error(
+            `Worker failed to load from ${workerUrl}: ${e instanceof Error ? e.message : String(e)}`,
+            { cause: e }
+          );
+        }
+      }
+
       // Try multiple path strategies to support both:
       // 1. Monorepo development structure: ../../{package}/dist/{workerFile}
       // 2. npm installed structure: ../../../{package}/dist/{workerFile}
@@ -65,12 +158,25 @@ export function createCodecWorker(workerFilename: string): Worker {
       let lastError: Error | null = null;
 
       for (const relPath of pathStrategies) {
+        console.log('relPath:', relPath);
+        console.log('import.meta.url:', import.meta.url);
         try {
           const workerUrl = new URL(relPath, import.meta.url);
-          return new Worker(workerUrl, {
+          console.log(
+            `[worker-helper] Trying path strategy. Full Worker URL: ${workerUrl.href}`
+          );
+          const worker = new Worker(workerUrl, {
             type: 'module',
           });
+          console.log(
+            `[worker-helper] Successfully created worker with URL: ${workerUrl.href}`
+          );
+          return worker;
         } catch (error) {
+          console.warn(
+            `[worker-helper] Path strategy failed for ${relPath}:`,
+            error
+          );
           lastError = error instanceof Error ? error : new Error(String(error));
           // Continue to next strategy
         }
@@ -78,6 +184,7 @@ export function createCodecWorker(workerFilename: string): Worker {
 
       // If all strategies failed, throw the last error
       if (lastError) {
+        console.error('[worker-helper] All path strategies failed.', lastError);
         throw lastError;
       }
       throw new Error(
@@ -88,20 +195,23 @@ export function createCodecWorker(workerFilename: string): Worker {
     // Fallbacks for monorepo/dev without build artifacts
     const platformExt = isBun() ? '.bun.js' : '.node.mjs';
     const baseName = normalizedName.replace('.js', '');
+    const pkgName = workerConfig.package.split('/')[1]; // e.g. 'avif', 'webp', 'resize'
 
     // 1) Try TypeScript source first (Bun can transpile TS, works in dev)
-    const srcRelPath = workerConfig.package.includes('resize')
-      ? `../../resize/src/${baseName}.ts`
-      : `../../webp/src/${baseName}.ts`;
+    const srcRelPath = `../../${pkgName}/src/${baseName}.ts`;
+
+    console.log('srcRelPath:', srcRelPath);
+    console.log('import.meta.url:', import.meta.url);
     try {
       return new Worker(new URL(srcRelPath, import.meta.url), {
         type: 'module',
       });
     } catch {
       // 2) Try dist output (if already built)
-      const distRelPath = workerConfig.package.includes('resize')
-        ? `../../resize/dist/${baseName}.${platformExt.slice(1)}`
-        : `../../webp/dist/${baseName}.${platformExt.slice(1)}`;
+      const distRelPath = `../../${pkgName}/dist/${baseName}.${platformExt.slice(1)}`;
+
+      console.log('distRelPath:', distRelPath);
+      console.log('import.meta.url:', import.meta.url);
       try {
         return new Worker(new URL(distRelPath, import.meta.url), {
           type: 'module',
@@ -113,6 +223,7 @@ export function createCodecWorker(workerFilename: string): Worker {
             const resolved = import.meta.resolve(
               `${workerConfig.package}/${workerConfig.specifier}`
             );
+            console.log('resolved:', resolved);
             return new Worker(resolved, { type: 'module' });
           } catch {
             // Continue to error below
@@ -132,7 +243,8 @@ export function createCodecWorker(workerFilename: string): Worker {
     throw new Error(
       `Failed to create worker from ${normalizedName}: ${errorMessage}. ` +
         `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed. ` +
-        `If you're using Vite, ensure the worker files are not being optimized as dependencies.`
+        `If you're using Vite, ensure the worker files are not being optimized as dependencies.`,
+      { cause: error }
     );
   }
 }
@@ -150,6 +262,7 @@ export function createCodecWorker(workerFilename: string): Worker {
  */
 export function createReadyWorker(
   workerFilename: string,
+  options?: CreateWorkerOptions,
   timeoutMs: number = 10000
 ): Promise<Worker> {
   return new Promise((resolve, reject) => {
@@ -163,7 +276,7 @@ export function createReadyWorker(
 
     let worker: Worker;
     try {
-      worker = createCodecWorker(workerFilename);
+      worker = createCodecWorker(workerFilename, options);
     } catch (error) {
       clearTimeout(timeout);
       reject(error);

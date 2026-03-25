@@ -10,121 +10,64 @@ import path from 'path';
 const __dirname = import.meta.dir;
 const projectRoot = path.resolve(__dirname, '../../');
 
+// Define a mapping from URL prefixes to package directories
+const packageMappings = {
+  '/dist/': path.join(projectRoot, 'packages/core/dist'),
+  '/webp/': path.join(projectRoot, 'packages/webp'),
+  '/resize/': path.join(projectRoot, 'packages/resize'),
+};
+
 const server = Bun.serve({
   port: 8000,
   async fetch(req) {
     const url = new URL(req.url);
-
-    // Serve static files from dist/ directory as root
     let filePath = url.pathname;
+    let fileFound = false;
 
     // Default to browser demo for root path
     if (filePath === '/') {
-      filePath = 'index.html';
+      filePath = path.join(__dirname, 'index.html');
+      fileFound = true;
+    } else {
+      for (const prefix in packageMappings) {
+        if (filePath.startsWith(prefix)) {
+          const packagePath =
+            packageMappings[prefix as keyof typeof packageMappings];
+          const filename = filePath.substring(prefix.length);
+          const potentialFilePath = path.join(packagePath, filename);
+
+          // Check if the file exists at the constructed path
+          if (await Bun.file(potentialFilePath).exists()) {
+            filePath = potentialFilePath;
+            fileFound = true;
+            break;
+          }
+
+          // Fallback for wasm files in dist/wasm subdirectory
+          const wasmFilePath = path.join(packagePath, 'dist/wasm', filename);
+          if (
+            filename.endsWith('.wasm') &&
+            (await Bun.file(wasmFilePath).exists())
+          ) {
+            filePath = wasmFilePath;
+            fileFound = true;
+            break;
+          }
+        }
+      }
     }
 
-    // Map paths to serve from the correct package directories
-    if (filePath.startsWith('/dist/features/webp/')) {
-      console.log(`/dist/features/webp/: ${filePath}`);
-      const filename = filePath.replace('/dist/features/webp/', '');
-      filePath = path.join(projectRoot, 'packages/webp/dist', filename);
-    } else if (filePath.startsWith('/dist/features/resize/')) {
-      console.log(`/dist/features/resize/: ${filePath}`);
-      const filename = filePath.replace('/dist/features/resize/', '');
-      filePath = path.join(projectRoot, 'packages/resize/dist', filename);
-    } else if (filePath.startsWith('/webp/dist/')) {
-      console.log(`/webp/dist/: ${filePath}`);
-      const filename = filePath.replace('/webp/dist/', '');
-      filePath = path.join(projectRoot, 'packages/webp/dist', filename);
-    } else if (filePath.startsWith('/resize/dist/')) {
-      console.log(`/resize/dist/: ${filePath}`);
-      const filename = filePath.replace('/resize/dist/', '');
-      filePath = path.join(projectRoot, 'packages/resize/dist', filename);
-    } else if (filePath.startsWith('/dist/features/wasm/')) {
-      console.log(`/dist/features/wasm/: ${filePath}`);
-      const filename = filePath.replace('/dist/features/wasm/', '');
-      // Route to the correct package based on filename
-      // Handle subdirectories like webp/webp_enc.wasm or webp-dec/webp_dec.wasm
-      if (filename.includes('resize')) {
-        filePath = path.join(
-          projectRoot,
-          'packages/resize/dist/wasm',
-          filename
-        );
-      } else if (
-        filename.startsWith('webp/') ||
-        filename.startsWith('webp-dec/')
-      ) {
-        filePath = path.join(projectRoot, 'packages/webp/dist/wasm', filename);
-      } else if (
-        filename.includes('webp') ||
-        filename.includes('enc') ||
-        filename.includes('dec')
-      ) {
-        filePath = path.join(projectRoot, 'packages/webp/dist/wasm', filename);
-      } else {
-        // Default to resize if unclear
-        filePath = path.join(
-          projectRoot,
-          'packages/resize/dist/wasm',
-          filename
-        );
+    if (!fileFound) {
+      // Handle files in the app's root directory
+      const localPath = path.join(__dirname, filePath);
+      if (await Bun.file(localPath).exists()) {
+        filePath = localPath;
       }
-    } else if (filePath.startsWith('/dist/wasm/')) {
-      console.log(`/dist/wasm/: ${filePath}`);
-      const filename = filePath.replace('/dist/wasm/', '');
-      // Route to the correct package based on filename for client mode WASM loading
-      if (filename.includes('resize')) {
-        filePath = path.join(
-          projectRoot,
-          'packages/resize/dist/wasm',
-          filename
-        );
-      } else if (
-        filename.startsWith('webp/') ||
-        filename.startsWith('webp-dec/')
-      ) {
-        filePath = path.join(projectRoot, 'packages/webp/dist/wasm', filename);
-      } else if (
-        filename.includes('webp') ||
-        filename.includes('enc') ||
-        filename.includes('dec')
-      ) {
-        filePath = path.join(projectRoot, 'packages/webp/dist/wasm', filename);
-      } else {
-        // Default to resize if unclear
-        filePath = path.join(
-          projectRoot,
-          'packages/resize/dist/wasm',
-          filename
-        );
-      }
-    } else if (filePath.startsWith('/dist/')) {
-      console.log(`/dist/: ${filePath}`);
-      const filename = filePath.replace('/dist/', '');
-      // Map index.js to index.browser.mjs for browser environments
-      const resolvedFilename =
-        filename === 'index.js' ? 'index.browser.mjs' : filename;
-      filePath = path.join(projectRoot, 'packages/core/dist', resolvedFilename);
-    } else if (filePath.startsWith('/wasm/')) {
-      const filename = filePath;
-      filePath = path.join(projectRoot, 'packages/core/dist', filename);
-    } else if (filePath.startsWith('/features/')) {
-      const filename = filePath;
-      filePath = path.join(projectRoot, 'packages/core/dist', filename);
-    } else if (filePath.startsWith('/examples/')) {
-      // Keep examples as-is for the HTML demo
-      filePath = path.join(__dirname, filePath);
-    } else if (filePath !== 'index.html' && !filePath.endsWith('.ico')) {
-      // For any other paths, assume they're in core package dist/
-      const filename = filePath;
-      filePath = path.join(projectRoot, 'packages/core/dist', filename);
-    } else if (filePath.endsWith('.ico')) {
-      // Return a simple 204 No Content for favicon to avoid 404 spam
+    }
+
+    // Return a simple 204 No Content for favicon to avoid 404 spam
+    if (url.pathname.endsWith('.ico')) {
       return new Response(null, { status: 204 });
-    } else {
-      // Handle index.html and other files in app root
-      filePath = path.join(__dirname, filePath);
     }
 
     try {

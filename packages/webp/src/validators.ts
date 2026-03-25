@@ -24,7 +24,7 @@ export function validateWebpOptions(
       throw new TypeError('quality must be a number');
     }
 
-    if (!Number.isInteger(quality)) {
+    if (!Number.isFinite(quality) || !Number.isInteger(quality)) {
       throw new RangeError(
         'quality must be an integer in the range 0-100, got floating point'
       );

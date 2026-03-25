@@ -1,8 +1,9 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 
 /**
- * Version Sync Script for Squoosh Kit
+ * Version Sync Script for Squoosh-Kit
  *
  * This script automatically bumps and synchronizes version numbers across all packages
  * in the monorepo, following semantic versioning principles.
@@ -33,7 +34,7 @@ import { join } from 'path';
  */
 
 const WORKSPACE_ROOT = import.meta.dir + '/..';
-const PACKAGES = ['core', 'resize', 'runtime', 'webp'];
+const PACKAGES = ['core', 'resize', 'runtime', 'webp', 'vite-plugin'];
 
 type BumpType = 'major' | 'minor' | 'patch';
 
@@ -89,7 +90,42 @@ function getCurrentVersion(): string {
   return json.version;
 }
 
+function isWorkingTreeClean(): boolean {
+  try {
+    const result = execSync('git status --porcelain', { encoding: 'utf-8' });
+    return result.trim() === '';
+  } catch {
+    return false;
+  }
+}
+
+function tagExists(tag: string): boolean {
+  try {
+    execSync(`git rev-parse refs/tags/${tag}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function syncVersions(newVersion: string): void {
+  // Guard: clean working tree
+  if (!isWorkingTreeClean()) {
+    console.error(
+      '❌ Working tree is not clean. Commit or stash your changes before bumping the version.'
+    );
+    process.exit(1);
+  }
+
+  // Guard: tag must not already exist
+  const tag = `v${newVersion}`;
+  if (tagExists(tag)) {
+    console.error(
+      `❌ Tag ${tag} already exists. Choose a different version or delete the existing tag first.`
+    );
+    process.exit(1);
+  }
+
   console.log(`\nSyncing version to ${newVersion}...\n`);
 
   const rootPackageJsonPath = join(WORKSPACE_ROOT, 'package.json');
@@ -106,6 +142,17 @@ function syncVersions(newVersion: string): void {
   }
 
   console.log(`\n✨ All versions synced to ${newVersion}`);
+
+  // Stage only the specific files we modified — never git add -A
+  execSync(`git add package.json`);
+  for (const pkg of PACKAGES) {
+    execSync(`git add packages/${pkg}/package.json`);
+  }
+
+  execSync(`git commit -m "chore: release ${tag}"`);
+  execSync(`git tag ${tag}`);
+  console.log(`\n🏷️  Created commit and tag ${tag}`);
+  console.log('Run: git push --follow-tags');
 }
 
 function main(): void {
@@ -114,7 +161,7 @@ function main(): void {
 
   if (!command || command === '--help' || command === '-h') {
     console.log(`
-Version Sync Script for Squoosh Kit
+Version Sync Script for Squoosh-Kit
 
 Usage:
   bun run scripts/sync-version.ts <command>

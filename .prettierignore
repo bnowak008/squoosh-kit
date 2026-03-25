@@ -7,3 +7,6 @@ bun.lock
 .git
 .github
 .squoosh-temp
+public/
+.cursor/
+.claude/

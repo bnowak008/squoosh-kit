@@ -3,7 +3,7 @@
  */
 
 import type { ImageInput } from '@squoosh-kit/runtime';
-import { createBridge } from './bridge';
+import { createBridge, type BridgeOptions } from './bridge';
 import type { ResizeOptions } from './types';
 
 export type { ImageInput, ResizeOptions };
@@ -76,9 +76,10 @@ export async function resize(
  * @returns A function that resizes an image with optional AbortSignal.
  */
 export function createResizer(
-  mode: 'worker' | 'client' = 'worker'
+  mode: 'worker' | 'client' = 'worker',
+  options?: BridgeOptions
 ): ResizerFactory {
-  const bridge = createBridge(mode);
+  const bridge = createBridge(mode, options);
 
   return Object.assign(
     (imageData: ImageInput, options: ResizeOptions, signal?: AbortSignal) => {

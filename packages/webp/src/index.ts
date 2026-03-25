@@ -3,12 +3,12 @@
  */
 
 import type { ImageInput } from '@squoosh-kit/runtime';
-import { createBridge } from './bridge';
+import { createBridge, type BridgeOptions } from './bridge';
 import type { EncodeInputOptions } from './types';
 
 export type { ImageInput, EncodeInputOptions };
 
-// Global bridge instance for reuse
+// Global bridge instance for encode reuse
 let globalClientBridge: ReturnType<typeof createBridge> | null = null;
 
 /**
@@ -31,6 +31,20 @@ export type WebpEncoderFactory = ((
    * } finally {
    *   await encoder.terminate();
    * }
+   */
+  terminate(): Promise<void>;
+};
+
+/**
+ * A WebP image decoder that can be reused for multiple operations.
+ * Can be terminated to clean up associated resources (especially workers).
+ */
+export type WebpDecoderFactory = ((
+  data: BufferSource,
+  signal?: AbortSignal
+) => Promise<ImageData>) & {
+  /**
+   * Terminates the decoder and cleans up resources.
    */
   terminate(): Promise<void>;
 };
@@ -70,6 +84,24 @@ export async function encode(
 }
 
 /**
+ * Decodes a WebP image to raw ImageData. Uses worker mode for UI responsiveness.
+ *
+ * @param data - The WebP data to decode.
+ * @param signal - (Optional) AbortSignal to cancel the decoding operation.
+ * @returns A Promise resolving to an ImageData object with the decoded pixel data.
+ */
+export async function decode(
+  data: BufferSource,
+  signal?: AbortSignal
+): Promise<ImageData> {
+  if (!globalClientBridge) {
+    globalClientBridge = createBridge('worker');
+  }
+
+  return globalClientBridge.decode(data, signal);
+}
+
+/**
  * Creates a reusable WebP encoder function for a specific execution mode.
  * This is useful for processing multiple images without the overhead of
  * creating a new worker or client instance each time.
@@ -78,9 +110,10 @@ export async function encode(
  * @returns A function that encodes an image to WebP format with optional AbortSignal.
  */
 export function createWebpEncoder(
-  mode: 'worker' | 'client' = 'worker'
+  mode: 'worker' | 'client' = 'worker',
+  options?: BridgeOptions
 ): WebpEncoderFactory {
-  const bridge = createBridge(mode);
+  const bridge = createBridge(mode, options);
 
   return Object.assign(
     (
@@ -89,6 +122,30 @@ export function createWebpEncoder(
       signal?: AbortSignal
     ) => {
       return bridge.encode(imageData, options, signal);
+    },
+    {
+      terminate: async () => {
+        await bridge.terminate();
+      },
+    }
+  );
+}
+
+/**
+ * Creates a reusable WebP decoder function for a specific execution mode.
+ *
+ * @param mode - The execution mode, either 'worker' or 'client'.
+ * @returns A function that decodes WebP data to ImageData with optional AbortSignal.
+ */
+export function createWebpDecoder(
+  mode: 'worker' | 'client' = 'worker',
+  options?: BridgeOptions
+): WebpDecoderFactory {
+  const bridge = createBridge(mode, options);
+
+  return Object.assign(
+    (data: BufferSource, signal?: AbortSignal) => {
+      return bridge.decode(data, signal);
     },
     {
       terminate: async () => {

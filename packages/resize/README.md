@@ -2,14 +2,14 @@
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fresize.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fresize)
 [![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![License: MIT](https://img.shields.io/badge/license-Apache%202-blue)](https://opensource.org/license/apache-2-0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-![Squoosh Kit](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)
+![Squoosh-Kit](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)
 
-## Squoosh Kit
+## Squoosh-Kit
 
-Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package (`@squoosh-kit/resize`) is one of those modules.
+Squoosh-Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package (`@squoosh-kit/resize`) is one of those modules.
 
 **Directly from the Source**
 We don't modify the core resize codec. The WebAssembly (`.wasm`) binary is taken directly from the official Squoosh repository builds. This means you get the exact same performance, quality, and reliability you'd expect from Squoosh.
@@ -83,8 +83,8 @@ Internal implementation details (such as `resizeClient`) are not part of the pub
 Control the quality/speed trade-off with the `method` option:
 
 ```typescript
-// Balanced quality and speed (default)
-const balanced = await resize(imageData, { width: 800, method: 'mitchell' });
+// Highest quality (default)
+const balanced = await resize(imageData, { width: 800, method: 'lanczos3' });
 
 // Fast for real-time preview
 const fast = await resize(imageData, { width: 800, method: 'triangular' });
@@ -99,8 +99,8 @@ All methods are provided by the Squoosh WASM codec:
 
 - **triangular** (typ_idx=0): Fastest, lowest quality. Good for real-time previews and large-scale batch processing.
 - **catrom** (typ_idx=1): Medium quality and speed. Good general-purpose option.
-- **mitchell** (typ_idx=2, default): Balanced quality and performance. Recommended for most use cases.
-- **lanczos3** (typ_idx=3): Highest quality, slowest. Use for production output where quality is paramount.
+- **mitchell** (typ_idx=2): Balanced quality and performance. Good general-purpose option.
+- **lanczos3** (typ_idx=3, default): Highest quality, slowest. Use for production output where quality is paramount.
 
 ### Advanced Options
 
@@ -191,6 +191,8 @@ const processedImage = await resize(imageData, {
 ### `resize(imageData, options, signal?)`
 
 The main resizing function. Smart defaults make it easy to use.
+
+**Note**: `resize()` uses a global singleton worker that is never automatically terminated. For long-running applications where worker cleanup is important, use `createResizer()` instead so you can call `.terminate()` when done.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - `ResizeOptions` for dimensions and quality
@@ -427,7 +429,7 @@ Control the quality and behavior of resizing:
 type ResizeOptions = {
   width?: number; // Target width (aspect ratio maintained if only width/height set)
   height?: number; // Target height (aspect ratio maintained if only width/height set)
-  method?: 'triangular' | 'catrom' | 'mitchell' | 'lanczos3'; // Resize algorithm (default: 'mitchell')
+  method?: 'triangular' | 'catrom' | 'mitchell' | 'lanczos3'; // Resize algorithm (default: 'lanczos3')
   premultiply?: boolean; // Premultiply alpha channel (default: false)
   linearRGB?: boolean; // Use linear RGB color space (default: false)
 };
@@ -441,7 +443,7 @@ All options map directly to the Squoosh WASM resize function:
 | ------------- | ---------------------- | ---------------------------------------------------- | --------------- | -------------------------------------------------------- |
 | `width`       | output_width           | number?                                              | original width  | Target width (aspect ratio maintained if height omitted) |
 | `height`      | output_height          | number?                                              | original height | Target height (aspect ratio maintained if width omitted) |
-| `method`      | typ_idx                | 'triangular' \| 'catrom' \| 'mitchell' \| 'lanczos3' | 'mitchell'      | Resize algorithm selection                               |
+| `method`      | typ_idx                | 'triangular' \| 'catrom' \| 'mitchell' \| 'lanczos3' | 'lanczos3'      | Resize algorithm selection                               |
 | `premultiply` | premultiply            | boolean?                                             | false           | Pre-multiply alpha channel before resizing               |
 | `linearRGB`   | color_space_conversion | boolean?                                             | false           | Use linear RGB color space instead of sRGB               |
 

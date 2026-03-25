@@ -1,11 +1,11 @@
 {
   "name": "squoosh-kit",
-  "version": "0.0.26",
+  "version": "0.1.18",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
   "author": "Brent Nowak <bnowak008@gmail.com>",
-  "license": "MIT",
+  "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bnowak008/squoosh-kit.git"
@@ -36,22 +36,27 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/example' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun --filter '{@squoosh-kit/webp,@squoosh-kit/resize,@squoosh-kit/mozjpeg,@squoosh-kit/avif,@squoosh-kit/jxl,@squoosh-kit/oxipng,@squoosh-kit/imagequant,@squoosh-kit/png,@squoosh-kit/qoi,@squoosh-kit/wp2,@squoosh-kit/hqx,@squoosh-kit/rotate,@squoosh-kit/visdif,@squoosh-kit/vite-plugin}' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/squoosh' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "tsc --noEmit",
-    "clean": "bun run --filter \"@squoosh-kit/*\" clean:local && rm -rf node_modules .bun/install/cache bun.lockb bun.lock",
+    "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'dev-dist' -type d -prune -exec rm -rf '{}' + && find . -name 'bundle' -type d -prune -exec rm -rf '{}' + && find . -name 'tsconfig.tsbuildinfo' -type f -delete && find . -name 'bun.lockb' -type f -delete  && find . -name 'bun.lock' -type f -delete",
     "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
-    "release": "bun run release:core --dry-run && bun run release:runtime --dry-run && bun run release:resize --dry-run && bun run release:webp --dry-run",
-    "release:core": "cd packages/core && bun publish",
-    "release:resize": "cd packages/resize && bun publish",
-    "release:webp": "cd packages/webp && bun publish",
-    "release:runtime": "cd packages/runtime && bun publish",
-    "release:publish": "bun run release:core && bun run release:runtime && bun run release:resize && bun run release:webp",
+    "validate:artifacts": "bun run scripts/validate-artifacts.ts",
+    "quick-release": "bun run clean && bun i && bun run format && bun run test && bun run ci:build && bun run validate:artifacts && bun run validate && bun run release",
+    "quick-release:publish": "bun run quick-release && bun run version:patch && bun run release:publish",
+    "release": "bun run release:core --dry-run && bun run release:runtime --dry-run && bun run release:resize --dry-run && bun run release:webp --dry-run && bun run release:vite-plugin --dry-run",
+    "release:core": "cd packages/core && bun publish --access public",
+    "release:resize": "cd packages/resize && bun publish --access public",
+    "release:webp": "cd packages/webp && bun publish --access public",
+    "release:vite-plugin": "cd packages/vite-plugin && bun publish --access public",
+    "release:runtime": "cd packages/runtime && bun publish --access public",
+    "release:publish": "bun run release:runtime && bun run release:webp && bun run release:resize && bun run release:core && bun run release:vite-plugin",
+    "prepare": "lefthook install",
     "sync-codecs": "bun run scripts/sync-squoosh-codecs.ts",
     "sync-version": "bun run scripts/sync-version.ts",
     "version:current": "bun run scripts/sync-version.ts current",
@@ -60,18 +65,23 @@
     "version:patch": "bun run scripts/sync-version.ts patch"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.38.0",
+    "@eslint/js": "^10.0.1",
     "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "eslint": "^9.38.0",
-    "globals": "^16.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
     "prettier": "^3.2.5",
+    "lefthook": "^1.11.0",
     "typescript": "^5.6.3"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "resolutions": {
+    "vite": "^7.3.1",
+    "flatted": "^3.4.2",
+    "rollup": "^4.59.0"
+  }
 }

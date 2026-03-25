@@ -39,28 +39,21 @@ async function init(): Promise<void> {
 
   initPromise = (async () => {
     try {
-      // Load WASM binary with robust fallback strategies
-      // Try multiple paths to support both development (../wasm) and npm installed (./wasm) scenarios
-      let wasmBuffer: ArrayBuffer | null = null;
-      const pathsToTry = [
-        new URL(
-          /* @vite-ignore */ './wasm/squoosh_resize_bg.wasm',
-          import.meta.url
-        ).href,
-        new URL(
-          /* @vite-ignore */ '../wasm/squoosh_resize_bg.wasm',
-          import.meta.url
-        ).href,
-      ];
+      // Use the worker's own import.meta.url as the base for resolving WASM paths
+      const workerBaseUrl = new URL('.', import.meta.url);
+      const isSource = import.meta.url.includes('/src/');
+      const wasmPathsToTry = isSource
+        ? ['../wasm/squoosh_resize_bg.wasm', './wasm/squoosh_resize_bg.wasm']
+        : ['./wasm/squoosh_resize_bg.wasm', '../wasm/squoosh_resize_bg.wasm'];
 
+      let wasmBuffer: ArrayBuffer | null = null;
       let lastError: Error | null = null;
-      for (const path of pathsToTry) {
+      for (const path of wasmPathsToTry) {
         try {
-          wasmBuffer = await loadWasmBinary(path);
+          wasmBuffer = await loadWasmBinary(path, workerBaseUrl);
           break;
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
-          // Continue to next path
         }
       }
 
@@ -91,7 +84,8 @@ async function init(): Promise<void> {
             await squoosh_resize_module.default(wasmBuffer);
           } catch (retryError) {
             throw new Error(
-              `WASM module initialization failed even with polyfill: ${retryError instanceof Error ? retryError.message : String(retryError)}`
+              `WASM module initialization failed even with polyfill: ${retryError instanceof Error ? retryError.message : String(retryError)}`,
+              { cause: retryError }
             );
           }
         } else {
@@ -103,7 +97,8 @@ async function init(): Promise<void> {
     } catch (error) {
       initPromise = null;
       throw new Error(
-        `Failed to initialize resize WASM module: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to initialize resize WASM module: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error }
       );
     }
   })();
@@ -213,6 +208,7 @@ if (typeof self !== 'undefined') {
 
     // Handle worker ping for initialization
     if (data?.type === 'worker:ping') {
+      await init();
       self.postMessage({ type: 'worker:ready' });
       return;
     }
@@ -233,10 +229,11 @@ if (typeof self !== 'undefined') {
 
       response.ok = true;
       response.data = resultImage;
-
-      // Post the response without transferring - the ImageInput with data will be cloned
-      // Transfer is only used for incoming requests (image.data buffer from client)
-      self.postMessage(response);
+      const transferBuffer =
+        resultImage.data.buffer instanceof ArrayBuffer
+          ? resultImage.data.buffer
+          : resultImage.data.slice().buffer;
+      self.postMessage(response, [transferBuffer]);
     } catch (error) {
       response.error = error instanceof Error ? error.message : String(error);
       self.postMessage(response);

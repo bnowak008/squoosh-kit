@@ -1,0 +1,52 @@
+{
+  "name": "@squoosh-kit/oxipng",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "OxiPNG codec for squoosh-kit, providing PNG optimization functionality.",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT AND Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/oxipng"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/oxipng#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.mjs",
+      "bun": "./dist/index.bun.js",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs"
+    },
+    "./oxipng.worker.js": {
+      "types": "./dist/oxipng.worker.d.ts",
+      "browser": "./dist/oxipng.worker.browser.mjs",
+      "bun": "./dist/oxipng.worker.bun.js",
+      "import": "./dist/oxipng.worker.node.mjs",
+      "require": "./dist/oxipng.worker.node.cjs"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun run build.ts",
+    "clean:local": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
+    "prepack": "bun run build && bun test",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@squoosh-kit/runtime": "workspace:*"
+  }
+}

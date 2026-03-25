@@ -1,0 +1,43 @@
+{
+  "name": "@squoosh-kit/vite-plugin",
+  "version": "0.1.18",
+  "type": "module",
+  "description": "Vite plugin for Squoosh-Kit - handles asset copying and WASM configuration",
+  "author": "Bartosz Nowak <bnowak008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnowak008/squoosh-kit.git",
+    "directory": "packages/vite-plugin"
+  },
+  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/vite-plugin#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bunx tsc -p . && bun build ./src/index.ts --outdir dist --format esm --target bun --external vite && bun build ./src/index.ts --outfile dist/index.cjs --format cjs --target bun --external vite && printf 'export default function squooshVitePlugin(squooshKitRoot: string): { name: string };\\n' > dist/index.d.ts",
+    "clean": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  }
+}

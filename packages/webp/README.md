@@ -2,14 +2,14 @@
 
 [![npm version](https://badge.fury.io/js/%40squoosh-kit%2Fwebp.svg)](https://badge.fury.io/js/%40squoosh-kit%2Fwebp)
 [![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![License: MIT](https://img.shields.io/badge/license-Apache%202-blue)](https://opensource.org/license/apache-2-0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-![Squoosh Kit](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)
+![Squoosh-Kit](https://github.com/bnowak008/squoosh-kit/blob/main/squoosh-kit-banner.webp)
 
-## Squoosh Kit
+## Squoosh-Kit
 
-Squoosh Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package (`@squoosh-kit/webp`) is one of those modules.
+Squoosh-Kit is built on a simple idea: provide a lightweight and modular bridge to the powerful, production-tested codecs from Google's Squoosh project. This package (`@squoosh-kit/webp`) is one of those modules.
 
 **Directly from the Source**
 We don't modify the core WebP codec. The WebAssembly (`.wasm`) binary is taken directly from the official Squoosh repository builds. This means you get the exact same performance, quality, and reliability you'd expect from Squoosh.
@@ -120,6 +120,8 @@ for (const imagePath of imageFiles) {
 ### `encode(imageData, options?, signal?)`
 
 The main encoding function. Handles everything automatically and returns a Promise.
+
+**Note**: `encode()` uses a global singleton worker that is never automatically terminated. For long-running applications where worker cleanup is important, use `createWebpEncoder()` instead so you can call `.terminate()` when done.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - (optional) `WebpOptions` for quality and format settings

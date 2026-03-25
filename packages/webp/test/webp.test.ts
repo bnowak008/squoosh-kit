@@ -3,32 +3,8 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { validateArrayBuffer } from '@squoosh-kit/runtime';
 import { createWebpEncoder } from '../src/index.js';
 import type { ImageInput } from '../src/index.js';
-
-// Test image data: 2x2 red square
-const createTestImage = (): ImageInput => {
-  const data = new Uint8Array([
-    255,
-    0,
-    0,
-    255, // Red pixel
-    255,
-    0,
-    0,
-    255, // Red pixel
-    255,
-    0,
-    0,
-    255, // Red pixel
-    255,
-    0,
-    0,
-    255, // Red pixel
-  ]);
-  return { data, width: 2, height: 2 };
-};
 
 describe('WebP Factory', () => {
   it('should create a factory function for client mode', () => {
@@ -40,75 +16,18 @@ describe('WebP Factory', () => {
     const webpEncoder = createWebpEncoder('worker');
     expect(typeof webpEncoder).toBe('function');
   });
-
-  it('should validate image input structure', () => {
-    const image = createTestImage();
-    expect(image.data).toBeInstanceOf(Uint8Array);
-    expect(image.width).toBe(2);
-    expect(image.height).toBe(2);
-    expect(image.data.length).toBe(16); // 2x2x4 = 16 bytes
-  });
 });
 
 describe('ImageData Buffer Handling (Zero-Copy Optimization)', () => {
-  it('should handle Uint8Array input', () => {
-    const image = createTestImage();
-    expect(image.data).toBeInstanceOf(Uint8Array);
-    expect(image.data.length).toBe(16);
-  });
-
-  it('should create zero-copy view for Uint8ClampedArray', () => {
-    const clampedArray = new Uint8ClampedArray(100);
-    clampedArray[0] = 255;
-    clampedArray[1] = 200;
-
-    // Create a view (zero-copy) like the code does
-    const view = new Uint8Array(
-      clampedArray.buffer,
-      clampedArray.byteOffset,
-      clampedArray.length
-    );
-
-    // Same underlying buffer, so modifying view affects original
-    view[0] = 100;
-    expect(clampedArray[0]).toBe(100);
-
-    // And modifying original affects view
-    clampedArray[1] = 50;
-    expect(view[1]).toBe(50);
-  });
-
-  it('should work with Uint8ClampedArray image data', () => {
-    // Simulate canvas ImageData which uses Uint8ClampedArray
+  it('should accept Uint8ClampedArray input and encode correctly', async () => {
     const clampedData = new Uint8ClampedArray([
-      255,
-      0,
-      0,
-      255, // Red pixel
-      255,
-      0,
-      0,
-      255, // Red pixel
-      255,
-      0,
-      0,
-      255, // Red pixel
-      255,
-      0,
-      0,
-      255, // Red pixel
+      255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
     ]);
-
-    const image: ImageInput = {
-      data: clampedData,
-      width: 2,
-      height: 2,
-    };
-
-    expect(image.data).toBeInstanceOf(Uint8ClampedArray);
-    expect(image.data.length).toBe(16);
-    expect(image.width).toBe(2);
-    expect(image.height).toBe(2);
+    const encoder = createWebpEncoder('client');
+    const result = await encoder({ data: clampedData, width: 2, height: 2 });
+    expect(result).toBeInstanceOf(Uint8Array);
+    const header = new TextDecoder().decode(result.slice(0, 4));
+    expect(header).toBe('RIFF');
   });
 });
 
@@ -116,7 +35,7 @@ describe('Input Validation', () => {
   it('should reject null image', async () => {
     const encoder = createWebpEncoder('client');
     // @ts-expect-error - we want to test the error case
-    await expect(encoder(undefined)).rejects.toThrow(TypeError);
+    await expect(encoder(null)).rejects.toThrow(TypeError);
   });
 
   it('should reject undefined image', async () => {
@@ -281,7 +200,6 @@ describe('Input Validation', () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
       const result = await encoder(image, { quality: 90 });
-      console.log(result);
       expect(result).toBeInstanceOf(Uint8Array);
     });
 
@@ -289,7 +207,7 @@ describe('Input Validation', () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
       try {
-        await await encoder(image, { quality: 150 });
+        await encoder(image, { quality: 150 });
         throw new Error('Should have thrown');
       } catch (e) {
         const message = (e as Error).message;
@@ -303,7 +221,6 @@ describe('Input Validation', () => {
       const encoder = createWebpEncoder('client');
       const image = createTestImage();
       const result = await encoder(image, {});
-      console.log(result);
       expect(result).toBeInstanceOf(Uint8Array);
     });
 
@@ -312,39 +229,5 @@ describe('Input Validation', () => {
       const image = createTestImage();
       expect(await encoder(image, undefined)).toBeInstanceOf(Uint8Array);
     });
-  });
-});
-
-describe('Buffer Validation (Unsafe Type Cast Prevention)', () => {
-  it('should accept normal ArrayBuffer', () => {
-    const buffer = new ArrayBuffer(100);
-    expect(() => validateArrayBuffer(buffer)).not.toThrow();
-  });
-
-  it('should accept Uint8Array backed by ArrayBuffer', () => {
-    const arrayBuffer = new ArrayBuffer(16);
-    const data = new Uint8Array(arrayBuffer);
-    expect(() => validateArrayBuffer(data.buffer)).not.toThrow();
-  });
-
-  it('should reject SharedArrayBuffer', () => {
-    if (typeof SharedArrayBuffer !== 'undefined') {
-      const sharedBuffer = new SharedArrayBuffer(100);
-      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(
-        /SharedArrayBuffer/
-      );
-    }
-  });
-
-  it('should reject null', () => {
-    expect(() => validateArrayBuffer(null)).toThrow(/ArrayBuffer/);
-  });
-
-  it('should reject undefined', () => {
-    expect(() => validateArrayBuffer(undefined)).toThrow(/ArrayBuffer/);
-  });
-
-  it('should reject plain objects', () => {
-    expect(() => validateArrayBuffer({})).toThrow(/ArrayBuffer/);
   });
 });

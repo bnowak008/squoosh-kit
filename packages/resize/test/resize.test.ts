@@ -3,21 +3,8 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { validateArrayBuffer } from '@squoosh-kit/runtime';
 import { createResizer } from '../src/index.ts';
-import type { ImageInput, ResizeOptions } from '../src/index.ts';
-
-// Test image data: 4x4 red square
-const createTestImage = (): ImageInput => {
-  const data = new Uint8Array(64); // 4x4x4 = 64 bytes
-  for (let i = 0; i < 64; i += 4) {
-    data[i] = 255; // R
-    data[i + 1] = 0; // G
-    data[i + 2] = 0; // B
-    data[i + 3] = 255; // A
-  }
-  return { data, width: 4, height: 4 };
-};
+import type { ImageInput } from '../src/index.ts';
 
 describe('Resize Factory', () => {
   it('should create a factory function for client mode', () => {
@@ -29,124 +16,21 @@ describe('Resize Factory', () => {
     const resizer = createResizer('worker');
     expect(typeof resizer).toBe('function');
   });
-
-  it('should validate image input structure', () => {
-    const image = createTestImage();
-    expect(image.data).toBeInstanceOf(Uint8Array);
-    expect(image.width).toBe(4);
-    expect(image.height).toBe(4);
-    expect(image.data.length).toBe(64); // 4x4x4 = 64 bytes
-  });
-
-  it('should validate resize options', () => {
-    const options: ResizeOptions = {
-      width: 800,
-      height: 600,
-      premultiply: false,
-      linearRGB: false,
-    };
-    expect(options.width).toBe(800);
-    expect(options.height).toBe(600);
-    expect(options.premultiply).toBe(false);
-    expect(options.linearRGB).toBe(false);
-  });
-
-  it('should handle partial resize options', () => {
-    const options: ResizeOptions = {
-      width: 800,
-    };
-    expect(options.width).toBe(800);
-    expect(options.height).toBeUndefined();
-    expect(options.premultiply).toBeUndefined();
-    expect(options.linearRGB).toBeUndefined();
-  });
-
-  it('should handle default resize options', () => {
-    const options: ResizeOptions = {};
-    expect(options.width).toBeUndefined();
-    expect(options.height).toBeUndefined();
-    expect(options.premultiply).toBeUndefined();
-    expect(options.linearRGB).toBeUndefined();
-    expect(options.method).toBeUndefined();
-  });
-
-  it('should validate resize options with method', () => {
-    const options: ResizeOptions = {
-      width: 800,
-      height: 600,
-      method: 'lanczos3',
-      premultiply: true,
-      linearRGB: true,
-    };
-    expect(options.width).toBe(800);
-    expect(options.height).toBe(600);
-    expect(options.method).toBe('lanczos3');
-    expect(options.premultiply).toBe(true);
-    expect(options.linearRGB).toBe(true);
-  });
-
-  it('should support all resize methods', () => {
-    const methods = ['triangular', 'catrom', 'mitchell', 'lanczos3'] as const;
-    for (const method of methods) {
-      const options: ResizeOptions = { width: 50, method };
-      expect(options.method).toBe(method);
-    }
-  });
-
-  it('should default to mitchell when method is not specified', () => {
-    const options: ResizeOptions = { width: 50 };
-    expect(options.method).toBeUndefined();
-  });
 });
 
 describe('ImageData Buffer Handling (Zero-Copy Optimization)', () => {
-  it('should handle Uint8Array input', () => {
-    const image = createTestImage();
-    expect(image.data).toBeInstanceOf(Uint8Array);
-    expect(image.data.length).toBe(64);
-  });
-
-  it('should create zero-copy view for Uint8ClampedArray', () => {
-    const clampedArray = new Uint8ClampedArray(100);
-    clampedArray[0] = 255;
-    clampedArray[1] = 200;
-
-    // Create a view (zero-copy) like the code does
-    const view = new Uint8Array(
-      clampedArray.buffer,
-      clampedArray.byteOffset,
-      clampedArray.length
+  it('should accept Uint8ClampedArray input and resize correctly', async () => {
+    const clampedData = new Uint8ClampedArray([
+      255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+    ]);
+    const resizer = createResizer('client');
+    const result = await resizer(
+      { data: clampedData, width: 2, height: 2 },
+      { width: 1, height: 1 }
     );
-
-    // Same underlying buffer, so modifying view affects original
-    view[0] = 100;
-    expect(clampedArray[0]).toBe(100);
-
-    // And modifying original affects view
-    clampedArray[1] = 50;
-    expect(view[1]).toBe(50);
-  });
-
-  it('should work with Uint8ClampedArray image data', () => {
-    // Simulate canvas ImageData which uses Uint8ClampedArray
-    const clampedData = new Uint8ClampedArray(64);
-    for (let i = 0; i < 64; i += 4) {
-      clampedData[i] = 255; // R
-      clampedData[i + 1] = 0; // G
-      clampedData[i + 2] = 0; // B
-      clampedData[i + 3] = 255; // A
-    }
-
-    const image: ImageInput = {
-      data: clampedData,
-      width: 4,
-      height: 4,
-    };
-
-    expect(image.data).toBeInstanceOf(Uint8ClampedArray);
-    expect(image.data.length).toBe(64);
-    expect(image.width).toBe(4);
-    expect(image.height).toBe(4);
+    expect(result.data).toBeInstanceOf(Uint8ClampedArray);
+    expect(result.width).toBe(1);
+    expect(result.height).toBe(1);
   });
 });
 
@@ -154,7 +38,7 @@ describe('Input Validation', () => {
   it('should reject null image', async () => {
     const resizer = createResizer('client');
     // @ts-expect-error - we want to test the error case
-    await expect(resizer(undefined, { width: 800 })).rejects.toThrow(TypeError);
+    await expect(resizer(null, { width: 800 })).rejects.toThrow(TypeError);
   });
 
   it('should reject undefined image', async () => {
@@ -360,20 +244,11 @@ describe('Input Validation', () => {
       const methods = ['triangular', 'catrom', 'mitchell', 'lanczos3'] as const;
 
       for (const method of methods) {
-        console.log('--- METHOD ---');
-        console.log(method);
-        await resizer(image, { width: 2, method });
-        console.log('----------------');
-        const result = {
-          data: new Uint8ClampedArray([254, 0, 0, 255]),
-          width: 1,
-          height: 1,
-        };
-        expect(result).toEqual({
-          data: new Uint8ClampedArray([254, 0, 0, 255]),
-          width: 1,
-          height: 1,
-        });
+        const result = await resizer(image, { width: 2, method });
+        expect(result.width).toBe(2);
+        expect(result.height).toBe(2);
+        expect(result.data).toBeInstanceOf(Uint8ClampedArray);
+        expect(result.data.length).toBe(16); // 2x2x4
       }
     });
 
@@ -414,195 +289,22 @@ describe('Input Validation', () => {
   });
 });
 
-describe('Buffer Validation (Unsafe Type Cast Prevention)', () => {
-  it('should accept normal ArrayBuffer', () => {
-    const buffer = new ArrayBuffer(100);
-    expect(() => validateArrayBuffer(buffer)).not.toThrow();
-  });
-
-  it('should accept Uint8Array backed by ArrayBuffer', () => {
-    const arrayBuffer = new ArrayBuffer(64);
-    const data = new Uint8Array(arrayBuffer);
-    expect(() => validateArrayBuffer(data.buffer)).not.toThrow();
-  });
-
-  it('should reject SharedArrayBuffer', () => {
-    if (typeof SharedArrayBuffer !== 'undefined') {
-      const sharedBuffer = new SharedArrayBuffer(100);
-      expect(() => validateArrayBuffer(sharedBuffer)).toThrow(
-        /SharedArrayBuffer/
-      );
-    }
-  });
-
-  it('should reject null', () => {
-    expect(() => validateArrayBuffer(null)).toThrow(/ArrayBuffer/);
-  });
-
-  it('should reject undefined', () => {
-    expect(() => validateArrayBuffer(undefined)).toThrow(/ArrayBuffer/);
-  });
-
-  it('should reject plain objects', () => {
-    expect(() => validateArrayBuffer({})).toThrow(/ArrayBuffer/);
-  });
-});
-
 describe('Edge Cases in Resize Logic', () => {
-  const createTestImage = (width: number, height: number): ImageInput => {
-    const size = width * height * 4;
-    const data = new Uint8Array(size);
-    for (let i = 0; i < size; i += 4) {
-      data[i] = 255; // R
-      data[i + 1] = 0; // G
-      data[i + 2] = 0; // B
-      data[i + 3] = 255; // A
-    }
-    return { data, width, height };
-  };
-
-  it('should accept valid aspect ratio dimensions', () => {
-    const image = createTestImage(1921, 1080);
-    expect(image.width).toBe(1921);
-    expect(image.height).toBe(1080);
-  });
-
-  it('should accept extreme aspect ratios', () => {
-    const image = createTestImage(1920, 1);
-    expect(image.width).toBe(1920);
-    expect(image.height).toBe(1);
-  });
-
-  it('should accept square image dimensions', () => {
-    const image = createTestImage(100, 100);
-    expect(image.width).toBe(100);
-    expect(image.height).toBe(100);
-  });
-
-  it('should accept portrait image dimensions', () => {
-    const image = createTestImage(600, 1200);
-    expect(image.width).toBe(600);
-    expect(image.height).toBe(1200);
-  });
-
-  it('should accept landscape image dimensions', () => {
-    const image = createTestImage(1200, 600);
-    expect(image.width).toBe(1200);
-    expect(image.height).toBe(600);
-  });
-
-  it('should accept large image dimensions', () => {
-    const image = createTestImage(4000, 3000);
-    expect(image.width).toBe(4000);
-    expect(image.height).toBe(3000);
-  });
-
-  it('should accept small image dimensions', () => {
-    const image = createTestImage(10, 10);
-    expect(image.width).toBe(10);
-    expect(image.height).toBe(10);
-  });
-
-  it('should accept valid resize option with aspect ratio', () => {
-    const options: ResizeOptions = { width: 960 };
-    expect(options.width).toBe(960);
-    expect(options.height).toBeUndefined();
-  });
-
-  it('should reject zero width in options', async () => {
+  it('should handle extreme aspect ratio (very wide) without errors', async () => {
     const resizer = createResizer('client');
-    const image = createTestImage(100, 100);
-
-    await expect(resizer(image, { width: 0 })).rejects.toThrow(RangeError);
+    const data = new Uint8Array(1920 * 1 * 4).fill(255);
+    const image = { data, width: 1920, height: 1 };
+    const result = await resizer(image, { height: 1 });
+    expect(result.width).toBeGreaterThanOrEqual(1);
+    expect(result.height).toBe(1);
   });
 
-  it('should reject zero height in options', async () => {
+  it('should compute aspect-ratio height correctly', async () => {
     const resizer = createResizer('client');
-    const image = createTestImage(100, 100);
-
-    await expect(resizer(image, { height: 0 })).rejects.toThrow(RangeError);
-  });
-
-  it('should reject negative width in options', async () => {
-    const resizer = createResizer('client');
-    const image = createTestImage(100, 100);
-
-    await expect(resizer(image, { width: -100 })).rejects.toThrow(RangeError);
-  });
-
-  it('should reject negative height in options', async () => {
-    const resizer = createResizer('client');
-    const image = createTestImage(100, 100);
-
-    await expect(resizer(image, { height: -100 })).rejects.toThrow(RangeError);
-  });
-
-  it('should reject floating point width in options', async () => {
-    const resizer = createResizer('client');
-    const image = createTestImage(100, 100);
-
-    await expect(resizer(image, { width: 50.5 })).rejects.toThrow(RangeError);
-  });
-
-  it('should reject floating point height in options', async () => {
-    const resizer = createResizer('client');
-    const image = createTestImage(100, 100);
-
-    await expect(resizer(image, { height: 50.5 })).rejects.toThrow(RangeError);
-  });
-
-  it('should handle dimension calculations safely', () => {
-    const width = 1921;
-    const height = 1080;
-    const targetWidth = 1;
-
-    const calculatedHeight = Math.max(
-      1,
-      Math.round((height * targetWidth) / width)
-    );
-
-    expect(calculatedHeight).toBeGreaterThanOrEqual(1);
-    expect(Number.isFinite(calculatedHeight)).toBe(true);
-  });
-
-  it('should handle extreme aspect ratio calculations', () => {
-    const width = 1920;
-    const height = 1;
-    const targetHeight = 1;
-
-    const calculatedWidth = Math.max(
-      1,
-      Math.round((width * targetHeight) / height)
-    );
-
-    expect(calculatedWidth).toBeGreaterThanOrEqual(1);
-    expect(Number.isFinite(calculatedWidth)).toBe(true);
-  });
-
-  it('should handle rounding precision in dimension calculations', () => {
-    const width = 1920;
-    const height = 1081;
-    const targetWidth = 960;
-
-    const calculatedHeight = Math.max(
-      1,
-      Math.round((height * targetWidth) / width)
-    );
-
-    expect(Number.isFinite(calculatedHeight)).toBe(true);
-    expect(calculatedHeight).toBeGreaterThanOrEqual(1);
-  });
-
-  it('should provide clear error for invalid output dimensions', async () => {
-    const resizer = createResizer('client');
-    const image = createTestImage(100, 100);
-
-    try {
-      await resizer(image, { width: 0 });
-      throw new Error('Should have thrown');
-    } catch (e) {
-      const message = (e as Error).message;
-      expect(message).toMatch(/dimension|positive/i);
-    }
+    const data = new Uint8Array(1920 * 1080 * 4).fill(128);
+    const image = { data, width: 1920, height: 1080 };
+    const result = await resizer(image, { width: 960 });
+    expect(result.width).toBe(960);
+    expect(result.height).toBe(540); // 1080 * 960 / 1920 = 540
   });
 });

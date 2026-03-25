@@ -1,6 +1,6 @@
 # Version Sync Script Guide
 
-The `sync-version.ts` script automatically bumps and synchronizes version numbers across all packages in the Squoosh Kit monorepo.
+The `sync-version.ts` script automatically bumps and synchronizes version numbers across all packages in the Squoosh-Kit monorepo.
 
 ## Quick Start
 

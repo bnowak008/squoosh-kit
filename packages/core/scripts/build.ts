@@ -1,10 +1,6 @@
-import { Glob } from 'bun';
-
-const SOURCE_DIR = 'src';
 const OUTPUT_DIR = 'dist';
 
-const glob = new Glob(`${SOURCE_DIR}/**/*.ts`);
-const entrypoints = [...glob.scanSync()];
+const entrypoints = ['src/index.ts'];
 
 try {
   const result = await Bun.build({
@@ -12,7 +8,7 @@ try {
     outdir: OUTPUT_DIR,
     splitting: true,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'bun',
     format: 'esm',
     naming: '[dir]/[name].bun.[ext]',
@@ -32,7 +28,7 @@ try {
     outdir: OUTPUT_DIR,
     splitting: true,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'node',
     format: 'esm',
     naming: '[dir]/[name].node.mjs',
@@ -52,7 +48,7 @@ try {
     outdir: OUTPUT_DIR,
     splitting: true,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'node',
     format: 'cjs',
     naming: '[dir]/[name].node.cjs',
@@ -72,7 +68,7 @@ try {
     outdir: OUTPUT_DIR,
     splitting: true,
     sourcemap: 'external',
-    minify: true,
+    minify: false,
     target: 'browser',
     format: 'esm',
     naming: '[dir]/[name].browser.mjs',
