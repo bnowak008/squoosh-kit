@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/vite-plugin",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Vite plugin for Squoosh-Kit - handles asset copying and WASM configuration",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -10,7 +10,7 @@
     "url": "https://github.com/bnowak008/squoosh-kit.git",
     "directory": "packages/vite-plugin"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/vite-plugin#readme",
+  "homepage": "http://squoosh-kit.dev",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

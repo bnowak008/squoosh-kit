@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/qoi",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "QOI (Quite OK Image) codec for squoosh-kit, providing lossless encoding and decoding.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -10,7 +10,7 @@
     "url": "https://github.com/bnowak008/squoosh-kit.git",
     "directory": "packages/qoi"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/qoi#readme",
+  "homepage": "http://squoosh-kit.dev",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

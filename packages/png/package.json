@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/png",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "PNG codec for squoosh-kit, providing lossless PNG encoding and decoding.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -10,7 +10,7 @@
     "url": "https://github.com/bnowak008/squoosh-kit.git",
     "directory": "packages/png"
   },
-  "homepage": "https://github.com/bnowak008/squoosh-kit/tree/main/packages/png#readme",
+  "homepage": "http://squoosh-kit.dev",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
