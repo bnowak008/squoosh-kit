@@ -38,7 +38,7 @@ jobs:
         run: bun run validate:artifacts
 
       - name: Upload Squoosh site
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: squoosh-pages-dist
           path: apps/squoosh/dist
