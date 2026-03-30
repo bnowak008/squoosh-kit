@@ -52,7 +52,7 @@ jobs:
       contents: read
     steps:
       - name: Download built site
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: squoosh-pages-dist
           path: site
