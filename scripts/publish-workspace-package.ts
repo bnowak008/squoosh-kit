@@ -13,7 +13,7 @@ type PublishClient = 'bun' | 'npm';
 function getPublishClient(): PublishClient {
   const raw = process.env.PUBLISH_CLIENT?.trim().toLowerCase();
   if (raw === undefined || raw.length === 0) {
-    return 'npm';
+    return 'bun';
   }
   if (raw === 'bun' || raw === 'npm') {
     return raw;
