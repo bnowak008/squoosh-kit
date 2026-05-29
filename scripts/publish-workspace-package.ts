@@ -1,24 +1,14 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import {
+  readWorkspacePackageVersions,
+  rewriteWorkspaceProtocolForPublish,
+} from './rewrite-workspace-protocol-for-publish.ts';
 
 function usage(): never {
   console.error(
     'usage: publish-workspace-package.ts <package-dir> [...publish args]'
   );
-  process.exit(1);
-}
-
-type PublishClient = 'bun' | 'npm';
-
-function getPublishClient(): PublishClient {
-  const raw = process.env.PUBLISH_CLIENT?.trim().toLowerCase();
-  if (raw === undefined || raw.length === 0) {
-    return 'bun';
-  }
-  if (raw === 'bun' || raw === 'npm') {
-    return raw;
-  }
-  console.error('PUBLISH_CLIENT must be "bun" or "npm"');
   process.exit(1);
 }
 
@@ -62,6 +52,8 @@ function main(): number {
   const passthrough = process.argv.slice(3);
   const tag = process.env.NPM_PUBLISH_TAG?.trim();
   const pkgRoot = resolve(import.meta.dir, '..', 'packages', pkgDirName);
+  const pkgJsonPath = resolve(pkgRoot, 'package.json');
+  const packagesDir = resolve(import.meta.dir, '..', 'packages');
 
   const skipIfExists = process.env.PUBLISH_SKIP_IF_EXISTS?.trim() !== '0';
   if (skipIfExists) {
@@ -78,13 +70,26 @@ function main(): number {
   }
   args.push(...passthrough);
 
-  const publishClient = getPublishClient();
-  const proc = Bun.spawnSync([publishClient, ...args], {
-    cwd: pkgRoot,
-    stdio: ['inherit', 'inherit', 'inherit'],
-  });
+  const originalBytes = readFileSync(pkgJsonPath);
+  const versions = readWorkspacePackageVersions(packagesDir);
 
-  return proc.exitCode ?? 1;
+  try {
+    const manifest = JSON.parse(originalBytes.toString('utf8')) as Record<
+      string,
+      unknown
+    >;
+    rewriteWorkspaceProtocolForPublish(manifest, versions);
+    writeFileSync(pkgJsonPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const proc = Bun.spawnSync(['npm', ...args], {
+      cwd: pkgRoot,
+      stdio: ['inherit', 'inherit', 'inherit'],
+    });
+
+    return proc.exitCode ?? 1;
+  } finally {
+    writeFileSync(pkgJsonPath, originalBytes);
+  }
 }
 
 process.exit(main());

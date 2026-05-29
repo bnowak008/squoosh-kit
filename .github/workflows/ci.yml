@@ -28,7 +28,7 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile --linker=hoisted
+        run: bun install --linker=hoisted
 
       - name: Type check
         run: bun run check-types
@@ -66,7 +66,7 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile --linker=hoisted
+        run: bun install --linker=hoisted
 
       - name: Security audit
         run: bun audit --audit-level=high

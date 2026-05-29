@@ -1,6 +1,6 @@
 {
   "name": "squoosh-kit",
-  "version": "0.2.5",
+  "version": "0.2.4",
   "type": "module",
   "private": true,
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
@@ -47,8 +47,9 @@
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'dev-dist' -type d -prune -exec rm -rf '{}' + && find . -name 'bundle' -type d -prune -exec rm -rf '{}' + && find . -name 'tsconfig.tsbuildinfo' -type f -delete && find . -name 'bun.lockb' -type f -delete  && find . -name 'bun.lock' -type f -delete",
     "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
     "validate:artifacts": "bun run scripts/validate-artifacts.ts",
+    "validate:publish-manifest": "bun run scripts/verify-publish-manifest.ts",
     "quick-release": "bun run clean && bun i && bun run format && bun run test && bun run ci:build && bun run validate:artifacts && bun run validate && bun run release",
-    "quick-release:publish": "bun run quick-release && bun run version:patch && bun run release:publish",
+    "quick-release:publish": "bun run quick-release && bun run release:publish",
     "release": "bun scripts/publish-workspace-package.ts runtime --dry-run && bun scripts/publish-workspace-package.ts webp --dry-run && bun scripts/publish-workspace-package.ts resize --dry-run && bun scripts/publish-workspace-package.ts avif --dry-run && bun scripts/publish-workspace-package.ts mozjpeg --dry-run && bun scripts/publish-workspace-package.ts jxl --dry-run && bun scripts/publish-workspace-package.ts oxipng --dry-run && bun scripts/publish-workspace-package.ts imagequant --dry-run && bun scripts/publish-workspace-package.ts png --dry-run && bun scripts/publish-workspace-package.ts qoi --dry-run && bun scripts/publish-workspace-package.ts wp2 --dry-run && bun scripts/publish-workspace-package.ts hqx --dry-run && bun scripts/publish-workspace-package.ts rotate --dry-run && bun scripts/publish-workspace-package.ts visdif --dry-run && bun scripts/publish-workspace-package.ts core --dry-run && bun scripts/publish-workspace-package.ts vite-plugin --dry-run",
     "release:core": "bun scripts/publish-workspace-package.ts core",
     "release:resize": "bun scripts/publish-workspace-package.ts resize",

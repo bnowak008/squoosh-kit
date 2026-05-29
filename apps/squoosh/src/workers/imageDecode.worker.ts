@@ -9,7 +9,7 @@ type DecodeSuccess = {
   ok: true;
   width: number;
   height: number;
-  sharedBuffer: SharedArrayBuffer;
+  pixelBuffer: ArrayBuffer;
 };
 
 type DecodeFailure = {
@@ -67,16 +67,16 @@ self.onmessage = async (event: MessageEvent<DecodeRequest>) => {
     ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const sharedBuffer = new SharedArrayBuffer(imageData.data.byteLength);
-    new Uint8ClampedArray(sharedBuffer).set(imageData.data);
+    const pixelBuffer = new ArrayBuffer(imageData.data.byteLength);
+    new Uint8ClampedArray(pixelBuffer).set(imageData.data);
     const response: DecodeSuccess = {
       id,
       ok: true,
       width: imageData.width,
       height: imageData.height,
-      sharedBuffer,
+      pixelBuffer,
     };
-    self.postMessage(response);
+    self.postMessage(response, { transfer: [pixelBuffer] });
   } catch (error) {
     const response: DecodeFailure = {
       id,

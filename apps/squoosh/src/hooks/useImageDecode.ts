@@ -13,7 +13,7 @@ type DecodeWorkerSuccess = {
   ok: true;
   width: number;
   height: number;
-  sharedBuffer: SharedArrayBuffer;
+  pixelBuffer: ArrayBuffer;
 };
 
 type DecodeWorkerFailure = {
@@ -96,7 +96,7 @@ function decodeWithWorker(
       resolve({
         width: response.width,
         height: response.height,
-        data: new Uint8ClampedArray(response.sharedBuffer),
+        data: new Uint8ClampedArray(response.pixelBuffer),
       });
     };
 
