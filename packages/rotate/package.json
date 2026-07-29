@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/rotate",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "description": "Image rotation codec for squoosh-kit, using raw WebAssembly (no JS glue).",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
