@@ -38,7 +38,7 @@ check_prerequisites() {
 clean_and_prepare() {
     log_info "Cleaning and preparing workspace..."
     bun run clean
-    bun install --frozen-lockfile --linker=hoisted
+    bun install --linker=hoisted
     log_success "Workspace prepared"
 }
 
