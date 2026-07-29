@@ -85,13 +85,10 @@ try {
   }
 
   // Generate type definitions
-  const typesResult = await Bun.spawn([
-    'bun',
-    'tsc',
-    '--emitDeclarationOnly',
-    '--outDir',
-    OUTPUT_DIR,
-  ]).exited;
+  const typesResult = await Bun.spawn(
+    ['bun', 'tsc', '--emitDeclarationOnly', '--outDir', OUTPUT_DIR],
+    { stdout: 'inherit', stderr: 'inherit' }
+  ).exited;
   if (typesResult !== 0) {
     console.error('TypeScript declaration build failed');
     process.exit(1);

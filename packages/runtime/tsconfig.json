@@ -4,8 +4,7 @@
     "composite": true,
     "emitDeclarationOnly": true,
     "declarationDir": "dist",
-    "rootDir": "src",
-    "baseUrl": "."
+    "rootDir": "src"
   },
   "include": ["src"]
 }
