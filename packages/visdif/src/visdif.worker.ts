@@ -40,8 +40,7 @@ async function loadVisDifModule(): Promise<VisDifModuleInstance> {
     : ['./wasm/visdif/visdif.js', '../wasm/visdif/visdif.js'];
 
   let moduleFactory:
-    | ((config: Record<string, unknown>) => Promise<unknown>)
-    | null = null;
+    ((config: Record<string, unknown>) => Promise<unknown>) | null = null;
   let lastJsError: Error | null = null;
   for (const jsPath of jsPaths) {
     try {
