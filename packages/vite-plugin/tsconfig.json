@@ -1,6 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "baseUrl": ".",
   "compilerOptions": {
     "composite": true,
     "emitDeclarationOnly": true,

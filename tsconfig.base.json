@@ -10,9 +10,8 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "types": ["bun-types"],
-    "baseUrl": ".",
     "paths": {
-      "@squoosh-kit/*": ["packages/*/src"]
+      "@squoosh-kit/*": ["./packages/*/src"]
     }
   },
   "exclude": ["node_modules", "dist", "wasm", ".squoosh-temp"]
