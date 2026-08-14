@@ -95,6 +95,25 @@ function bumpVersion(version: Version, bumpType: BumpType): Version {
   return bumped;
 }
 
+function updateLockfileWorkspaceVersions(newVersion: string): void {
+  const lockfilePath = join(WORKSPACE_ROOT, 'bun.lock');
+  let content = readFileSync(lockfilePath, 'utf-8');
+
+  for (const pkg of PACKAGES) {
+    const pattern = new RegExp(
+      `("packages/${pkg}": \\{\\s*"name": "@squoosh-kit/${pkg}",\\s*"version": ")([^"]+)(")`
+    );
+    const next = content.replace(pattern, `$1${newVersion}$3`);
+    if (next === content) {
+      throw new Error(`bun.lock missing workspace version for packages/${pkg}`);
+    }
+    content = next;
+  }
+
+  writeFileSync(lockfilePath, content, 'utf-8');
+  console.log(`✓ Updated bun.lock workspace versions to ${newVersion}`);
+}
+
 function updatePackageJsonVersion(filePath: string, newVersion: string): void {
   const content = readFileSync(filePath, 'utf-8');
   const json = JSON.parse(content);
@@ -181,11 +200,7 @@ function syncVersions(newVersion: string, options: SyncOptions): void {
   }
 
   console.log(`\n✨ All versions synced to ${newVersion}`);
-  const workspaceNames = PACKAGES.map((pkg) => `@squoosh-kit/${pkg}`).join(' ');
-  execSync(`bun update ${workspaceNames}`, {
-    cwd: WORKSPACE_ROOT,
-    stdio: 'inherit',
-  });
+  updateLockfileWorkspaceVersions(newVersion);
 
   if (noGit) {
     console.log(
