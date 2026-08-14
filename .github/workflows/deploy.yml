@@ -137,6 +137,10 @@ jobs:
             echo "Stable: publishing to npm default dist-tag (latest)"
           fi
 
+      - name: Sync codecs and build
+        if: steps.version_check.outputs.is_new_version == 'true'
+        run: bun run ci:build
+
       - name: Publish to NPM
         if: steps.version_check.outputs.is_new_version == 'true'
         run: bun run release:publish
