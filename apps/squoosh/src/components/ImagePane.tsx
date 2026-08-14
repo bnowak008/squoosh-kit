@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import type { CodecId } from '../types';
 import { jxl } from '@squoosh-kit/core';
 
-const BRIDGE_OPTIONS = { assetPath: '/squoosh-kit' };
 const PERF_FLAG = 'perf';
 
 type Props = {
@@ -75,7 +74,7 @@ export default function ImagePane({
     if (codecId !== 'jxl' || !encodedBytes || !canvasRef.current) return;
 
     let cancelled = false;
-    const decoder = jxl.createJxlDecoder('worker', BRIDGE_OPTIONS);
+    const decoder = jxl.createJxlDecoder('worker');
 
     void decoder(encodedBytes)
       .then((imgData: ImageData) => {

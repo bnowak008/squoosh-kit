@@ -54,7 +54,7 @@ Squoosh-Kit is a Bun-first monorepo providing thin TypeScript wrappers around Go
 - **`@squoosh-kit/webp`** — WebP encoding. Exports `encode()` (one-shot) and `createWebpEncoder()` (reusable factory).
 - **`@squoosh-kit/resize`** — Image resizing with 4 algorithms. Exports `resize()` and `createResizer()`.
 - **`@squoosh-kit/core`** — Meta-package that re-exports everything from webp and resize.
-- **`@squoosh-kit/vite-plugin`** — Vite plugin that auto-copies `.browser.mjs`/WASM assets, sets CORS headers (`require-corp`, `same-origin`), and serves files under `/squoosh-kit/`.
+- **`@squoosh-kit/vite-plugin`** — Vite plugin that auto-copies `.browser.mjs`/WASM assets, sets CORS headers (`credentialless`, `same-origin`), and serves files under `/squoosh-kit/`. Browser worker mode defaults `assetPath` to `/squoosh-kit`.
 
 ### Worker/Client Bridge Pattern
 

@@ -46,6 +46,8 @@ That's it! The plugin will:
 3. Set necessary CORS headers for cross-origin embedder policy
 4. Exclude heavy dependencies from optimization
 
+Worker mode then loads those assets from `/squoosh-kit` automatically. You only need to pass `assetPath` if you serve them from a different URL.
+
 ## What the Plugin Does
 
 ### Asset Copying
@@ -64,7 +66,7 @@ The plugin:
 
 - Sets correct MIME type (`application/wasm`) for `.wasm` files
 - Configures CORS headers:
-  - `Cross-Origin-Embedder-Policy: require-corp`
+  - `Cross-Origin-Embedder-Policy: credentialless`
   - `Cross-Origin-Opener-Policy: same-origin`
 - Ensures WASM files are treated as assets
 - Handles WASM file paths correctly in both development and production
@@ -79,23 +81,24 @@ In development mode, the plugin:
 
 ## Usage Example
 
-After setting up the plugin, you can use Squoosh-Kit as normal:
+After setting up the plugin, worker mode uses `/squoosh-kit` by default:
 
 ```typescript
-import { createWebpEncoder, createResizer } from '@squoosh-kit/core';
+import { webp, resize } from '@squoosh-kit/core';
 
-// Create encoder and resizer with worker mode
-const encoder = createWebpEncoder('worker', {
-  assetPath: '/squoosh-kit/',
-});
+const encoder = webp.createWebpEncoder('worker');
+const resizer = resize.createResizer('worker');
 
-const resizer = createResizer('worker', {
-  assetPath: '/squoosh-kit/',
-});
-
-// Use them
-const webpData = await encoder(imageData, { quality: 80 });
 const resizedImage = await resizer(imageData, { width: 800 });
+const webpData = await encoder(resizedImage, { quality: 80 });
+```
+
+Override `assetPath` only if you serve the copied assets from a different public URL:
+
+```typescript
+const encoder = webp.createWebpEncoder('worker', {
+  assetPath: '/custom-assets/squoosh-kit',
+});
 ```
 
 ## API Reference
@@ -157,11 +160,13 @@ In production, they're available at `/squoosh-kit/`.
 
 ## Configuration
 
-The plugin requires no configuration, but it assumes:
+The plugin copies assets to `public/squoosh-kit/`. Worker mode loads from `/squoosh-kit` by default.
 
-- Your project uses the standard Vite `public/` directory
-- You're using `@squoosh-kit/webp` and/or `@squoosh-kit/resize` packages
-- You want WASM assets at `/squoosh-kit/` path
+Override the public URL only when needed:
+
+```typescript
+createWebpEncoder('worker', { assetPath: '/custom-assets/squoosh-kit' });
+```
 
 ## Troubleshooting
 
@@ -178,7 +183,7 @@ bun add @squoosh-kit/webp @squoosh-kit/resize
 Check that:
 
 1. The plugin is configured before other plugins
-2. You're importing from the correct path: `/squoosh-kit/`
+2. Worker assets are reachable at `/squoosh-kit/` (or the `assetPath` you passed)
 3. Your server headers allow CORS (plugin should set these automatically)
 
 ### Build fails with "dist not found"

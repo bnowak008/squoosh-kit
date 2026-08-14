@@ -3,7 +3,6 @@ import type { Dispatch } from 'react';
 import type { Action } from '../types';
 import { jxl } from '@squoosh-kit/core';
 
-const BRIDGE_OPTIONS = { assetPath: '/squoosh-kit' };
 const PERF_FLAG = 'perf';
 let decodeWorker: Worker | null = null;
 let decodeRequestId = 0;
@@ -143,7 +142,7 @@ async function decodeJxlWithWorker(file: File): Promise<{
   data: Uint8ClampedArray;
 }> {
   const arrayBuffer = await file.arrayBuffer();
-  const decoder = jxl.createJxlDecoder('worker', BRIDGE_OPTIONS);
+  const decoder = jxl.createJxlDecoder('worker');
   try {
     const decoded = await decoder(new Uint8Array(arrayBuffer));
     const data =

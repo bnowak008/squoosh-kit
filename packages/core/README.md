@@ -59,6 +59,10 @@ const pngBuffer = await png.encode(imageData);
 const rotated = await rotate.rotate(imageData, { rotate: 90 });
 ```
 
+## Browser (Vite)
+
+Add [`@squoosh-kit/vite-plugin`](https://www.npmjs.com/package/@squoosh-kit/vite-plugin) so worker and WASM files are copied to `public/squoosh-kit/`. In the browser, worker mode loads from `/squoosh-kit` by default — `encode()`, `createWebpEncoder('worker')`, and the other factories do not need `assetPath` unless you serve those files from a different URL.
+
 ## What's Included
 
 This package bundles all Squoosh-Kit codecs under a single import:
