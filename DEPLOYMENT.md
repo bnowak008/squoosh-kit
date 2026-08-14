@@ -35,7 +35,7 @@ bun run version:minor   # 0.x.0 → 0.(x+1).0
 bun run version:major   # x.0.0 → (x+1).0.0
 ```
 
-This updates all package.json files, creates a git commit (`chore: release vX.Y.Z`), and creates a git tag (`vX.Y.Z`).
+This updates all package.json files and bun.lock, then creates a git commit (`chore: release vX.Y.Z`). Git tags are created by Deploy after a successful npm publish.
 
 ### 2. Run validation locally (recommended)
 

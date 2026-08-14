@@ -52,13 +52,7 @@ bun run version:current
 bun run scripts/sync-version.ts set 1.5.3
 ```
 
-If **`v1.5.3` already exists** as a git tag, either delete it (`git tag -d v1.5.3`) and run `set` again, or replace the tag after syncing:
-
-```bash
-bun run scripts/sync-version.ts set 1.0.0 --force
-```
-
-To **only bump `package.json` files** (no commit/tag), for example before you handle git yourself:
+To **only bump version files** (no commit), for example before you handle git yourself:
 
 ```bash
 bun run scripts/sync-version.ts set 1.0.0 --no-git
@@ -111,7 +105,7 @@ bun run release:publish
 
 For a semver **prerelease** (version contains a hyphen after `X.Y.Z`, e.g. `1.0.0-rc.1`):
 
-1. Sync versions, commit, push, then tag and push the tag (e.g. `v1.0.0-rc.1`).
+1. Sync versions, commit, and merge to `main` (e.g. `1.0.0-rc.1`).
 2. CI publishes all workspace packages to the **`rc`** dist-tag (not `latest`).
 3. Consumers install with:
 
