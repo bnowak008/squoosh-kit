@@ -169,7 +169,7 @@ Every push to `main` runs the deploy workflow, which:
 To release a new version, bump versions in a PR (for example `bun run version:patch` at the repo root), then merge:
 
 ```bash
-bun run version:patch   # updates all package.json files, commits, creates a local tag
+bun run version:patch   # updates package.json files, bun.lock, and commits
 git push                # push the branch, open a PR as normal
 # merge the PR → deploy workflow auto-detects the new version and publishes
 ```
