@@ -1,5 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import {
+  resolveWorkspaceDependencies,
+  restoreOriginalPackageJson,
+  type ResolvedDepsBackup,
+} from './resolve-workspace-deps';
 
 function usage(): never {
   console.error(
@@ -63,28 +68,42 @@ function main(): number {
   const tag = process.env.NPM_PUBLISH_TAG?.trim();
   const pkgRoot = resolve(import.meta.dir, '..', 'packages', pkgDirName);
 
+  const { name, version } = readManifest(pkgRoot);
+
   const skipIfExists = process.env.PUBLISH_SKIP_IF_EXISTS?.trim() !== '0';
   if (skipIfExists) {
-    const { name, version } = readManifest(pkgRoot);
     if (isVersionPublishedOnRegistry(name, version)) {
       console.log(`skip: ${name}@${version} already on registry`);
       return 0;
     }
   }
 
-  const args = ['publish', '--access', 'public'];
-  if (tag !== undefined && tag.length > 0) {
-    args.push('--tag', tag);
+  console.log(`\nResolving workspace dependencies for ${name}@${version}...`);
+  const backup: ResolvedDepsBackup = resolveWorkspaceDependencies(
+    pkgRoot,
+    version
+  );
+
+  try {
+    const args = ['publish', '--access', 'public'];
+    if (tag !== undefined && tag.length > 0) {
+      args.push('--tag', tag);
+    }
+    args.push(...passthrough);
+
+    const publishClient = getPublishClient();
+    console.log(`\nPublishing ${name}@${version} with ${publishClient}...`);
+    const proc = Bun.spawnSync([publishClient, ...args], {
+      cwd: pkgRoot,
+      stdio: ['inherit', 'inherit', 'inherit'],
+    });
+
+    return proc.exitCode ?? 1;
+  } finally {
+    // Always restore the original package.json, even if publish fails
+    console.log('Restoring original package.json...');
+    restoreOriginalPackageJson(backup);
   }
-  args.push(...passthrough);
-
-  const publishClient = getPublishClient();
-  const proc = Bun.spawnSync([publishClient, ...args], {
-    cwd: pkgRoot,
-    stdio: ['inherit', 'inherit', 'inherit'],
-  });
-
-  return proc.exitCode ?? 1;
 }
 
 process.exit(main());
