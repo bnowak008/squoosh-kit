@@ -174,7 +174,7 @@ git push                # push the branch, open a PR as normal
 # merge the PR → deploy workflow auto-detects the new version and publishes
 ```
 
-All package versions must match the root `package.json` version (enforced in the workflow’s **Verify all package versions match** step). Add an `NPM_TOKEN` secret in the repo’s GitHub **Settings → Secrets and variables → Actions**.
+All package versions must match the root `package.json` version (enforced in the workflow’s **Verify all package versions match** step). Publishing uses npm [trusted publishing](https://docs.npmjs.com/trusted-publishers/) from `deploy.yml` (OIDC). Configure a trusted publisher on each `@squoosh-kit/*` package pointing at this repository and workflow filename `deploy.yml`.
 
 ## License
 

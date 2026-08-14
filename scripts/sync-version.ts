@@ -181,18 +181,23 @@ function syncVersions(newVersion: string, options: SyncOptions): void {
   }
 
   console.log(`\n✨ All versions synced to ${newVersion}`);
+  const workspaceNames = PACKAGES.map((pkg) => `@squoosh-kit/${pkg}`).join(' ');
+  execSync(`bun update ${workspaceNames}`, {
+    cwd: WORKSPACE_ROOT,
+    stdio: 'inherit',
+  });
 
   if (noGit) {
     console.log(
       '\n📦 Wrote versions only (--no-git). Commit and tag when ready, e.g.:'
     );
     console.log(
-      `   git add package.json packages/*/package.json && git commit -m "chore: release ${tag}" && git tag ${tag}`
+      `   git add package.json bun.lock packages/*/package.json && git commit -m "chore: release ${tag}" && git tag ${tag}`
     );
     return;
   }
 
-  execSync(`git add package.json`);
+  execSync(`git add package.json bun.lock`);
   for (const pkg of PACKAGES) {
     execSync(`git add packages/${pkg}/package.json`);
   }
