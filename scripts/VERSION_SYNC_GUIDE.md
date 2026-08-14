@@ -121,7 +121,7 @@ npm install @squoosh-kit/core@rc
 
 Stable tags like `v1.0.0` publish to the default **`latest`** channel.
 
-Local publish to `rc` (after `npm login` or `NPM_CONFIG_TOKEN`):
+Local publish to `rc` (after `npm login`):
 
 ```bash
 NPM_PUBLISH_TAG=rc bun run release:publish

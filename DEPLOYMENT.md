@@ -6,17 +6,26 @@ This guide covers the release process for `squoosh-kit` packages.
 
 - Bun 1.0+ installed
 - npm account with publish permissions for the `@squoosh-kit` scope
-- `NPM_TOKEN` secret configured in GitHub repository settings
+- A [trusted publisher](https://docs.npmjs.com/trusted-publishers/) configured on npm for each `@squoosh-kit/*` package
 
-## GitHub Secrets
+## Trusted publishing (GitHub Actions)
 
-Ensure the following secret is configured in your repository (Settings → Secrets and variables → Actions):
+CI publishes with OpenID Connect. There is no long-lived `NPM_TOKEN`.
 
-- `NPM_TOKEN`: npm token with publish access to `@squoosh-kit/*`
+On each published package (npmjs.com → package → Settings → Trusted Publisher), add GitHub Actions with:
+
+- Organization or user: the GitHub owner of this repository
+- Repository: `squoosh-kit`
+- Workflow filename: `deploy.yml` (filename only, including `.yml`)
+- Allowed action: `npm publish`
+
+The publish job in `.github/workflows/deploy.yml` already has `id-token: write` and runs on GitHub-hosted runners.
+
+After a successful OIDC publish, restrict token-based publishing on npm and delete any leftover automation tokens.
 
 ## Release Flow
 
-Publishing is tag-triggered and fully automated via GitHub Actions.
+Publishing is automated via GitHub Actions on push to `main`.
 
 ### 1. Bump the version
 
@@ -26,7 +35,7 @@ bun run version:minor   # 0.x.0 → 0.(x+1).0
 bun run version:major   # x.0.0 → (x+1).0.0
 ```
 
-This updates all 5 `package.json` files, creates a git commit (`chore: release vX.Y.Z`), and creates a git tag (`vX.Y.Z`).
+This updates all package.json files, creates a git commit (`chore: release vX.Y.Z`), and creates a git tag (`vX.Y.Z`).
 
 ### 2. Run validation locally (recommended)
 
@@ -34,30 +43,31 @@ This updates all 5 `package.json` files, creates a git commit (`chore: release v
 bun run validate
 ```
 
-### 3. Push the tag
+### 3. Push and merge
 
 ```bash
-git push --follow-tags
+git push
 ```
 
-Pushing the tag triggers the CI pipeline which:
+Merging to `main` triggers the deploy workflow, which:
 
-1. Runs tests, type checks, lint, and bundle size checks
-2. Builds all packages
-3. Publishes all 5 packages to npm
+1. Builds all packages and deploys the demo site
+2. Packs each workspace package with `bun pm pack` (rewrites `workspace:*` in the tarball)
+3. Publishes the tarballs with `npm publish` using trusted publishing
+4. Creates a git tag and GitHub Release
 
 ## CI Pipeline
 
-- **On push to `main`/`develop` or PR**: runs tests, lint, type check, build, and bundle size check
-- **On tag push (`v*`)**: same checks + publishes to npm if tests pass
+- **On push to `main`**: build, deploy the site, and publish to npm if the version is new
+- **`workflow_dispatch`**: same as a push to `main`
 
 ## Manual Publish (emergency only)
 
-If CI publish fails, you can publish manually after building locally:
+If CI publish fails, you can publish locally after `npm login` (interactive 2FA). This does not use OIDC:
 
 ```bash
 bun run ci:build
-NPM_CONFIG_TOKEN=<your-token> bun run release:publish
+bun run release:publish
 ```
 
 ## Rollback
@@ -72,4 +82,4 @@ npm unpublish @squoosh-kit/runtime@<version>
 npm unpublish @squoosh-kit/vite-plugin@<version>
 ```
 
-Then fix the issue, bump to a new patch version, and push the new tag.
+Then fix the issue, bump to a new patch version, and merge to `main`.

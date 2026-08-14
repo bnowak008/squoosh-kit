@@ -78,6 +78,15 @@ jobs:
         with:
           bun-version: latest
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Ensure npm supports trusted publishing
+        run: npm install -g npm@latest
+
       - uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
@@ -131,9 +140,6 @@ jobs:
       - name: Publish to NPM
         if: steps.version_check.outputs.is_new_version == 'true'
         run: bun run release:publish
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
 
       - name: Create git tag
         if: steps.version_check.outputs.is_new_version == 'true'
