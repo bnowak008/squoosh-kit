@@ -138,7 +138,9 @@ export default defineConfig({
 });
 ```
 
-The plugin handles everything automatically: copying browser-compatible assets to `public/squoosh-kit/`, setting CORS headers (`require-corp`, `same-origin`), excluding Squoosh packages from Vite's optimization pipeline, and serving WASM files with the correct MIME type in development.
+The plugin copies browser-compatible assets to `public/squoosh-kit/`, sets CORS headers (`credentialless`, `same-origin`), excludes Squoosh packages from Vite's optimization pipeline, and serves WASM files with the correct MIME type in development.
+
+In the browser, worker mode loads those files from `/squoosh-kit` by default (`createWebpEncoder('worker')`, `encode()`, etc.). Pass `{ assetPath: '/your-prefix' }` only if you serve the assets from a different path.
 
 ### Without Vite (Other Bundlers)
 

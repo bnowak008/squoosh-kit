@@ -64,14 +64,14 @@
     },
     "packages/avif": {
       "name": "@squoosh-kit/avif",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/core": {
       "name": "@squoosh-kit/core",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/avif": "workspace:*",
         "@squoosh-kit/hqx": "workspace:*",
@@ -91,70 +91,70 @@
     },
     "packages/hqx": {
       "name": "@squoosh-kit/hqx",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/imagequant": {
       "name": "@squoosh-kit/imagequant",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/jxl": {
       "name": "@squoosh-kit/jxl",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/mozjpeg": {
       "name": "@squoosh-kit/mozjpeg",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/oxipng": {
       "name": "@squoosh-kit/oxipng",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/png": {
       "name": "@squoosh-kit/png",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/qoi": {
       "name": "@squoosh-kit/qoi",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/resize": {
       "name": "@squoosh-kit/resize",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/rotate": {
       "name": "@squoosh-kit/rotate",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/runtime": {
       "name": "@squoosh-kit/runtime",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "wasm-feature-detect": "^1.0.0",
       },
@@ -164,14 +164,14 @@
     },
     "packages/visdif": {
       "name": "@squoosh-kit/visdif",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/vite-plugin": {
       "name": "@squoosh-kit/vite-plugin",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "~6.0.3",
@@ -180,14 +180,14 @@
     },
     "packages/webp": {
       "name": "@squoosh-kit/webp",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },
     },
     "packages/wp2": {
       "name": "@squoosh-kit/wp2",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "dependencies": {
         "@squoosh-kit/runtime": "workspace:*",
       },

@@ -10,6 +10,10 @@ import {
 import { validateImageInput } from '@squoosh-kit/runtime';
 
 export type BridgeOptions = {
+  /**
+   * Public URL prefix for worker and WASM files.
+   * Defaults to `/squoosh-kit` in the browser.
+   */
   assetPath?: string;
 };
 

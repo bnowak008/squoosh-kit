@@ -8,7 +8,15 @@
 
 import { isBun } from './env';
 
+export const DEFAULT_BROWSER_ASSET_PATH = '/squoosh-kit';
+
 export type CreateWorkerOptions = {
+  /**
+   * Public URL prefix for worker and WASM files.
+   * Defaults to `/squoosh-kit` in the browser (the path used by
+   * `@squoosh-kit/vite-plugin`). Pass an empty string to resolve workers
+   * relative to the installed package instead.
+   */
   assetPath?: string;
 };
 
@@ -16,7 +24,7 @@ export type CreateWorkerOptions = {
  * Create a Web Worker for a specific codec
  *
  * In Node.js/Bun environments, uses import.meta.resolve to locate worker files.
- * In browser environments, uses relative paths within node_modules that Vite can resolve.
+ * In browsers, workers load from `/squoosh-kit/{package}/` by default.
  *
  * @param workerFilename - The name of the worker file (e.g., 'resize.worker' or 'webp.worker')
  * @returns Worker instance
@@ -96,7 +104,7 @@ export function createCodecWorker(
   }
 
   try {
-    // In browser contexts, use relative paths within the installed packages
+    // In browsers, workers load from /squoosh-kit by default
     if (typeof window !== 'undefined') {
       const packageName = workerConfig.package.split('/')[1]; // Extract 'resize' or 'webp'
       const workerFile = normalizedName.replace('.js', '.browser.mjs');
@@ -107,10 +115,13 @@ export function createCodecWorker(
       console.log(`[worker-helper]   - Package Name: ${packageName}`);
       console.log(`[worker-helper]   - Worker File: ${workerFile}`);
 
-      // If a custom asset path is provided, use it directly
-      if (options?.assetPath) {
-        // Normalize the asset path - ensure it starts with / and ends without /
-        let normalizedAssetPath = options.assetPath;
+      const assetPath =
+        options?.assetPath === undefined
+          ? DEFAULT_BROWSER_ASSET_PATH
+          : options.assetPath;
+
+      if (assetPath) {
+        let normalizedAssetPath = assetPath;
         if (!normalizedAssetPath.startsWith('/')) {
           normalizedAssetPath = '/' + normalizedAssetPath;
         }
@@ -123,7 +134,7 @@ export function createCodecWorker(
         const workerUrl = new URL(workerPath, window.location.origin).href;
 
         console.log(
-          `[worker-helper] Using provided assetPath. Full Worker URL: ${workerUrl}`
+          `[worker-helper] Using assetPath. Full Worker URL: ${workerUrl}`
         );
         try {
           const worker = new Worker(workerUrl, { type: 'module' });

@@ -3,7 +3,6 @@ import type { ImageInput } from '@squoosh-kit/core';
 import type { CodecId } from '../types';
 import { getCodec } from './registry';
 
-const BRIDGE_OPTIONS = { assetPath: '/squoosh-kit' };
 const PERF_FLAG = 'perf';
 const TINY_IMAGE: ImageInput = {
   data: new Uint8ClampedArray([0, 0, 0, 255]),
@@ -46,7 +45,7 @@ function getEncoder(codecId: CodecId): EncoderWrapper {
 function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
   switch (codecId) {
     case 'webp': {
-      const f = webp.createWebpEncoder('worker', BRIDGE_OPTIONS);
+      const f = webp.createWebpEncoder('worker');
       return {
         encode: (image, options, signal) =>
           f(image, options as Parameters<typeof f>[1], signal),
@@ -54,7 +53,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       };
     }
     case 'avif': {
-      const f = avif.createAvifEncoder('worker', BRIDGE_OPTIONS);
+      const f = avif.createAvifEncoder('worker');
       return {
         encode: (image, options, signal) =>
           f(image, options as Parameters<typeof f>[1], signal),
@@ -62,7 +61,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       };
     }
     case 'mozjpeg': {
-      const f = mozjpeg.createMozjpegEncoder('worker', BRIDGE_OPTIONS);
+      const f = mozjpeg.createMozjpegEncoder('worker');
       return {
         encode: (image, options, signal) =>
           f(image, options as Parameters<typeof f>[1], signal),
@@ -70,7 +69,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       };
     }
     case 'jxl': {
-      const f = jxl.createJxlEncoder('worker', BRIDGE_OPTIONS);
+      const f = jxl.createJxlEncoder('worker');
       return {
         encode: (image, options, signal) =>
           f(image, options as Parameters<typeof f>[1], signal),
@@ -78,7 +77,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       };
     }
     case 'oxipng': {
-      const f = oxipng.createOxipngOptimizer('worker', BRIDGE_OPTIONS);
+      const f = oxipng.createOxipngOptimizer('worker');
       return {
         encode: (image, options, signal) =>
           f(image, options as Parameters<typeof f>[1], signal),
@@ -86,7 +85,7 @@ function createEncoderWrapper(codecId: CodecId): EncoderWrapper {
       };
     }
     case 'png': {
-      const f = png.createPngEncoder('worker', BRIDGE_OPTIONS);
+      const f = png.createPngEncoder('worker');
       return {
         encode: (image, _options, signal) => f(image, signal),
         terminate: () => f.terminate(),

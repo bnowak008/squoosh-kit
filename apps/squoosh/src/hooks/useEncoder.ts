@@ -5,14 +5,13 @@ import { encodeWith, getCodecWarmupState, terminateAll } from '../codec/encode';
 import { getCodec } from '../codec/registry';
 import { resize } from '@squoosh-kit/core';
 
-const BRIDGE_OPTIONS = { assetPath: '/squoosh-kit' };
 const PERF_FLAG = 'perf';
 
 let resizerFactory: ReturnType<typeof resize.createResizer> | null = null;
 
 function getResizer() {
   if (!resizerFactory) {
-    resizerFactory = resize.createResizer('worker', BRIDGE_OPTIONS);
+    resizerFactory = resize.createResizer('worker');
   }
   return resizerFactory;
 }
