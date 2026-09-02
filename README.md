@@ -53,6 +53,17 @@ const resized = await resize(imageData, { width: 800, method: 'mitchell' });
 const webpBuffer = await encode(resized, { quality: 85 });
 ```
 
+## Execution Modes
+
+Codec factories (`createWebpEncoder()`, `createResizer()`, and similar) default to **`'auto'`**:
+
+- **Browser (main thread)** — uses Web Workers so WASM encoding does not block the UI
+- **Bun / Node / scripts** — runs WASM on the calling thread (no worker spawn overhead)
+
+Pass `'worker'` or `'client'` when you need an explicit override. One-shot helpers such as `encode()` and `resize()` use the same auto behavior via a shared singleton.
+
+In browser apps, add [`@squoosh-kit/vite-plugin`](./packages/vite-plugin/README.md) so worker assets are served from `/squoosh-kit` (see [Vite Integration](#vite-integration) below).
+
 ## Installation
 
 Choose what you need, or install everything:
@@ -90,14 +101,15 @@ rm -rf node_modules/@squoosh-kit/resize/dist/wasm/
 # This reduces the package size by ~30-50KB gzipped
 ```
 
-**Important**: Removing WASM files will cause worker mode to fail. Only do this if you're using client mode exclusively:
+**Important**: Removing WASM files will cause worker mode to fail. Only do this if you use client mode exclusively (pass `'client'` or rely on auto in Bun/Node, which already uses client):
 
 ```typescript
-// This will work (client mode)
+// Works in Bun/Node with auto or explicit client mode
+const encoder = createWebpEncoder();
 const encoder = createWebpEncoder('client');
 
-// This will fail (worker mode requires WASM)
-const encoder = createWebpEncoder('worker'); // ❌ WASM files missing
+// Requires WASM files (browser auto mode, or explicit worker mode)
+const encoder = createWebpEncoder('worker'); // ❌ WASM files missing if removed
 ```
 
 ## Learn More
@@ -140,7 +152,7 @@ export default defineConfig({
 
 The plugin copies browser-compatible assets to `public/squoosh-kit/`, sets CORS headers (`credentialless`, `same-origin`), excludes Squoosh packages from Vite's optimization pipeline, and serves WASM files with the correct MIME type in development.
 
-In the browser, worker mode loads those files from `/squoosh-kit` by default (`createWebpEncoder('worker')`, `encode()`, etc.). Pass `{ assetPath: '/your-prefix' }` only if you serve the assets from a different path.
+In the browser, auto mode uses workers and loads assets from `/squoosh-kit` by default (`encode()`, `createWebpEncoder()`, and the other factories). Pass `{ assetPath: '/your-prefix' }` only if you serve those files from a different path.
 
 ### Without Vite (Other Bundlers)
 

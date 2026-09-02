@@ -45,8 +45,8 @@ const imageData: ImageInput = {
 const controller = new AbortController();
 const webpBuffer = await encode(imageData, { quality: 85 }, controller.signal);
 
-// For multiple images, create a persistent encoder
-const encoder = createWebpEncoder('worker');
+// For multiple images, create a persistent encoder (auto mode by default)
+const encoder = createWebpEncoder();
 const optimized = await encoder(
   imageData,
   { quality: 90, lossless: false },
@@ -121,7 +121,7 @@ for (const imagePath of imageFiles) {
 
 The main encoding function. Handles everything automatically and returns a Promise.
 
-**Note**: `encode()` uses a global singleton worker that is never automatically terminated. For long-running applications where worker cleanup is important, use `createWebpEncoder()` instead so you can call `.terminate()` when done.
+**Note**: `encode()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node) and is never automatically terminated. For long-running applications where worker cleanup is important, use `createWebpEncoder()` instead so you can call `.terminate()` when done.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - (optional) `WebpOptions` for quality and format settings
@@ -132,7 +132,7 @@ The main encoding function. Handles everything automatically and returns a Promi
 
 Creates a reusable encoder function. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `encode()`
 
 ## Cancellation Support
@@ -293,8 +293,8 @@ type WebpOptions = {
 
 ## Performance Tips
 
-- **Use workers for UI apps** - Keeps your interface responsive during encoding
-- **Use client mode for servers** - Direct encoding without worker overhead
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive - Keeps your interface responsive during encoding
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead - Direct encoding without worker overhead
 - **Batch with persistent encoders** - More efficient than one-off calls
 - **Adjust quality strategically** - Often 80-90% quality looks identical to 100%
 

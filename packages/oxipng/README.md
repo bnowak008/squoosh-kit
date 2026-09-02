@@ -47,7 +47,7 @@ const optimizedPng = await optimize(imageData);
 const maxOptimized = await optimize(imageData, { level: 6 });
 
 // For multiple images, use a persistent optimizer
-const optimizer = createOxipngOptimizer('worker');
+const optimizer = createOxipngOptimizer();
 const result = await optimizer(imageData, { level: 3 });
 await optimizer.terminate();
 ```
@@ -126,7 +126,7 @@ Optimizes raw RGBA pixel data into a compressed PNG. This is a lossless operatio
 
 Creates a reusable optimizer. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `optimize()`
 
 ## Cancellation Support
@@ -205,8 +205,8 @@ type OxipngOptions = {
 
 - **Level 2 is the sweet spot** — Good compression with fast processing; use for most cases
 - **Level 6 for static assets** — Worth the extra time for files that will be served many times
-- **Use workers for UI apps** — Higher levels can take several seconds on large images
-- **Use client mode for build tools** — Direct processing is simpler in Node/Bun scripts
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive — Higher levels can take several seconds on large images
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead — Direct processing is simpler in Node/Bun scripts
 - **Pair with @squoosh-kit/png** — Encode raw pixels with png, then optimize with oxipng
 
 ## Works With

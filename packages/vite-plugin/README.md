@@ -46,7 +46,7 @@ That's it! The plugin will:
 3. Set necessary CORS headers for cross-origin embedder policy
 4. Exclude heavy dependencies from optimization
 
-Worker mode then loads those assets from `/squoosh-kit` automatically. You only need to pass `assetPath` if you serve them from a different URL.
+Worker mode (including **auto** in the browser) loads those assets from `/squoosh-kit` by default. You only need to pass `assetPath` if you serve them from a different URL.
 
 ## What the Plugin Does
 
@@ -81,13 +81,13 @@ In development mode, the plugin:
 
 ## Usage Example
 
-After setting up the plugin, worker mode uses `/squoosh-kit` by default:
+After setting up the plugin, factories default to **auto** mode (workers in the browser):
 
 ```typescript
 import { webp, resize } from '@squoosh-kit/core';
 
-const encoder = webp.createWebpEncoder('worker');
-const resizer = resize.createResizer('worker');
+const encoder = webp.createWebpEncoder();
+const resizer = resize.createResizer();
 
 const resizedImage = await resizer(imageData, { width: 800 });
 const webpData = await encoder(resizedImage, { quality: 80 });
@@ -96,7 +96,7 @@ const webpData = await encoder(resizedImage, { quality: 80 });
 Override `assetPath` only if you serve the copied assets from a different public URL:
 
 ```typescript
-const encoder = webp.createWebpEncoder('worker', {
+const encoder = webp.createWebpEncoder('auto', {
   assetPath: '/custom-assets/squoosh-kit',
 });
 ```
@@ -160,12 +160,12 @@ In production, they're available at `/squoosh-kit/`.
 
 ## Configuration
 
-The plugin copies assets to `public/squoosh-kit/`. Worker mode loads from `/squoosh-kit` by default.
+The plugin copies assets to `public/squoosh-kit/`. **Auto** mode (the default) uses workers in the browser and loads from `/squoosh-kit`.
 
 Override the public URL only when needed:
 
 ```typescript
-createWebpEncoder('worker', { assetPath: '/custom-assets/squoosh-kit' });
+createWebpEncoder('auto', { assetPath: '/custom-assets/squoosh-kit' });
 ```
 
 ## Troubleshooting
@@ -199,7 +199,7 @@ bun run build
 - The plugin runs once during Vite startup
 - Asset copying adds < 100ms to build time
 - WASM files are excluded from Vite's optimization pipeline
-- Consider using worker mode for long-running image processing
+- Consider using auto mode (default) for long-running image processing in the browser
 
 ## Architecture
 

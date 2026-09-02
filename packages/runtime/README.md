@@ -28,6 +28,7 @@ Our goal is to provide a minimal, modern JavaScript wrapper around the codec. We
 **Environment Detection**
 
 - Smart detection of execution context (worker vs main thread)
+- **Auto bridge mode** — worker in the browser main thread, client in Bun/Node/scripts
 - Platform-specific optimizations and polyfills
 - Consistent behavior across Bun, Node.js, and browsers
 
@@ -54,22 +55,28 @@ The main types and functions you'll encounter:
 // Core types for image data
 type ImageInput = ImageData | { data: Uint8Array; width: number; height: number };
 
+// Bridge mode (used by codec packages)
+type BridgeMode = 'auto' | 'worker' | 'client';
+
+function resolveBridgeMode(mode?: BridgeMode): 'worker' | 'client';
+// 'auto' (default): worker in the browser main thread, client in Bun/Node
+
 // Worker communication
-interface WorkerRequest<T = any> {
+interface WorkerRequest<T = unknown> {
   id: string;
   type: string;
   payload: T;
 }
 
-interface WorkerResponse<T = any> {
+interface WorkerResponse<T = unknown> {
   id: string;
   ok: boolean;
   data?: T;
   error?: string;
 }
 
-// Bridge creation
-createBridge(mode: 'worker' | 'client'): ImageProcessorBridge;
+// Bridge creation (codec packages)
+createBridge(mode?: BridgeMode): ImageProcessorBridge;
 ```
 
 ## Environment Support

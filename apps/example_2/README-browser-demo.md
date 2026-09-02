@@ -93,19 +93,18 @@ Tested browsers:
 
 ### Execution Modes
 
-#### Worker Mode (Recommended)
+Factories default to **`'auto'`**:
 
-- Processing happens in a background Web Worker
-- UI remains responsive during heavy processing
-- Better performance for large images
-- Requires WebAssembly modules to be served with proper MIME types
+- **Browser** — uses Web Workers (recommended for this demo); UI stays responsive during heavy processing
+- **Bun / Node** — uses client mode on the main thread
 
-#### Client Mode
+Pass `'worker'` or `'client'` to override. Worker mode requires WebAssembly modules to be served with proper MIME types (handled by `@squoosh-kit/vite-plugin`).
 
-- Processing happens in the main thread
+#### Client Mode (explicit)
+
+- Processing happens on the main thread
 - May block the UI during processing
-- Useful for debugging or when Web Workers aren't available
-- Simpler setup but less performant
+- Useful for debugging or when Web Workers are unavailable
 
 ## API Usage Example
 
@@ -114,9 +113,9 @@ The demo uses the same API as the Node.js/Bun example:
 ```javascript
 import { createWebpEncoder, createResizer } from '@squoosh-kit/core';
 
-// Create encoders
-const encoder = createWebpEncoder('worker'); // or 'client'
-const resizer = createResizer('worker'); // or 'client'
+// Auto mode: workers in the browser, client in Bun/Node
+const encoder = createWebpEncoder();
+const resizer = createResizer();
 
 // Process an image
 const controller = new AbortController();

@@ -55,7 +55,7 @@ const jxl = await encode(
 const rawImage = await decode(jxlBuffer);
 
 // For multiple images, create a persistent encoder
-const encoder = createJxlEncoder('worker');
+const encoder = createJxlEncoder();
 const result = await encoder(imageData, { quality: 80, progressive: true });
 await encoder.terminate();
 ```
@@ -134,7 +134,7 @@ await encoder.terminate();
 
 Encodes raw RGBA pixel data to JPEG XL format.
 
-**Note**: `encode()` uses a global singleton worker. For long-running applications where worker cleanup is important, use `createJxlEncoder()` instead.
+**Note**: `encode()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node). For long-running applications where worker cleanup is important, use `createJxlEncoder()` instead.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - (optional) `JxlEncodeOptions` for quality and compression settings
@@ -153,14 +153,14 @@ Decodes a JXL file back to raw RGBA pixel data.
 
 Creates a reusable encoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `encode()`
 
 ### `createJxlDecoder(mode?)`
 
 Creates a reusable decoder.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `decode()`
 
 ## Cancellation Support
@@ -251,7 +251,7 @@ type JxlEncodeOptions = {
 ## Performance Tips
 
 - **JXL encodes slower than WebP** — Use effort 4–7 for interactive pipelines; effort 9–10 only for archival
-- **Use workers for UI apps** — Encoding at high effort can take 10+ seconds for large images
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive — Encoding at high effort can take 10+ seconds for large images
 - **JXL at quality 75 ≈ WebP at quality 85** — JXL achieves better compression at the same perceptual quality
 - **Progressive mode costs little** — Enable it for web delivery with minimal size penalty
 

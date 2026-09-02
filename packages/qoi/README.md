@@ -48,7 +48,7 @@ const qoiBuffer = await encode(imageData);
 const rawImage = await decode(existingQoi);
 
 // For multiple images, create a persistent encoder
-const encoder = createQoiEncoder('worker');
+const encoder = createQoiEncoder();
 const qoi = await encoder(imageData);
 await encoder.terminate();
 ```
@@ -135,14 +135,14 @@ Decodes a QOI file back to raw RGBA pixel data.
 
 Creates a reusable encoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `encode()`
 
 ### `createQoiDecoder(mode?)`
 
 Creates a reusable decoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `decode()`
 
 ## Cancellation Support
@@ -212,7 +212,7 @@ try {
 ## Performance Tips
 
 - **QOI shines in pipelines** - Use it for intermediate steps where you need fast lossless storage
-- **Use client mode for servers** - QOI is already fast; worker overhead can exceed encode time for small images
+- **Auto mode in Bun/Node** - QOI is already fast; worker overhead can exceed encode time for small images
 - **Compare to PNG** - QOI files are slightly larger but encode/decode significantly faster
 
 ## Works With

@@ -47,7 +47,7 @@ const upscaled2x = await upscale(sprite, { factor: 2 });
 const upscaled4x = await upscale(sprite, { factor: 4 });
 
 // For multiple sprites, use a persistent upscaler
-const scaler = createHqxUpscaler('worker');
+const scaler = createHqxUpscaler();
 const result = await scaler(sprite, { factor: 3 });
 await scaler.terminate();
 ```
@@ -94,7 +94,7 @@ const highDpi = await upscale(spritesheet, { factor: 4 }); // 512x512
 **Batch upscale game assets with worker**
 
 ```typescript
-const scaler = createHqxUpscaler('worker');
+const scaler = createHqxUpscaler();
 
 try {
   const upscaledAssets = await Promise.all(
@@ -117,13 +117,13 @@ Upscales a pixel-art image using the HQX algorithm. The output dimensions are ex
 - `signal` - (optional) `AbortSignal` to cancel the operation
 - **Returns** - `Promise<ImageInput>` with upscaled pixel data and updated dimensions
 
-**Note**: `upscale()` uses a global singleton worker. For long-running applications where worker cleanup is important, use `createHqxUpscaler()` instead.
+**Note**: `upscale()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node). For long-running applications where worker cleanup is important, use `createHqxUpscaler()` instead.
 
 ### `createHqxUpscaler(mode?)`
 
 Creates a reusable upscaler. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `upscale()`
 
 ## Cancellation Support
@@ -199,8 +199,8 @@ type HqxOptions = {
 
 ## Performance Tips
 
-- **Use workers for UI apps** - Keeps the interface responsive while upscaling large spritesheets
-- **Use client mode for servers** - Avoids worker overhead for batch processing
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive - Keeps the interface responsive while upscaling large spritesheets
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead - Avoids worker overhead for batch processing
 - **HQX is not for photos** - For photographic images, use `@squoosh-kit/resize` with lanczos3 or mitchell
 - **Factor 2 is fastest** - Higher factors process more pixels; start with 2x unless you specifically need 3x or 4x
 

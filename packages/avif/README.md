@@ -55,7 +55,7 @@ const avif = await encode(
 const rawImage = await decode(avifBuffer);
 
 // For multiple images, create a persistent encoder
-const encoder = createAvifEncoder('worker');
+const encoder = createAvifEncoder();
 const result = await encoder(imageData, { quality: 70, tune: AVIFTune.ssim });
 await encoder.terminate();
 ```
@@ -126,7 +126,7 @@ await encoder.terminate();
 
 Encodes raw RGBA pixel data to AVIF format.
 
-**Note**: `encode()` uses a global singleton worker. For long-running applications where worker cleanup is important, use `createAvifEncoder()` instead.
+**Note**: `encode()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node). For long-running applications where worker cleanup is important, use `createAvifEncoder()` instead.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - (optional) `AvifEncodeOptions` for quality and compression settings
@@ -145,14 +145,14 @@ Decodes an AVIF file back to raw RGBA pixel data.
 
 Creates a reusable encoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `encode()`
 
 ### `createAvifDecoder(mode?)`
 
 Creates a reusable decoder.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `decode()`
 
 ## Cancellation Support
@@ -246,7 +246,7 @@ type AvifEncodeOptions = {
 
 ## Performance Tips
 
-- **AVIF is slow to encode** — Use workers or client mode with server-side encoding; expect several seconds for large images at low speed settings
+- **AVIF is slow to encode** — Auto mode picks workers in the browser and client mode in scripts; expect several seconds for large images at low speed settings
 - **Speed 6–8 for real-time** — Speeds below 4 are typically too slow for interactive use
 - **AVIF produces excellent quality** — At equivalent visual quality, AVIF files are typically 30-50% smaller than WebP
 - **Batch with persistent encoders** — Amortizes WASM initialization cost across multiple encodes

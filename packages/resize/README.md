@@ -58,7 +58,7 @@ setTimeout(() => controller.abort(), 5000);
 const resizedImage = await resize(imageData, { width: 1200, height: 800 });
 
 // Create a resizer for batch operations
-const resizer = createResizer('worker');
+const resizer = createResizer();
 const results = await Promise.all([
   resizer(imageData, { width: 800 }, new AbortController().signal),
   resizer(imageData, { width: 1200 }, new AbortController().signal),
@@ -192,7 +192,7 @@ const processedImage = await resize(imageData, {
 
 The main resizing function. Smart defaults make it easy to use.
 
-**Note**: `resize()` uses a global singleton worker that is never automatically terminated. For long-running applications where worker cleanup is important, use `createResizer()` instead so you can call `.terminate()` when done.
+**Note**: `resize()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node) and is never automatically terminated. For long-running applications where worker cleanup is important, use `createResizer()` instead so you can call `.terminate()` when done.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - `ResizeOptions` for dimensions and quality
@@ -203,7 +203,7 @@ The main resizing function. Smart defaults make it easy to use.
 
 Creates a reusable resizing function for efficient batch processing.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `resize()`
 
 ## Cancellation Support

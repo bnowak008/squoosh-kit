@@ -48,7 +48,7 @@ const quantized = await quantize(imageData);
 const reduced = await quantize(imageData, { numColors: 64, dither: 1.0 });
 
 // For multiple images, use a persistent quantizer
-const quantizer = createImagequantQuantizer('worker');
+const quantizer = createImagequantQuantizer();
 const result = await quantizer(imageData, { numColors: 128 });
 await quantizer.terminate();
 ```
@@ -95,7 +95,7 @@ const png = await encode(quantized);
 **Batch optimize icons with limited palette**
 
 ```typescript
-const quantizer = createImagequantQuantizer('worker');
+const quantizer = createImagequantQuantizer();
 
 try {
   const optimized = await Promise.all(
@@ -118,13 +118,13 @@ Reduces an image to a limited color palette using ImageQuant's lossy quantizatio
 - `signal` - (optional) `AbortSignal` to cancel the operation
 - **Returns** - `Promise<{ data: Uint8ClampedArray; width: number; height: number }>` with the quantized pixel data
 
-**Note**: `quantize()` uses a global singleton worker. For long-running applications where worker cleanup is important, use `createImagequantQuantizer()` instead.
+**Note**: `quantize()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node). For long-running applications where worker cleanup is important, use `createImagequantQuantizer()` instead.
 
 ### `createImagequantQuantizer(mode?)`
 
 Creates a reusable quantizer. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `quantize()`
 
 ## Cancellation Support
@@ -208,8 +208,8 @@ type ImagequantOptions = {
 
 ## Performance Tips
 
-- **Use workers for UI apps** - Keeps your interface responsive
-- **Use client mode for servers** - Avoids worker overhead for batch processing
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive - Keeps your interface responsive
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead - Avoids worker overhead for batch processing
 - **More colors = better quality** - Start with 256 and reduce if file size is still too large
 - **Dithering improves perceived quality** - Leave at `1.0` unless you specifically need hard edges
 - **Pair with OxiPNG** - After quantizing, run through `@squoosh-kit/oxipng` for additional compression

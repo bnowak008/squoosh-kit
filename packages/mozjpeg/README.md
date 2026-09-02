@@ -50,7 +50,7 @@ const highQuality = await encode(imageData, { quality: 90 });
 const rawImage = await decode(jpegBuffer);
 
 // For multiple images, create a persistent encoder
-const encoder = createMozjpegEncoder('worker');
+const encoder = createMozjpegEncoder();
 const result = await encoder(imageData, { quality: 85, progressive: true });
 await encoder.terminate();
 ```
@@ -124,7 +124,7 @@ await encoder.terminate();
 
 Encodes raw RGBA pixel data to JPEG format using MozJPEG.
 
-**Note**: `encode()` uses a global singleton worker. For long-running applications where worker cleanup is important, use `createMozjpegEncoder()` instead.
+**Note**: `encode()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node). For long-running applications where worker cleanup is important, use `createMozjpegEncoder()` instead.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - (optional) `MozjpegEncodeOptions` for quality and compression settings
@@ -143,14 +143,14 @@ Decodes a JPEG file back to raw RGBA pixel data.
 
 Creates a reusable encoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `encode()`
 
 ### `createMozjpegDecoder(mode?)`
 
 Creates a reusable decoder.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `decode()`
 
 ## Cancellation Support
@@ -250,7 +250,7 @@ type MozjpegEncodeOptions = {
 
 - **Quality 75–85 is the sweet spot** — Near-indistinguishable from higher quality at significantly smaller file size
 - **Use progressive for web** — Better user experience; browsers can show a rough preview immediately
-- **Use client mode for batch jobs** — Avoids worker overhead in Node/Bun scripts
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead — Avoids worker overhead in Node/Bun scripts
 - **MozJPEG vs WebP vs AVIF** — MozJPEG is best for maximum JPEG compatibility; for modern browsers, WebP or AVIF will be smaller
 
 ## Encoding Quality & File Size
