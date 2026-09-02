@@ -11,6 +11,7 @@
     "pages:dev": "wrangler pages dev dist"
   },
   "dependencies": {
+    "@fontsource-variable/nunito-sans": "^5.3.0",
     "@squoosh-kit/core": "workspace:*",
     "@squoosh-kit/vite-plugin": "workspace:*",
     "react": "^19.2.0",

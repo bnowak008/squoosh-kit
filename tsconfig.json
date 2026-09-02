@@ -5,6 +5,5 @@
     { "path": "packages/webp" },
     { "path": "packages/resize" },
     { "path": "packages/core" },
-    { "path": "apps/example" }
   ]
 }
