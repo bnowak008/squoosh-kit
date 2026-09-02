@@ -1,6 +1,5 @@
 import { join } from 'path';
 import { existsSync, mkdirSync, cpSync } from 'fs';
-import { stripDistSourcemaps } from '../../scripts/strip-dist-sourcemaps.ts';
 
 const SOURCE_DIR = 'src';
 const OUTPUT_DIR = 'dist';
@@ -15,7 +14,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'bun',
     format: 'esm',
@@ -35,7 +34,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'esm',
@@ -55,7 +54,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'cjs',
@@ -123,7 +122,6 @@ try {
       'Warning: wasm directory not found, WASM files will not be included in dist/'
     );
   }
-  stripDistSourcemaps(OUTPUT_DIR);
 } catch (error) {
   console.error(error);
 }

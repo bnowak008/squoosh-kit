@@ -1,5 +1,3 @@
-import { stripDistSourcemaps } from '../../scripts/strip-dist-sourcemaps.ts';
-
 const SOURCE_DIR = 'src';
 const OUTPUT_DIR = 'dist';
 
@@ -10,7 +8,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'bun',
     format: 'esm',
@@ -30,7 +28,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'esm',
@@ -50,7 +48,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'cjs',
@@ -104,7 +102,6 @@ try {
     process.exit(1);
   }
   console.log('TypeScript declaration build completed successfully');
-  stripDistSourcemaps(OUTPUT_DIR);
 } catch (error) {
   console.error(error);
 }

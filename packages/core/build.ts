@@ -1,6 +1,5 @@
 import { build, Transpiler } from 'bun';
 import { spawn } from 'bun';
-import { stripDistSourcemaps } from '../../scripts/strip-dist-sourcemaps.ts';
 
 const OUTPUT_DIR = 'dist';
 const SOURCE_FILE = 'src/index.ts';
@@ -31,7 +30,7 @@ try {
     entrypoints: [SOURCE_FILE],
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'cjs',
@@ -65,7 +64,6 @@ try {
     process.exit(1);
   }
   console.log('TypeScript declaration build completed successfully');
-  stripDistSourcemaps(OUTPUT_DIR);
 } catch (error) {
   console.error(error);
 }
