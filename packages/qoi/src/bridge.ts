@@ -7,6 +7,8 @@ import {
   createReadyWorker,
   type ImageInput,
   validateImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 
 export type BridgeOptions = {
@@ -97,11 +99,12 @@ class QoiWorkerBridge implements QoiBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): QoiBridge {
-  console.log(`[qoi/bridge] createBridge called with mode: ${mode}`);
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(`[qoi/bridge] createBridge called with mode: ${resolvedMode}`);
+  if (resolvedMode === 'worker') {
     return new QoiWorkerBridge(options);
   }
   return new QoiClientBridge();

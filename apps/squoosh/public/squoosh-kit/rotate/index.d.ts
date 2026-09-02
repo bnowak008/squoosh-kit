@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/rotate public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { RotateOptions } from './types';
 export type { ImageInput, RotateOptions };
@@ -48,5 +48,5 @@ export declare function rotate(image: ImageInput, options?: RotateOptions, signa
  * const result = await rotator(image, { rotate: 180 });
  * await rotator.terminate();
  */
-export declare function createRotator(mode?: 'worker' | 'client', options?: BridgeOptions): RotatorFactory;
+export declare function createRotator(mode?: BridgeMode, options?: BridgeOptions): RotatorFactory;
 //# sourceMappingURL=index.d.ts.map

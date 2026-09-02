@@ -2,7 +2,7 @@
  * @squoosh-kit/webp public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { EncodeInputOptions } from './types';
 
@@ -77,7 +77,7 @@ export async function encode(
 ): Promise<Uint8Array> {
   // Use worker mode for UI responsiveness - prevents blocking the main thread
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.encode(imageData, options, signal);
@@ -95,7 +95,7 @@ export async function decode(
   signal?: AbortSignal
 ): Promise<ImageData> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.decode(data, signal);
@@ -110,7 +110,7 @@ export async function decode(
  * @returns A function that encodes an image to WebP format with optional AbortSignal.
  */
 export function createWebpEncoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): WebpEncoderFactory {
   const bridge = createBridge(mode, options);
@@ -138,7 +138,7 @@ export function createWebpEncoder(
  * @returns A function that decodes WebP data to ImageData with optional AbortSignal.
  */
 export function createWebpDecoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): WebpDecoderFactory {
   const bridge = createBridge(mode, options);

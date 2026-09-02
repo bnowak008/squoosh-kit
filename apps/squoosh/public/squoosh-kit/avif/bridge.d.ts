@@ -1,7 +1,7 @@
 /**
  * Bridge implementation for the AVIF package, handling worker and client modes.
  */
-import { type ImageInput } from '@squoosh-kit/runtime';
+import { type ImageInput, type BridgeMode } from '@squoosh-kit/runtime';
 import type { AvifEncodeOptions } from './types';
 export type BridgeOptions = {
     /**
@@ -15,6 +15,6 @@ interface AvifBridge {
     decode(data: BufferSource, signal?: AbortSignal): Promise<ImageData>;
     terminate(): Promise<void>;
 }
-export declare function createBridge(mode: 'worker' | 'client', options?: BridgeOptions): AvifBridge;
+export declare function createBridge(mode?: BridgeMode, options?: BridgeOptions): AvifBridge;
 export {};
 //# sourceMappingURL=bridge.d.ts.map

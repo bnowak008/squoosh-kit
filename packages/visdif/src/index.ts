@@ -2,7 +2,7 @@
  * @squoosh-kit/visdif public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 
 export type { ImageInput };
@@ -54,7 +54,7 @@ export async function compare(
   signal?: AbortSignal
 ): Promise<number> {
   if (!globalBridge) {
-    globalBridge = createBridge('worker');
+    globalBridge = createBridge('auto');
   }
   return globalBridge.compare(image1, image2, signal);
 }
@@ -73,7 +73,7 @@ export async function compare(
  * await visdiff.terminate();
  */
 export function createVisDiff(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): VisDifFactory {
   const bridge = createBridge(mode, options);

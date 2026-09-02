@@ -7,6 +7,8 @@ import {
   createReadyWorker,
   type ImageInput,
   validateImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import type { ImagequantOptions } from './types';
 
@@ -103,11 +105,14 @@ class ImagequantWorkerBridge implements ImagequantBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): ImagequantBridge {
-  console.log(`[imagequant/bridge] createBridge called with mode: ${mode}`);
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(
+    `[imagequant/bridge] createBridge called with mode: ${resolvedMode}`
+  );
+  if (resolvedMode === 'worker') {
     return new ImagequantWorkerBridge(options);
   }
   return new ImagequantClientBridge();

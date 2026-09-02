@@ -2,7 +2,7 @@
  * @squoosh-kit/hqx public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { HqxOptions } from './types';
 
@@ -52,7 +52,7 @@ export async function upscale(
   signal?: AbortSignal
 ): Promise<ImageInput> {
   if (!globalBridge) {
-    globalBridge = createBridge('worker');
+    globalBridge = createBridge('auto');
   }
   return globalBridge.upscale(image, options, signal);
 }
@@ -70,7 +70,7 @@ export async function upscale(
  * await upscaler.terminate();
  */
 export function createHqxUpscaler(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): HqxUpscalerFactory {
   const bridge = createBridge(mode, options);

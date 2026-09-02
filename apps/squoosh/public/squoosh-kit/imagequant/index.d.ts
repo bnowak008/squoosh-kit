@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/imagequant public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { ImagequantOptions } from './types';
 export type { ImageInput, ImagequantOptions };
@@ -51,5 +51,5 @@ export declare function quantize(image: ImageInput, options?: ImagequantOptions,
  * @param options - Optional bridge options.
  * @returns A function that quantizes an image with optional AbortSignal.
  */
-export declare function createImagequantQuantizer(mode?: 'worker' | 'client', options?: BridgeOptions): ImagequantQuantizerFactory;
+export declare function createImagequantQuantizer(mode?: BridgeMode, options?: BridgeOptions): ImagequantQuantizerFactory;
 //# sourceMappingURL=index.d.ts.map

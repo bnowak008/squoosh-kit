@@ -15,9 +15,27 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
 // ../runtime/src/env.ts
+function isWorker() {
+  return typeof self !== "undefined" && typeof globalThis.DedicatedWorkerGlobalScope !== "undefined";
+}
+function isBrowser() {
+  return typeof window !== "undefined" && typeof document !== "undefined";
+}
 function isBun() {
   return typeof Bun !== "undefined";
 }
+
+// ../runtime/src/bridge-mode.ts
+function resolveBridgeMode(mode = "auto") {
+  if (mode === "worker" || mode === "client") {
+    return mode;
+  }
+  if (isBrowser() && !isWorker()) {
+    return "worker";
+  }
+  return "client";
+}
+var init_bridge_mode = () => {};
 
 // ../runtime/src/worker-call.ts
 async function callWorker(worker, type, payload, signal, transfer) {
@@ -365,6 +383,7 @@ var init_simd_detector = () => {};
 
 // ../runtime/src/index.ts
 var init_src = __esm(() => {
+  init_bridge_mode();
   init_worker_helper();
   init_simd_detector();
 });
@@ -772,9 +791,10 @@ class WebpWorkerBridge {
     }
   }
 }
-function createBridge(mode, options) {
-  console.log(`[webp/bridge] createBridge called with mode: ${mode}`);
-  if (mode === "worker") {
+function createBridge(mode = "auto", options) {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(`[webp/bridge] createBridge called with mode: ${resolvedMode}`);
+  if (resolvedMode === "worker") {
     return new WebpWorkerBridge(options);
   }
   return new WebpClientBridge;
@@ -784,17 +804,17 @@ function createBridge(mode, options) {
 var globalClientBridge = null;
 async function encode(imageData, options, signal) {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge("worker");
+    globalClientBridge = createBridge("auto");
   }
   return globalClientBridge.encode(imageData, options, signal);
 }
 async function decode(data, signal) {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge("worker");
+    globalClientBridge = createBridge("auto");
   }
   return globalClientBridge.decode(data, signal);
 }
-function createWebpEncoder(mode = "worker", options) {
+function createWebpEncoder(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((imageData, options2, signal) => {
     return bridge.encode(imageData, options2, signal);
@@ -804,7 +824,7 @@ function createWebpEncoder(mode = "worker", options) {
     }
   });
 }
-function createWebpDecoder(mode = "worker", options) {
+function createWebpDecoder(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((data, signal) => {
     return bridge.decode(data, signal);
@@ -821,4 +841,4 @@ export {
   createWebpDecoder
 };
 
-//# debugId=28B7DA41E274552364756E2164756E21
+//# debugId=E3521A20D7B1EC7564756E2164756E21

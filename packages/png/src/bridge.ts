@@ -6,6 +6,8 @@ import {
   callWorker,
   createReadyWorker,
   type ImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import { validateImageInput } from '@squoosh-kit/runtime';
 
@@ -89,10 +91,11 @@ class PngWorkerBridge implements PngBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): PngBridge {
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  if (resolvedMode === 'worker') {
     return new PngWorkerBridge(options);
   }
   return new PngClientBridge();

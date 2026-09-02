@@ -6,6 +6,8 @@ import {
   callWorker,
   createReadyWorker,
   type ImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import { validateImageInput } from '@squoosh-kit/runtime';
 import type { JxlEncodeOptions } from './types';
@@ -111,11 +113,12 @@ class JxlWorkerBridge implements JxlBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): JxlBridge {
-  console.log(`[jxl/bridge] createBridge called with mode: ${mode}`);
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(`[jxl/bridge] createBridge called with mode: ${resolvedMode}`);
+  if (resolvedMode === 'worker') {
     return new JxlWorkerBridge(options);
   }
   return new JxlClientBridge();

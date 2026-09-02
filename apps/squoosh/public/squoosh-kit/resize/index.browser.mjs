@@ -15,9 +15,27 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
 // ../runtime/src/env.ts
+function isWorker() {
+  return typeof self !== "undefined" && typeof globalThis.DedicatedWorkerGlobalScope !== "undefined";
+}
+function isBrowser() {
+  return typeof window !== "undefined" && typeof document !== "undefined";
+}
 function isBun() {
   return typeof Bun !== "undefined";
 }
+
+// ../runtime/src/bridge-mode.ts
+function resolveBridgeMode(mode = "auto") {
+  if (mode === "worker" || mode === "client") {
+    return mode;
+  }
+  if (isBrowser() && !isWorker()) {
+    return "worker";
+  }
+  return "client";
+}
+var init_bridge_mode = () => {};
 
 // ../runtime/src/worker-call.ts
 async function callWorker(worker, type, payload, signal, transfer) {
@@ -341,6 +359,7 @@ var init_simd_detector = () => {};
 
 // ../runtime/src/index.ts
 var init_src = __esm(() => {
+  init_bridge_mode();
   init_worker_helper();
   init_simd_detector();
 });
@@ -635,8 +654,9 @@ class ResizeWorkerBridge {
     }
   }
 }
-function createBridge(mode, options) {
-  if (mode === "worker") {
+function createBridge(mode = "auto", options) {
+  const resolvedMode = resolveBridgeMode(mode);
+  if (resolvedMode === "worker") {
     return new ResizeWorkerBridge(options);
   }
   return new ResizeClientBridge;
@@ -646,11 +666,11 @@ function createBridge(mode, options) {
 var globalClientBridge = null;
 async function resize2(imageData, options, signal) {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge("worker");
+    globalClientBridge = createBridge("auto");
   }
   return globalClientBridge.resize(imageData, options, signal);
 }
-function createResizer(mode = "worker", options) {
+function createResizer(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((imageData, options2, signal) => {
     return bridge.resize(imageData, options2, signal);
@@ -665,4 +685,4 @@ export {
   createResizer
 };
 
-//# debugId=0AABD0D24993039064756E2164756E21
+//# debugId=E07D666808E7A7C864756E2164756E21

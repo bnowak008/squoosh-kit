@@ -7,6 +7,8 @@ import {
   createReadyWorker,
   type ImageInput,
   validateImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import type { HqxOptions } from './types';
 
@@ -88,10 +90,11 @@ class HqxWorkerBridge implements HqxBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): HqxBridge {
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  if (resolvedMode === 'worker') {
     return new HqxWorkerBridge(options);
   }
   return new HqxClientBridge();

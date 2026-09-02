@@ -6,6 +6,8 @@ import {
   callWorker,
   createReadyWorker,
   type ImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 
 export type BridgeOptions = {
@@ -85,10 +87,11 @@ class VisDifWorkerBridge implements VisDifBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): VisDifBridge {
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  if (resolvedMode === 'worker') {
     return new VisDifWorkerBridge(options);
   }
   return new VisDifClientBridge();

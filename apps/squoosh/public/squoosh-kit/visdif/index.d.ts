@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/visdif public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 export type { ImageInput };
 export type { VisDifModule } from './types';
@@ -51,5 +51,5 @@ export declare function compare(image1: ImageInput, image2: ImageInput, signal?:
  * console.log(`Butteraugli distance: ${distance}`);
  * await visdiff.terminate();
  */
-export declare function createVisDiff(mode?: 'worker' | 'client', options?: BridgeOptions): VisDifFactory;
+export declare function createVisDiff(mode?: BridgeMode, options?: BridgeOptions): VisDifFactory;
 //# sourceMappingURL=index.d.ts.map

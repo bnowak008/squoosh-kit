@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/png public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 export type { ImageInput };
 /**
@@ -45,7 +45,7 @@ export declare function decode(data: Uint8Array, signal?: AbortSignal): Promise<
  * @param options - Optional bridge configuration options.
  * @returns A function that encodes image data to PNG.
  */
-export declare function createPngEncoder(mode?: 'worker' | 'client', options?: BridgeOptions): PngEncoderFactory;
+export declare function createPngEncoder(mode?: BridgeMode, options?: BridgeOptions): PngEncoderFactory;
 /**
  * Creates a reusable PNG decoder for a specific execution mode.
  *
@@ -53,5 +53,5 @@ export declare function createPngEncoder(mode?: 'worker' | 'client', options?: B
  * @param options - Optional bridge configuration options.
  * @returns A function that decodes PNG data to ImageData.
  */
-export declare function createPngDecoder(mode?: 'worker' | 'client', options?: BridgeOptions): PngDecoderFactory;
+export declare function createPngDecoder(mode?: BridgeMode, options?: BridgeOptions): PngDecoderFactory;
 //# sourceMappingURL=index.d.ts.map

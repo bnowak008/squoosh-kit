@@ -3,8 +3,21 @@
  */
 
 import { describe, it, expect } from 'bun:test';
+import { resolveBridgeMode } from '../src/bridge-mode.js';
 import { resolveServerWorkerScript } from '../src/worker-helper.js';
 import { validateArrayBuffer } from '../src/validators.js';
+
+describe('Bridge mode resolution', () => {
+  it('defaults to client in Bun', () => {
+    expect(resolveBridgeMode()).toBe('client');
+    expect(resolveBridgeMode('auto')).toBe('client');
+  });
+
+  it('honors explicit worker and client modes', () => {
+    expect(resolveBridgeMode('worker')).toBe('worker');
+    expect(resolveBridgeMode('client')).toBe('client');
+  });
+});
 
 function scriptUrlToPath(scriptUrl: string | URL): string {
   const href = typeof scriptUrl === 'string' ? scriptUrl : scriptUrl.href;

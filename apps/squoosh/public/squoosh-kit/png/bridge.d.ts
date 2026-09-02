@@ -1,7 +1,7 @@
 /**
  * Bridge implementation for the PNG package, handling worker and client modes.
  */
-import { type ImageInput } from '@squoosh-kit/runtime';
+import { type ImageInput, type BridgeMode } from '@squoosh-kit/runtime';
 export type BridgeOptions = {
     /**
      * Public URL prefix for worker and WASM files.
@@ -14,6 +14,6 @@ interface PngBridge {
     decode(data: Uint8Array, signal?: AbortSignal): Promise<ImageData>;
     terminate(): Promise<void>;
 }
-export declare function createBridge(mode: 'worker' | 'client', options?: BridgeOptions): PngBridge;
+export declare function createBridge(mode?: BridgeMode, options?: BridgeOptions): PngBridge;
 export {};
 //# sourceMappingURL=bridge.d.ts.map

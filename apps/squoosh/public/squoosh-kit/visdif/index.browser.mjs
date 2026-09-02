@@ -15,9 +15,27 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
 // ../runtime/src/env.ts
+function isWorker() {
+  return typeof self !== "undefined" && typeof globalThis.DedicatedWorkerGlobalScope !== "undefined";
+}
+function isBrowser() {
+  return typeof window !== "undefined" && typeof document !== "undefined";
+}
 function isBun() {
   return typeof Bun !== "undefined";
 }
+
+// ../runtime/src/bridge-mode.ts
+function resolveBridgeMode(mode = "auto") {
+  if (mode === "worker" || mode === "client") {
+    return mode;
+  }
+  if (isBrowser() && !isWorker()) {
+    return "worker";
+  }
+  return "client";
+}
+var init_bridge_mode = () => {};
 
 // ../runtime/src/worker-call.ts
 async function callWorker(worker, type, payload, signal, transfer) {
@@ -312,6 +330,7 @@ var init_simd_detector = () => {};
 
 // ../runtime/src/index.ts
 var init_src = __esm(() => {
+  init_bridge_mode();
   init_worker_helper();
   init_simd_detector();
 });
@@ -474,8 +493,9 @@ class VisDifWorkerBridge {
     }
   }
 }
-function createBridge(mode, options) {
-  if (mode === "worker") {
+function createBridge(mode = "auto", options) {
+  const resolvedMode = resolveBridgeMode(mode);
+  if (resolvedMode === "worker") {
     return new VisDifWorkerBridge(options);
   }
   return new VisDifClientBridge;
@@ -485,11 +505,11 @@ function createBridge(mode, options) {
 var globalBridge = null;
 async function compare(image1, image2, signal) {
   if (!globalBridge) {
-    globalBridge = createBridge("worker");
+    globalBridge = createBridge("auto");
   }
   return globalBridge.compare(image1, image2, signal);
 }
-function createVisDiff(mode = "worker", options) {
+function createVisDiff(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((image1, image2, signal) => {
     return bridge.compare(image1, image2, signal);
@@ -504,4 +524,4 @@ export {
   compare
 };
 
-//# debugId=8DC599A0B5EE1E3464756E2164756E21
+//# debugId=C43BD9A6A607246164756E2164756E21

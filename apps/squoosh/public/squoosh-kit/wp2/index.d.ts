@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/wp2 public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { Wp2EncodeOptions } from './types';
 export type { ImageInput, Wp2EncodeOptions };
@@ -74,7 +74,7 @@ export declare function decode(data: BufferSource, signal?: AbortSignal): Promis
  * @param options - Optional bridge options.
  * @returns A function that encodes an image to WP2 format with optional AbortSignal.
  */
-export declare function createWp2Encoder(mode?: 'worker' | 'client', options?: BridgeOptions): Wp2EncoderFactory;
+export declare function createWp2Encoder(mode?: BridgeMode, options?: BridgeOptions): Wp2EncoderFactory;
 /**
  * Creates a reusable WP2 decoder function for a specific execution mode.
  *
@@ -82,5 +82,5 @@ export declare function createWp2Encoder(mode?: 'worker' | 'client', options?: B
  * @param options - Optional bridge options.
  * @returns A function that decodes WP2 data to ImageData with optional AbortSignal.
  */
-export declare function createWp2Decoder(mode?: 'worker' | 'client', options?: BridgeOptions): Wp2DecoderFactory;
+export declare function createWp2Decoder(mode?: BridgeMode, options?: BridgeOptions): Wp2DecoderFactory;
 //# sourceMappingURL=index.d.ts.map

@@ -6,6 +6,8 @@ import {
   callWorker,
   createReadyWorker,
   type ImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import { validateImageInput } from '@squoosh-kit/runtime';
 import type { OxipngOptions } from './types';
@@ -88,10 +90,11 @@ class OxipngWorkerBridge implements OxipngBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): OxipngBridge {
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  if (resolvedMode === 'worker') {
     return new OxipngWorkerBridge(options);
   }
   return new OxipngClientBridge();

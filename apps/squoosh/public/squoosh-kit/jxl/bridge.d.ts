@@ -1,7 +1,7 @@
 /**
  * Bridge implementation for the JXL package, handling worker and client modes.
  */
-import { type ImageInput } from '@squoosh-kit/runtime';
+import { type ImageInput, type BridgeMode } from '@squoosh-kit/runtime';
 import type { JxlEncodeOptions } from './types';
 export type BridgeOptions = {
     /**
@@ -15,6 +15,6 @@ interface JxlBridge {
     decode(data: Uint8Array, signal?: AbortSignal): Promise<ImageData>;
     terminate(): Promise<void>;
 }
-export declare function createBridge(mode: 'worker' | 'client', options?: BridgeOptions): JxlBridge;
+export declare function createBridge(mode?: BridgeMode, options?: BridgeOptions): JxlBridge;
 export {};
 //# sourceMappingURL=bridge.d.ts.map

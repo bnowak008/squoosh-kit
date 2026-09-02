@@ -2,7 +2,7 @@
  * @squoosh-kit/wp2 public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { Wp2EncodeOptions } from './types';
 
@@ -83,7 +83,7 @@ export async function encode(
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.encode(imageData, options, signal);
@@ -101,7 +101,7 @@ export async function decode(
   signal?: AbortSignal
 ): Promise<ImageData> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.decode(data, signal);
@@ -115,7 +115,7 @@ export async function decode(
  * @returns A function that encodes an image to WP2 format with optional AbortSignal.
  */
 export function createWp2Encoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): Wp2EncoderFactory {
   const bridge = createBridge(mode, options);
@@ -144,7 +144,7 @@ export function createWp2Encoder(
  * @returns A function that decodes WP2 data to ImageData with optional AbortSignal.
  */
 export function createWp2Decoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): Wp2DecoderFactory {
   const bridge = createBridge(mode, options);
