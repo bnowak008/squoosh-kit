@@ -1,9 +1,5 @@
 import { useMemo } from 'react';
-import {
-  AMBIENT_BLOB_COUNT,
-  BLOB_COLOR,
-  generateAmbientBlobs,
-} from './config';
+import { AMBIENT_BLOB_COUNT, BLOB_COLOR, generateAmbientBlobs } from './config';
 
 export default function AmbientBlobs() {
   const blobs = useMemo(() => generateAmbientBlobs(AMBIENT_BLOB_COUNT), []);

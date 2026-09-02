@@ -38,19 +38,38 @@ const PACKAGE_CATALOG: PackageEntry[] = [
   { id: 'core', purpose: 'All codecs bundled together' },
   { id: 'webp', namespace: 'webp', purpose: 'WebP encoding/decoding' },
   { id: 'avif', namespace: 'avif', purpose: 'AVIF encoding/decoding' },
-  { id: 'mozjpeg', namespace: 'mozjpeg', purpose: 'Optimized JPEG encoding/decoding' },
+  {
+    id: 'mozjpeg',
+    namespace: 'mozjpeg',
+    purpose: 'Optimized JPEG encoding/decoding',
+  },
   { id: 'jxl', namespace: 'jxl', purpose: 'JPEG XL encoding/decoding' },
-  { id: 'wp2', namespace: 'wp2', purpose: 'WP2 encoding/decoding (experimental)' },
+  {
+    id: 'wp2',
+    namespace: 'wp2',
+    purpose: 'WP2 encoding/decoding (experimental)',
+  },
   { id: 'png', namespace: 'png', purpose: 'Lossless PNG encoding/decoding' },
   { id: 'qoi', namespace: 'qoi', purpose: 'QOI lossless encoding/decoding' },
   { id: 'resize', namespace: 'resize', purpose: 'High-quality image resizing' },
   { id: 'rotate', namespace: 'rotate', purpose: '90°/180°/270° rotation' },
   { id: 'oxipng', namespace: 'oxipng', purpose: 'Lossless PNG optimization' },
-  { id: 'imagequant', namespace: 'imagequant', purpose: 'Palette quantization (PNG-8)' },
+  {
+    id: 'imagequant',
+    namespace: 'imagequant',
+    purpose: 'Palette quantization (PNG-8)',
+  },
   { id: 'hqx', namespace: 'hqx', purpose: 'Pixel-art upscaling (2x/3x/4x)' },
-  { id: 'visdif', namespace: 'visdif', purpose: 'Butteraugli perceptual comparison' },
+  {
+    id: 'visdif',
+    namespace: 'visdif',
+    purpose: 'Butteraugli perceptual comparison',
+  },
   { id: 'runtime', purpose: 'Internal runtime utilities' },
-  { id: 'vite-plugin', purpose: 'Vite plugin for WASM assets and CORS headers' },
+  {
+    id: 'vite-plugin',
+    purpose: 'Vite plugin for WASM assets and CORS headers',
+  },
 ];
 
 function npmName(id: string): string {
@@ -75,8 +94,14 @@ function relatedPackagesSection(): string {
     purpose: entry.purpose,
   }));
 
-  const packageWidth = Math.max('Package'.length, ...rows.map((row) => row.package.length));
-  const purposeWidth = Math.max('Purpose'.length, ...rows.map((row) => row.purpose.length));
+  const packageWidth = Math.max(
+    'Package'.length,
+    ...rows.map((row) => row.package.length)
+  );
+  const purposeWidth = Math.max(
+    'Purpose'.length,
+    ...rows.map((row) => row.purpose.length)
+  );
 
   const lines = [
     '## Related Packages',
@@ -86,7 +111,8 @@ function relatedPackagesSection(): string {
     `| ${pad('Package', packageWidth)} | ${pad('Purpose', purposeWidth)} |`,
     `| ${'-'.repeat(packageWidth)} | ${'-'.repeat(purposeWidth)} |`,
     ...rows.map(
-      (row) => `| ${pad(row.package, packageWidth)} | ${pad(row.purpose, purposeWidth)} |`
+      (row) =>
+        `| ${pad(row.package, packageWidth)} | ${pad(row.purpose, purposeWidth)} |`
     ),
     '',
   ];
@@ -95,15 +121,26 @@ function relatedPackagesSection(): string {
 }
 
 function coreIncludedSection(): string {
-  const rows = PACKAGE_CATALOG.filter((entry) => entry.namespace !== undefined).map((entry) => ({
+  const rows = PACKAGE_CATALOG.filter(
+    (entry) => entry.namespace !== undefined
+  ).map((entry) => ({
     namespace: `\`${entry.namespace}\``,
     package: npmLink(entry.id),
     purpose: entry.purpose,
   }));
 
-  const namespaceWidth = Math.max('Namespace'.length, ...rows.map((row) => row.namespace.length));
-  const packageWidth = Math.max('Package'.length, ...rows.map((row) => row.package.length));
-  const purposeWidth = Math.max('Purpose'.length, ...rows.map((row) => row.purpose.length));
+  const namespaceWidth = Math.max(
+    'Namespace'.length,
+    ...rows.map((row) => row.namespace.length)
+  );
+  const packageWidth = Math.max(
+    'Package'.length,
+    ...rows.map((row) => row.package.length)
+  );
+  const purposeWidth = Math.max(
+    'Purpose'.length,
+    ...rows.map((row) => row.purpose.length)
+  );
 
   const lines = [
     '| ' +
@@ -114,9 +151,11 @@ function coreIncludedSection(): string {
       ].join(' | ') +
       ' |',
     '| ' +
-      ['-'.repeat(namespaceWidth), '-'.repeat(packageWidth), '-'.repeat(purposeWidth)].join(
-        ' | '
-      ) +
+      [
+        '-'.repeat(namespaceWidth),
+        '-'.repeat(packageWidth),
+        '-'.repeat(purposeWidth),
+      ].join(' | ') +
       ' |',
     ...rows.map(
       (row) =>
@@ -145,7 +184,10 @@ function replaceMarkedSection(
   return content.slice(0, beginIndex) + replacement.replace(/\n*$/, '') + after;
 }
 
-function insertRelatedBeforeLicense(content: string, section: string): string | null {
+function insertRelatedBeforeLicense(
+  content: string,
+  section: string
+): string | null {
   const licenseHeading = '\n## License\n';
   const licenseIndex = content.indexOf(licenseHeading);
   if (licenseIndex === -1) {
@@ -157,8 +199,16 @@ function insertRelatedBeforeLicense(content: string, section: string): string | 
   return `${before}${section}\n\n${after}`;
 }
 
-function syncRelatedPackages(content: string, section: string): { content: string; ok: boolean } {
-  const replaced = replaceMarkedSection(content, RELATED_BEGIN, RELATED_END, section);
+function syncRelatedPackages(
+  content: string,
+  section: string
+): { content: string; ok: boolean } {
+  const replaced = replaceMarkedSection(
+    content,
+    RELATED_BEGIN,
+    RELATED_END,
+    section
+  );
   if (replaced !== null) {
     return { content: replaced, ok: true };
   }
@@ -171,8 +221,16 @@ function syncRelatedPackages(content: string, section: string): { content: strin
   return { content, ok: false };
 }
 
-function syncCoreIncluded(content: string, section: string): { content: string; ok: boolean } {
-  const replaced = replaceMarkedSection(content, CORE_INCLUDED_BEGIN, CORE_INCLUDED_END, section);
+function syncCoreIncluded(
+  content: string,
+  section: string
+): { content: string; ok: boolean } {
+  const replaced = replaceMarkedSection(
+    content,
+    CORE_INCLUDED_BEGIN,
+    CORE_INCLUDED_END,
+    section
+  );
   if (replaced !== null) {
     return { content: replaced, ok: true };
   }
@@ -217,8 +275,16 @@ function licenseSection(packageId: string, license: string): string {
   return `${LICENSE_BEGIN}\n${lines.join('\n')}${LICENSE_END}`;
 }
 
-function syncLicense(content: string, section: string): { content: string; ok: boolean } {
-  const replaced = replaceMarkedSection(content, LICENSE_BEGIN, LICENSE_END, section);
+function syncLicense(
+  content: string,
+  section: string
+): { content: string; ok: boolean } {
+  const replaced = replaceMarkedSection(
+    content,
+    LICENSE_BEGIN,
+    LICENSE_END,
+    section
+  );
   if (replaced !== null) {
     return { content: replaced, ok: true };
   }
@@ -266,7 +332,9 @@ async function main(): Promise<void> {
 
     const license = await readPackageLicense(packageId);
     if (license === null) {
-      console.error(`failed ${packageId}: missing or invalid package.json license`);
+      console.error(
+        `failed ${packageId}: missing or invalid package.json license`
+      );
       failed = true;
       continue;
     }
@@ -275,7 +343,9 @@ async function main(): Promise<void> {
     let next = original;
     const relatedResult = syncRelatedPackages(next, relatedSection);
     if (!relatedResult.ok) {
-      console.error(`failed ${packageId}: could not insert Related Packages section`);
+      console.error(
+        `failed ${packageId}: could not insert Related Packages section`
+      );
       failed = true;
       continue;
     }

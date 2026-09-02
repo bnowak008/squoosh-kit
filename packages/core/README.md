@@ -68,6 +68,7 @@ Add [`@squoosh-kit/vite-plugin`](https://www.npmjs.com/package/@squoosh-kit/vite
 This package bundles all Squoosh-Kit codecs under a single import:
 
 <!-- BEGIN:SQUOOSH-KIT-CORE-INCLUDED -->
+
 | Namespace    | Package                                                                            | Purpose                              |
 | ------------ | ---------------------------------------------------------------------------------- | ------------------------------------ |
 | `webp`       | [`@squoosh-kit/webp`](https://www.npmjs.com/package/@squoosh-kit/webp)             | WebP encoding/decoding               |
@@ -83,6 +84,7 @@ This package bundles all Squoosh-Kit codecs under a single import:
 | `imagequant` | [`@squoosh-kit/imagequant`](https://www.npmjs.com/package/@squoosh-kit/imagequant) | Palette quantization (PNG-8)         |
 | `hqx`        | [`@squoosh-kit/hqx`](https://www.npmjs.com/package/@squoosh-kit/hqx)               | Pixel-art upscaling (2x/3x/4x)       |
 | `visdif`     | [`@squoosh-kit/visdif`](https://www.npmjs.com/package/@squoosh-kit/visdif)         | Butteraugli perceptual comparison    |
+
 <!-- END:SQUOOSH-KIT-CORE-INCLUDED -->
 
 ## When to Use Core vs Individual Packages
@@ -118,6 +120,7 @@ All functions follow the same patterns as the individual packages. For detailed 
 - [VisDif](https://www.npmjs.com/package/@squoosh-kit/visdif) — `compare`, `createVisDiff`
 
 <!-- BEGIN:SQUOOSH-KIT-RELATED-PACKAGES -->
+
 ## Related Packages
 
 Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only what you need:
@@ -140,9 +143,11 @@ Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only wh
 | [`@squoosh-kit/visdif`](https://www.npmjs.com/package/@squoosh-kit/visdif)           | Butteraugli perceptual comparison            |
 | [`@squoosh-kit/runtime`](https://www.npmjs.com/package/@squoosh-kit/runtime)         | Internal runtime utilities                   |
 | [`@squoosh-kit/vite-plugin`](https://www.npmjs.com/package/@squoosh-kit/vite-plugin) | Vite plugin for WASM assets and CORS headers |
+
 <!-- END:SQUOOSH-KIT-RELATED-PACKAGES -->
 
 <!-- BEGIN:SQUOOSH-KIT-LICENSE -->
+
 ## License
 
 The `@squoosh-kit/core` source code is licensed under the **MIT License** — see [LICENSE](https://github.com/bnowak008/squoosh-kit/blob/main/LICENSE).
@@ -151,4 +156,3 @@ The WebAssembly binaries distributed with this package are compiled from [Google
 
 The two licenses are compatible — both are permissive and allow commercial use.
 <!-- END:SQUOOSH-KIT-LICENSE -->
-

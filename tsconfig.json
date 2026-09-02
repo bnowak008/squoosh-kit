@@ -4,6 +4,6 @@
     { "path": "packages/runtime" },
     { "path": "packages/webp" },
     { "path": "packages/resize" },
-    { "path": "packages/core" },
+    { "path": "packages/core" }
   ]
 }

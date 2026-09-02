@@ -1,4 +1,11 @@
-import { useState, useCallback, useEffect, useRef, type SyntheticEvent, type ChangeEvent } from 'react';
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  type SyntheticEvent,
+  type ChangeEvent,
+} from 'react';
 import Logo from './Logo';
 import { CODECS } from '../codec/registry';
 import type { CodecId } from '../types';
@@ -105,9 +112,8 @@ function AnimatedPackageName({ name, animate }: AnimatedPackageNameProps) {
 }
 
 export default function InfoPanel({ codecId }: Props) {
-  const [selectedPackage, setSelectedPackage] = useState<InstallPackage>(
-    randomPackage
-  );
+  const [selectedPackage, setSelectedPackage] =
+    useState<InstallPackage>(randomPackage);
   const [packageLocked, setPackageLocked] = useState(false);
   const [copied, setCopied] = useState(false);
   const [motionEnabled, setMotionEnabled] = useState(true);

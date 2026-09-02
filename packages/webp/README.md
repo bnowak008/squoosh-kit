@@ -323,6 +323,7 @@ This means that at 85% quality, you get smaller files than the original by apply
 - **TypeScript** - Complete type definitions included
 
 <!-- BEGIN:SQUOOSH-KIT-RELATED-PACKAGES -->
+
 ## Related Packages
 
 Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only what you need:
@@ -345,9 +346,11 @@ Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only wh
 | [`@squoosh-kit/visdif`](https://www.npmjs.com/package/@squoosh-kit/visdif)           | Butteraugli perceptual comparison            |
 | [`@squoosh-kit/runtime`](https://www.npmjs.com/package/@squoosh-kit/runtime)         | Internal runtime utilities                   |
 | [`@squoosh-kit/vite-plugin`](https://www.npmjs.com/package/@squoosh-kit/vite-plugin) | Vite plugin for WASM assets and CORS headers |
+
 <!-- END:SQUOOSH-KIT-RELATED-PACKAGES -->
 
 <!-- BEGIN:SQUOOSH-KIT-LICENSE -->
+
 ## License
 
 The `@squoosh-kit/webp` source code is licensed under the **MIT License** — see [LICENSE](https://github.com/bnowak008/squoosh-kit/blob/main/LICENSE).
@@ -356,4 +359,3 @@ The WebAssembly binaries distributed with this package are compiled from [Google
 
 The two licenses are compatible — both are permissive and allow commercial use.
 <!-- END:SQUOOSH-KIT-LICENSE -->
-

@@ -93,6 +93,7 @@ If you're working on Squoosh-Kit itself, this package is where the magic happens
 For detailed API documentation, check the TypeScript definitions and source code comments - everything is thoroughly documented for maintainers.
 
 <!-- BEGIN:SQUOOSH-KIT-RELATED-PACKAGES -->
+
 ## Related Packages
 
 Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only what you need:
@@ -115,11 +116,12 @@ Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only wh
 | [`@squoosh-kit/visdif`](https://www.npmjs.com/package/@squoosh-kit/visdif)           | Butteraugli perceptual comparison            |
 | [`@squoosh-kit/runtime`](https://www.npmjs.com/package/@squoosh-kit/runtime)         | Internal runtime utilities                   |
 | [`@squoosh-kit/vite-plugin`](https://www.npmjs.com/package/@squoosh-kit/vite-plugin) | Vite plugin for WASM assets and CORS headers |
+
 <!-- END:SQUOOSH-KIT-RELATED-PACKAGES -->
 
 <!-- BEGIN:SQUOOSH-KIT-LICENSE -->
+
 ## License
 
 The `@squoosh-kit/runtime` source code is licensed under the **MIT License** — see [LICENSE](https://github.com/bnowak008/squoosh-kit/blob/main/LICENSE).
 <!-- END:SQUOOSH-KIT-LICENSE -->
-
