@@ -234,6 +234,9 @@ Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only wh
 | [`@squoosh-kit/vite-plugin`](https://www.npmjs.com/package/@squoosh-kit/vite-plugin) | Vite plugin for WASM assets and CORS headers |
 <!-- END:SQUOOSH-KIT-RELATED-PACKAGES -->
 
+<!-- BEGIN:SQUOOSH-KIT-LICENSE -->
 ## License
 
-MIT - part of the Squoosh-Kit family
+The `@squoosh-kit/vite-plugin` source code is licensed under the **MIT License** — see [LICENSE](https://github.com/bnowak008/squoosh-kit/blob/main/LICENSE).
+<!-- END:SQUOOSH-KIT-LICENSE -->
+

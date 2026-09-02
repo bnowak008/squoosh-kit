@@ -244,6 +244,13 @@ Part of [Squoosh-Kit](https://github.com/bnowak008/squoosh-kit). Install only wh
 | [`@squoosh-kit/vite-plugin`](https://www.npmjs.com/package/@squoosh-kit/vite-plugin) | Vite plugin for WASM assets and CORS headers |
 <!-- END:SQUOOSH-KIT-RELATED-PACKAGES -->
 
+<!-- BEGIN:SQUOOSH-KIT-LICENSE -->
 ## License
 
-MIT - use it freely in your projects
+The `@squoosh-kit/visdif` source code is licensed under the **MIT License** — see [LICENSE](https://github.com/bnowak008/squoosh-kit/blob/main/LICENSE).
+
+The WebAssembly binaries distributed with this package are compiled from [Google Squoosh](https://github.com/GoogleChromeLabs/squoosh) and are licensed under the **Apache License 2.0** — see [NOTICE](https://github.com/bnowak008/squoosh-kit/blob/main/NOTICE) for the full attribution and license text.
+
+The two licenses are compatible — both are permissive and allow commercial use.
+<!-- END:SQUOOSH-KIT-LICENSE -->
+

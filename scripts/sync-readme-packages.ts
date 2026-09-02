@@ -1,9 +1,10 @@
 /**
- * Syncs package catalog tables into package READMEs.
+ * Syncs package catalog tables and license attribution into package READMEs.
  *
  * Updates:
  *   - Related Packages section in every packages/<name>/README.md
  *   - Whats Included table in packages/core/README.md
+ *   - License section (MIT and, when applicable, Apache 2.0 Squoosh WASM)
  *
  * Usage:
  *   bun run scripts/sync-readme-packages.ts          Write updates
@@ -16,11 +17,16 @@ import { join } from 'path';
 const WORKSPACE_ROOT = join(import.meta.dir, '..');
 const PACKAGES_DIR = join(WORKSPACE_ROOT, 'packages');
 const REPO_URL = 'https://github.com/bnowak008/squoosh-kit';
+const SQUOOSH_URL = 'https://github.com/GoogleChromeLabs/squoosh';
+const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
+const NOTICE_URL = `${REPO_URL}/blob/main/NOTICE`;
 
 const RELATED_BEGIN = '<!-- BEGIN:SQUOOSH-KIT-RELATED-PACKAGES -->';
 const RELATED_END = '<!-- END:SQUOOSH-KIT-RELATED-PACKAGES -->';
 const CORE_INCLUDED_BEGIN = '<!-- BEGIN:SQUOOSH-KIT-CORE-INCLUDED -->';
 const CORE_INCLUDED_END = '<!-- END:SQUOOSH-KIT-CORE-INCLUDED -->';
+const LICENSE_BEGIN = '<!-- BEGIN:SQUOOSH-KIT-LICENSE -->';
+const LICENSE_END = '<!-- END:SQUOOSH-KIT-LICENSE -->';
 
 type PackageEntry = {
   id: string;
@@ -186,6 +192,58 @@ function syncCoreIncluded(content: string, section: string): { content: string; 
   return { content: `${before}${section}${after}`, ok: true };
 }
 
+function includesApacheLicense(license: string): boolean {
+  return /apache/i.test(license);
+}
+
+function licenseSection(packageId: string, license: string): string {
+  const name = npmName(packageId);
+  const lines = [
+    '## License',
+    '',
+    `The \`${name}\` source code is licensed under the **MIT License** — see [LICENSE](${LICENSE_URL}).`,
+  ];
+
+  if (includesApacheLicense(license)) {
+    lines.push(
+      '',
+      `The WebAssembly binaries distributed with this package are compiled from [Google Squoosh](${SQUOOSH_URL}) and are licensed under the **Apache License 2.0** — see [NOTICE](${NOTICE_URL}) for the full attribution and license text.`,
+      '',
+      'The two licenses are compatible — both are permissive and allow commercial use.'
+    );
+  }
+
+  lines.push('');
+  return `${LICENSE_BEGIN}\n${lines.join('\n')}${LICENSE_END}`;
+}
+
+function syncLicense(content: string, section: string): { content: string; ok: boolean } {
+  const replaced = replaceMarkedSection(content, LICENSE_BEGIN, LICENSE_END, section);
+  if (replaced !== null) {
+    return { content: replaced, ok: true };
+  }
+
+  const licenseHeading = '\n## License\n';
+  const licenseIndex = content.indexOf(licenseHeading);
+  if (licenseIndex === -1) {
+    return { content, ok: false };
+  }
+
+  const before = content.slice(0, licenseIndex).replace(/\s*$/, '\n\n');
+  return { content: `${before}${section}\n\n`, ok: true };
+}
+
+async function readPackageLicense(packageId: string): Promise<string | null> {
+  const packageJsonPath = join(PACKAGES_DIR, packageId, 'package.json');
+  const file = Bun.file(packageJsonPath);
+  if (!(await file.exists())) {
+    return null;
+  }
+
+  const packageJson = (await file.json()) as { license?: unknown };
+  return typeof packageJson.license === 'string' ? packageJson.license : null;
+}
+
 async function main(): Promise<void> {
   const checkOnly = process.argv.includes('--check');
   const relatedSection = relatedPackagesSection();
@@ -206,7 +264,15 @@ async function main(): Promise<void> {
       continue;
     }
 
-    let next = await file.text();
+    const license = await readPackageLicense(packageId);
+    if (license === null) {
+      console.error(`failed ${packageId}: missing or invalid package.json license`);
+      failed = true;
+      continue;
+    }
+
+    const original = await file.text();
+    let next = original;
     const relatedResult = syncRelatedPackages(next, relatedSection);
     if (!relatedResult.ok) {
       console.error(`failed ${packageId}: could not insert Related Packages section`);
@@ -225,13 +291,21 @@ async function main(): Promise<void> {
       next = includedResult.content;
     }
 
-    if (next === (await file.text())) {
+    const licenseResult = syncLicense(next, licenseSection(packageId, license));
+    if (!licenseResult.ok) {
+      console.error(`failed ${packageId}: could not sync License section`);
+      failed = true;
+      continue;
+    }
+    next = licenseResult.content;
+
+    if (next === original) {
       console.log(`ok    ${packageId}`);
       continue;
     }
 
     if (checkOnly) {
-      console.error(`drift ${packageId}: README package tables are out of sync`);
+      console.error(`drift ${packageId}: README is out of sync`);
       failed = true;
       continue;
     }
