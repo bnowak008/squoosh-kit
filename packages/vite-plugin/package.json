@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/vite-plugin",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "type": "module",
   "description": "Vite plugin for Squoosh-Kit - handles asset copying and WASM configuration",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -26,11 +26,12 @@
   },
   "files": [
     "dist/**",
+    "!dist/**/*.map",
     "README.md"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "bunx tsc -p . && bun build ./src/index.ts --outdir dist --format esm --target bun --external vite && bun build ./src/index.ts --outfile dist/index.cjs --format cjs --target bun --external vite && printf 'export default function squooshVitePlugin(squooshKitRoot: string): { name: string };\\n' > dist/index.d.ts",
+    "build": "bun run build.ts",
     "clean": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
     "prepack": "bun run build",
     "typecheck": "tsc --noEmit"

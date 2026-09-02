@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/wp2",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "type": "module",
   "description": "WP2 codec for squoosh-kit, providing encoding and decoding functionality.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -35,6 +35,7 @@
   },
   "files": [
     "dist/**",
+    "!dist/**/*.map",
     "README.md",
     "LICENSE",
     "NOTICE"

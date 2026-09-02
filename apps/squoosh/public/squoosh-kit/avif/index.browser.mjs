@@ -868,5 +868,3 @@ export {
   createAvifDecoder,
   AVIFTune2 as AVIFTune
 };
-
-//# debugId=A418D7CCF98353B464756E2164756E21

@@ -609,5 +609,3 @@ init_resize_worker();
 export {
   resizeClient
 };
-
-//# debugId=7FBD127FB61281E364756E2164756E21

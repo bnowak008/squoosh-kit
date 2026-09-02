@@ -30,7 +30,7 @@ try {
     entrypoints: [SOURCE_FILE],
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'cjs',
@@ -48,7 +48,15 @@ try {
 
   // Generate type definitions
   const typesResult = await spawn(
-    ['bun', 'tsc', '--emitDeclarationOnly', '--outDir', OUTPUT_DIR],
+    [
+      'bun',
+      'tsc',
+      '--emitDeclarationOnly',
+      '--declarationMap',
+      'false',
+      '--outDir',
+      OUTPUT_DIR,
+    ],
     { stdout: 'inherit', stderr: 'inherit' }
   ).exited;
   if (typesResult !== 0) {

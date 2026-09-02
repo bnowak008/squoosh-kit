@@ -1,6 +1,6 @@
 {
   "name": "@squoosh-kit/core",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "type": "module",
   "description": "Per-feature adapters around Squoosh codecs, worker/client runtimes.",
   "author": "Bartosz Nowak <bnowak008@gmail.com>",
@@ -50,6 +50,7 @@
   },
   "files": [
     "dist/**",
+    "!dist/**/*.map",
     "README.md",
     "LICENSE"
   ],

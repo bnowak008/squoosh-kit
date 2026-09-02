@@ -464,5 +464,3 @@ init_rotate_worker();
 export {
   rotateClient
 };
-
-//# debugId=A2BB1A6EB8231DB864756E2164756E21

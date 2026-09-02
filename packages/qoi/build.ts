@@ -11,7 +11,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'bun',
     format: 'esm',
@@ -31,7 +31,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'esm',
@@ -51,7 +51,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'cjs',
@@ -71,7 +71,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'browser',
     format: 'esm',
@@ -89,7 +89,15 @@ try {
 
   // Generate type definitions
   const typesResult = await Bun.spawn(
-    ['bun', 'tsc', '--emitDeclarationOnly', '--outDir', OUTPUT_DIR],
+    [
+      'bun',
+      'tsc',
+      '--emitDeclarationOnly',
+      '--declarationMap',
+      'false',
+      '--outDir',
+      OUTPUT_DIR,
+    ],
     { stdout: 'inherit', stderr: 'inherit' }
   ).exited;
   if (typesResult !== 0) {

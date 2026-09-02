@@ -456,5 +456,3 @@ init_visdif_worker();
 export {
   visdifCompareClient
 };
-
-//# debugId=6D2DDE315FC4153564756E2164756E21

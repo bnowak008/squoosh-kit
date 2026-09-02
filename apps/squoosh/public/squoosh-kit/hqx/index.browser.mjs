@@ -537,5 +537,3 @@ export {
   upscale,
   createHqxUpscaler
 };
-
-//# debugId=3561F06B7F4899DE64756E2164756E21

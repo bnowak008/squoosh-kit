@@ -559,5 +559,3 @@ export {
   optimize,
   createOxipngOptimizer
 };
-
-//# debugId=0BCC1F77A40C23F064756E2164756E21

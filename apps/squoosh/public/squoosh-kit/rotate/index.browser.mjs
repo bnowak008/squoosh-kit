@@ -532,5 +532,3 @@ export {
   rotate,
   createRotator
 };
-
-//# debugId=0361028E89F02AAD64756E2164756E21

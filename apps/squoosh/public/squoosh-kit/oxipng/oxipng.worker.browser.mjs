@@ -490,5 +490,3 @@ init_oxipng_worker();
 export {
   oxipngOptimizeClient
 };
-
-//# debugId=68510C4B7598B54264756E2164756E21

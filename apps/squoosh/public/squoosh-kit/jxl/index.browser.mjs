@@ -836,5 +836,3 @@ export {
   createJxlEncoder,
   createJxlDecoder
 };
-
-//# debugId=A9E21A10B64E2F1064756E2164756E21

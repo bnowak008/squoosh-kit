@@ -59,6 +59,10 @@ function withSquooshKitCodecImportWarningsFiltered(base: Logger): Logger {
   });
 }
 
+function isSquooshKitSourcemapRequest(id: string): boolean {
+  return id.includes('@squoosh-kit') && id.includes('.map');
+}
+
 function copyBrowserFiles(srcDir: string, destDir: string) {
   if (!existsSync(srcDir)) {
     console.warn(`Source directory does not exist: ${srcDir}`);
@@ -69,11 +73,7 @@ function copyBrowserFiles(srcDir: string, destDir: string) {
 
   const files = readdirSync(srcDir);
   const browserFiles = files.filter(
-    (file) =>
-      file.endsWith('.browser.mjs') ||
-      file.endsWith('.browser.mjs.map') ||
-      file.endsWith('.d.ts') ||
-      file.endsWith('.d.ts.map')
+    (file) => file.endsWith('.browser.mjs') && !file.endsWith('.map')
   );
 
   for (const file of browserFiles) {
@@ -110,6 +110,18 @@ export default function squooshVitePlugin(
 
   return {
     name: 'squoosh-vite-plugin',
+    resolveId(id) {
+      if (isSquooshKitSourcemapRequest(id)) {
+        return '\0squoosh-kit:ignore-map';
+      }
+      return null;
+    },
+    load(id) {
+      if (id === '\0squoosh-kit:ignore-map') {
+        return 'export default null';
+      }
+      return null;
+    },
     buildStart() {
       if (existsSync(publicDir)) {
         rmSync(publicDir, { recursive: true, force: true });

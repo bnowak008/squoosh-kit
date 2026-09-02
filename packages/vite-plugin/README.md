@@ -54,8 +54,7 @@ Worker mode (including **auto** in the browser) loads those assets from `/squoos
 
 The plugin automatically copies:
 
-- **Browser builds** (`.browser.mjs`, `.browser.mjs.map`)
-- **TypeScript definitions** (`.d.ts`, `.d.ts.map`)
+- **Browser builds** (`.browser.mjs` only — sourcemaps are not copied or published)
 - **WASM modules** (`.wasm` files and supporting JavaScript)
 
 From both `@squoosh-kit/webp` and `@squoosh-kit/resize` to `public/squoosh-kit/`.

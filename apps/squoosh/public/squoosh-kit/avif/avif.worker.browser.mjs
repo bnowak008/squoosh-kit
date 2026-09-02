@@ -767,5 +767,3 @@ export {
   avifEncodeClient,
   avifDecodeClient
 };
-
-//# debugId=9347CC2C560786C964756E2164756E21
