@@ -68,6 +68,54 @@ async function callWorker(worker, type, payload, signal, transfer) {
 var requestId = 0;
 
 // ../runtime/src/worker-helper.ts
+function scriptUrlToPath(scriptUrl) {
+  const href = typeof scriptUrl === "string" ? scriptUrl : scriptUrl.href;
+  if (href.startsWith("file://")) {
+    return decodeURIComponent(href.startsWith("file:///") ? href.slice(7) : href.slice(5));
+  }
+  return href;
+}
+function workerScriptExists(scriptUrl) {
+  if (typeof window !== "undefined") {
+    return false;
+  }
+  const path = scriptUrlToPath(scriptUrl);
+  if (typeof Bun !== "undefined") {
+    return Bun.spawnSync(["test", "-f", path], {
+      stdout: "ignore",
+      stderr: "ignore"
+    }).exitCode === 0;
+  }
+  try {
+    const existsSync = Function('return require("node:fs").existsSync')();
+    return existsSync(path);
+  } catch {
+    return false;
+  }
+}
+function resolveServerWorkerScript(workerConfig, normalizedName) {
+  const platformExt = isBun() ? "bun.js" : "node.mjs";
+  const baseName = normalizedName.replace(".js", "");
+  const pkgName = workerConfig.package.split("/")[1];
+  if (typeof import.meta.resolve === "function") {
+    try {
+      const resolved = import.meta.resolve(`${workerConfig.package}/${workerConfig.specifier}`);
+      if (workerScriptExists(resolved)) {
+        return resolved;
+      }
+    } catch {}
+  }
+  const candidates = [
+    new URL(`../../${pkgName}/dist/${baseName}.${platformExt}`, import.meta.url),
+    new URL(`../../${pkgName}/src/${baseName}.ts`, import.meta.url)
+  ];
+  for (const candidate of candidates) {
+    if (workerScriptExists(candidate)) {
+      return candidate;
+    }
+  }
+  throw new Error(`Failed to resolve worker script for ${normalizedName}. ` + `Tried import.meta.resolve, dist output, and TypeScript source. ` + `Ensure ${workerConfig.package} is installed.`);
+}
 function createCodecWorker(workerFilename, options) {
   const normalizedName = workerFilename.endsWith(".js") ? workerFilename : `${workerFilename}.js`;
   const workerMap = {
@@ -135,8 +183,9 @@ function createCodecWorker(workerFilename, options) {
       console.log(`[worker-helper] In browser environment. Trying to create worker:`);
       console.log(`[worker-helper]   - Package Name: ${packageName}`);
       console.log(`[worker-helper]   - Worker File: ${workerFile}`);
-      if (options?.assetPath) {
-        let normalizedAssetPath = options.assetPath;
+      const assetPath = options?.assetPath === undefined ? DEFAULT_BROWSER_ASSET_PATH : options.assetPath;
+      if (assetPath) {
+        let normalizedAssetPath = assetPath;
         if (!normalizedAssetPath.startsWith("/")) {
           normalizedAssetPath = "/" + normalizedAssetPath;
         }
@@ -145,7 +194,7 @@ function createCodecWorker(workerFilename, options) {
         }
         const workerPath = `${normalizedAssetPath}/${packageName}/${workerFile}`;
         const workerUrl = new URL(workerPath, window.location.origin).href;
-        console.log(`[worker-helper] Using provided assetPath. Full Worker URL: ${workerUrl}`);
+        console.log(`[worker-helper] Using assetPath. Full Worker URL: ${workerUrl}`);
         try {
           const worker = new Worker(workerUrl, { type: "module" });
           console.log(`[worker-helper] Successfully created worker with assetPath: ${workerUrl}`);
@@ -183,35 +232,8 @@ function createCodecWorker(workerFilename, options) {
       }
       throw new Error(`Could not resolve worker ${normalizedName} using any available path strategy`);
     }
-    const platformExt = isBun() ? ".bun.js" : ".node.mjs";
-    const baseName = normalizedName.replace(".js", "");
-    const pkgName = workerConfig.package.split("/")[1];
-    const srcRelPath = `../../${pkgName}/src/${baseName}.ts`;
-    console.log("srcRelPath:", srcRelPath);
-    console.log("import.meta.url:", import.meta.url);
-    try {
-      return new Worker(new URL(srcRelPath, import.meta.url), {
-        type: "module"
-      });
-    } catch {
-      const distRelPath = `../../${pkgName}/dist/${baseName}.${platformExt.slice(1)}`;
-      console.log("distRelPath:", distRelPath);
-      console.log("import.meta.url:", import.meta.url);
-      try {
-        return new Worker(new URL(distRelPath, import.meta.url), {
-          type: "module"
-        });
-      } catch {
-        if (typeof import.meta.resolve === "function") {
-          try {
-            const resolved = import.meta.resolve(`${workerConfig.package}/${workerConfig.specifier}`);
-            console.log("resolved:", resolved);
-            return new Worker(resolved, { type: "module" });
-          } catch {}
-        }
-      }
-    }
-    throw new Error(`Failed to create worker from ${normalizedName}. ` + `Tried TypeScript source, dist output, and import.meta.resolve. ` + `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed.`);
+    const workerScript = resolveServerWorkerScript(workerConfig, normalizedName);
+    return new Worker(workerScript, { type: "module" });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to create worker from ${normalizedName}: ${errorMessage}. ` + `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed. ` + `If you're using Vite, ensure the worker files are not being optimized as dependencies.`, { cause: error });
@@ -259,6 +281,7 @@ function createReadyWorker(workerFilename, options, timeoutMs = 1e4) {
     worker.postMessage({ type: "worker:ping" });
   });
 }
+var DEFAULT_BROWSER_ASSET_PATH = "/squoosh-kit";
 var init_worker_helper = () => {};
 
 // ../runtime/src/wasm-loader.ts
@@ -726,4 +749,4 @@ export {
   avifDecodeClient
 };
 
-//# debugId=D2C70B4C5F42E0CF64756E2164756E21
+//# debugId=2F87EE557B40825364756E2164756E21
