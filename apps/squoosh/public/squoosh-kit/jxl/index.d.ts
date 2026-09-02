@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/jxl public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { JxlEncodeOptions } from './types';
 export type { ImageInput, JxlEncodeOptions };
@@ -66,7 +66,7 @@ export declare function decode(data: Uint8Array, signal?: AbortSignal): Promise<
  * @param options - Optional bridge options.
  * @returns A function that encodes an image to JXL format with optional AbortSignal.
  */
-export declare function createJxlEncoder(mode?: 'worker' | 'client', options?: BridgeOptions): JxlEncoderFactory;
+export declare function createJxlEncoder(mode?: BridgeMode, options?: BridgeOptions): JxlEncoderFactory;
 /**
  * Creates a reusable JXL decoder function for a specific execution mode.
  *
@@ -74,5 +74,5 @@ export declare function createJxlEncoder(mode?: 'worker' | 'client', options?: B
  * @param options - Optional bridge options.
  * @returns A function that decodes JXL data with optional AbortSignal.
  */
-export declare function createJxlDecoder(mode?: 'worker' | 'client', options?: BridgeOptions): JxlDecoderFactory;
+export declare function createJxlDecoder(mode?: BridgeMode, options?: BridgeOptions): JxlDecoderFactory;
 //# sourceMappingURL=index.d.ts.map

@@ -15,12 +15,30 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
 // ../runtime/src/env.ts
+function isWorker() {
+  return typeof self !== "undefined" && typeof globalThis.DedicatedWorkerGlobalScope !== "undefined";
+}
+function isBrowser() {
+  return typeof window !== "undefined" && typeof document !== "undefined";
+}
 function isBun() {
   return typeof Bun !== "undefined";
 }
 function isNode() {
   return typeof process !== "undefined" && process.versions != null && process.versions.node != null;
 }
+
+// ../runtime/src/bridge-mode.ts
+function resolveBridgeMode(mode = "auto") {
+  if (mode === "worker" || mode === "client") {
+    return mode;
+  }
+  if (isBrowser() && !isWorker()) {
+    return "worker";
+  }
+  return "client";
+}
+var init_bridge_mode = () => {};
 
 // ../runtime/src/worker-call.ts
 async function callWorker(worker, type, payload, signal, transfer) {
@@ -361,6 +379,7 @@ function polyfillImageData() {
 
 // ../runtime/src/index.ts
 var init_src = __esm(() => {
+  init_bridge_mode();
   init_worker_helper();
   init_simd_detector();
 });
@@ -798,9 +817,10 @@ class AvifWorkerBridge {
     }
   }
 }
-function createBridge(mode, options) {
-  console.log(`[avif/bridge] createBridge called with mode: ${mode}`);
-  if (mode === "worker") {
+function createBridge(mode = "auto", options) {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(`[avif/bridge] createBridge called with mode: ${resolvedMode}`);
+  if (resolvedMode === "worker") {
     return new AvifWorkerBridge(options);
   }
   return new AvifClientBridge;
@@ -811,17 +831,17 @@ var AVIFTune2 = { auto: 0, psnr: 1, ssim: 2 };
 var globalClientBridge = null;
 async function encode(imageData, options, signal) {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge("worker");
+    globalClientBridge = createBridge("auto");
   }
   return globalClientBridge.encode(imageData, options, signal);
 }
 async function decode(data, signal) {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge("worker");
+    globalClientBridge = createBridge("auto");
   }
   return globalClientBridge.decode(data, signal);
 }
-function createAvifEncoder(mode = "worker", options) {
+function createAvifEncoder(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((imageData, encodeOptions, signal) => {
     return bridge.encode(imageData, encodeOptions, signal);
@@ -831,7 +851,7 @@ function createAvifEncoder(mode = "worker", options) {
     }
   });
 }
-function createAvifDecoder(mode = "worker", options) {
+function createAvifDecoder(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((data, signal) => {
     return bridge.decode(data, signal);
@@ -849,4 +869,4 @@ export {
   AVIFTune2 as AVIFTune
 };
 
-//# debugId=5BBDF857C37DF9E164756E2164756E21
+//# debugId=A418D7CCF98353B464756E2164756E21

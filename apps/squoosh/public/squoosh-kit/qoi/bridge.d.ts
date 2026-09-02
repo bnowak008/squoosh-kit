@@ -1,7 +1,7 @@
 /**
  * Bridge implementation for the QOI package, handling worker and client modes.
  */
-import { type ImageInput } from '@squoosh-kit/runtime';
+import { type ImageInput, type BridgeMode } from '@squoosh-kit/runtime';
 export type BridgeOptions = {
     /**
      * Public URL prefix for worker and WASM files.
@@ -14,6 +14,6 @@ interface QoiBridge {
     decode(data: BufferSource, signal?: AbortSignal): Promise<ImageData>;
     terminate(): Promise<void>;
 }
-export declare function createBridge(mode: 'worker' | 'client', options?: BridgeOptions): QoiBridge;
+export declare function createBridge(mode?: BridgeMode, options?: BridgeOptions): QoiBridge;
 export {};
 //# sourceMappingURL=bridge.d.ts.map

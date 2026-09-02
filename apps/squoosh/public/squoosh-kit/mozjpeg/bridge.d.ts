@@ -1,7 +1,7 @@
 /**
  * Bridge implementation for the MozJPEG package, handling worker and client modes.
  */
-import { type ImageInput } from '@squoosh-kit/runtime';
+import { type ImageInput, type BridgeMode } from '@squoosh-kit/runtime';
 import type { MozjpegEncodeOptions } from './types';
 export type BridgeOptions = {
     /**
@@ -15,6 +15,6 @@ interface MozjpegBridge {
     decode(data: BufferSource, signal?: AbortSignal): Promise<ImageData>;
     terminate(): Promise<void>;
 }
-export declare function createBridge(mode: 'worker' | 'client', options?: BridgeOptions): MozjpegBridge;
+export declare function createBridge(mode?: BridgeMode, options?: BridgeOptions): MozjpegBridge;
 export {};
 //# sourceMappingURL=bridge.d.ts.map

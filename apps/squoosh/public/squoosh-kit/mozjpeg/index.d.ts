@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/mozjpeg public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { MozjpegEncodeOptions } from './types';
 export type { ImageInput, MozjpegEncodeOptions };
@@ -51,7 +51,7 @@ export declare function decode(data: BufferSource, signal?: AbortSignal): Promis
  * @param mode - The execution mode, either 'worker' or 'client'.
  * @returns A function that encodes an image to JPEG format with optional AbortSignal.
  */
-export declare function createMozjpegEncoder(mode?: 'worker' | 'client', options?: BridgeOptions): MozjpegEncoderFactory;
+export declare function createMozjpegEncoder(mode?: BridgeMode, options?: BridgeOptions): MozjpegEncoderFactory;
 /**
  * Creates a reusable MozJPEG decoder function for a specific execution mode.
  * Note: Only available in Bun/Node environments.
@@ -59,5 +59,5 @@ export declare function createMozjpegEncoder(mode?: 'worker' | 'client', options
  * @param mode - The execution mode, either 'worker' or 'client'.
  * @returns A function that decodes JPEG data to ImageData with optional AbortSignal.
  */
-export declare function createMozjpegDecoder(mode?: 'worker' | 'client', options?: BridgeOptions): MozjpegDecoderFactory;
+export declare function createMozjpegDecoder(mode?: BridgeMode, options?: BridgeOptions): MozjpegDecoderFactory;
 //# sourceMappingURL=index.d.ts.map

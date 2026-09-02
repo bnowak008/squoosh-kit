@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/hqx public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { HqxOptions } from './types';
 export type { ImageInput, HqxOptions };
@@ -48,5 +48,5 @@ export declare function upscale(image: ImageInput, options?: HqxOptions, signal?
  * const result = await upscaler(image, { factor: 4 });
  * await upscaler.terminate();
  */
-export declare function createHqxUpscaler(mode?: 'worker' | 'client', options?: BridgeOptions): HqxUpscalerFactory;
+export declare function createHqxUpscaler(mode?: BridgeMode, options?: BridgeOptions): HqxUpscalerFactory;
 //# sourceMappingURL=index.d.ts.map

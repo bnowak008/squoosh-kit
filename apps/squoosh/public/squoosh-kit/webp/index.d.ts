@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/webp public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { EncodeInputOptions } from './types';
 export type { ImageInput, EncodeInputOptions };
@@ -72,12 +72,12 @@ export declare function decode(data: BufferSource, signal?: AbortSignal): Promis
  * @param mode - The execution mode, either 'worker' or 'client'.
  * @returns A function that encodes an image to WebP format with optional AbortSignal.
  */
-export declare function createWebpEncoder(mode?: 'worker' | 'client', options?: BridgeOptions): WebpEncoderFactory;
+export declare function createWebpEncoder(mode?: BridgeMode, options?: BridgeOptions): WebpEncoderFactory;
 /**
  * Creates a reusable WebP decoder function for a specific execution mode.
  *
  * @param mode - The execution mode, either 'worker' or 'client'.
  * @returns A function that decodes WebP data to ImageData with optional AbortSignal.
  */
-export declare function createWebpDecoder(mode?: 'worker' | 'client', options?: BridgeOptions): WebpDecoderFactory;
+export declare function createWebpDecoder(mode?: BridgeMode, options?: BridgeOptions): WebpDecoderFactory;
 //# sourceMappingURL=index.d.ts.map

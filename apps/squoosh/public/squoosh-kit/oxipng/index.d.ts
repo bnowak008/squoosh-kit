@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/oxipng public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { OxipngOptions } from './types';
 export type { ImageInput, OxipngOptions };
@@ -43,5 +43,5 @@ export declare function optimize(imageData: ImageInput, options?: OxipngOptions,
  * @param options - Optional bridge configuration options.
  * @returns A function that optimizes a PNG image with optional AbortSignal.
  */
-export declare function createOxipngOptimizer(mode?: 'worker' | 'client', options?: BridgeOptions): OxipngOptimizerFactory;
+export declare function createOxipngOptimizer(mode?: BridgeMode, options?: BridgeOptions): OxipngOptimizerFactory;
 //# sourceMappingURL=index.d.ts.map

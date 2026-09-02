@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/resize public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { ResizeOptions } from './types';
 export type { ImageInput, ResizeOptions };
@@ -52,5 +52,5 @@ export declare function resize(imageData: ImageInput, options: ResizeOptions, si
  * @param mode - The execution mode, either 'worker' or 'client'.
  * @returns A function that resizes an image with optional AbortSignal.
  */
-export declare function createResizer(mode?: 'worker' | 'client', options?: BridgeOptions): ResizerFactory;
+export declare function createResizer(mode?: BridgeMode, options?: BridgeOptions): ResizerFactory;
 //# sourceMappingURL=index.d.ts.map

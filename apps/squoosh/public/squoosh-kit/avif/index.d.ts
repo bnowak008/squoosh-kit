@@ -1,7 +1,7 @@
 /**
  * @squoosh-kit/avif public API
  */
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { type BridgeOptions } from './bridge';
 import type { AvifEncodeOptions } from './types';
 export declare const AVIFTune: {
@@ -67,7 +67,7 @@ export declare function decode(data: BufferSource, signal?: AbortSignal): Promis
  * @param options - Optional bridge configuration options.
  * @returns A function that encodes an image to AVIF format with optional AbortSignal.
  */
-export declare function createAvifEncoder(mode?: 'worker' | 'client', options?: BridgeOptions): AvifEncoderFactory;
+export declare function createAvifEncoder(mode?: BridgeMode, options?: BridgeOptions): AvifEncoderFactory;
 /**
  * Creates a reusable AVIF decoder function for a specific execution mode.
  *
@@ -75,5 +75,5 @@ export declare function createAvifEncoder(mode?: 'worker' | 'client', options?: 
  * @param options - Optional bridge configuration options.
  * @returns A function that decodes AVIF data to ImageData with optional AbortSignal.
  */
-export declare function createAvifDecoder(mode?: 'worker' | 'client', options?: BridgeOptions): AvifDecoderFactory;
+export declare function createAvifDecoder(mode?: BridgeMode, options?: BridgeOptions): AvifDecoderFactory;
 //# sourceMappingURL=index.d.ts.map

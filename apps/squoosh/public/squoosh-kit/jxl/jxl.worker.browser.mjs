@@ -15,9 +15,27 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
 // ../runtime/src/env.ts
+function isWorker() {
+  return typeof self !== "undefined" && typeof globalThis.DedicatedWorkerGlobalScope !== "undefined";
+}
+function isBrowser() {
+  return typeof window !== "undefined" && typeof document !== "undefined";
+}
 function isBun() {
   return typeof Bun !== "undefined";
 }
+
+// ../runtime/src/bridge-mode.ts
+function resolveBridgeMode(mode = "auto") {
+  if (mode === "worker" || mode === "client") {
+    return mode;
+  }
+  if (isBrowser() && !isWorker()) {
+    return "worker";
+  }
+  return "client";
+}
+var init_bridge_mode = () => {};
 
 // ../runtime/src/worker-call.ts
 async function callWorker(worker, type, payload, signal, transfer) {
@@ -358,6 +376,7 @@ function polyfillImageData() {
 
 // ../runtime/src/index.ts
 var init_src = __esm(() => {
+  init_bridge_mode();
   init_worker_helper();
   init_simd_detector();
 });
@@ -719,4 +738,4 @@ export {
   jxlDecodeClient
 };
 
-//# debugId=65431ED20CEACC6264756E2164756E21
+//# debugId=CD9B50435ACB0DE364756E2164756E21

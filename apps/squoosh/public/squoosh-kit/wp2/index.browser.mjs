@@ -15,9 +15,27 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
 // ../runtime/src/env.ts
+function isWorker() {
+  return typeof self !== "undefined" && typeof globalThis.DedicatedWorkerGlobalScope !== "undefined";
+}
+function isBrowser() {
+  return typeof window !== "undefined" && typeof document !== "undefined";
+}
 function isBun() {
   return typeof Bun !== "undefined";
 }
+
+// ../runtime/src/bridge-mode.ts
+function resolveBridgeMode(mode = "auto") {
+  if (mode === "worker" || mode === "client") {
+    return mode;
+  }
+  if (isBrowser() && !isWorker()) {
+    return "worker";
+  }
+  return "client";
+}
+var init_bridge_mode = () => {};
 
 // ../runtime/src/worker-call.ts
 async function callWorker(worker, type, payload, signal, transfer) {
@@ -358,6 +376,7 @@ function polyfillImageData() {
 
 // ../runtime/src/index.ts
 var init_src = __esm(() => {
+  init_bridge_mode();
   init_worker_helper();
   init_simd_detector();
 });
@@ -770,9 +789,10 @@ class Wp2WorkerBridge {
     }
   }
 }
-function createBridge(mode, options) {
-  console.log(`[wp2/bridge] createBridge called with mode: ${mode}`);
-  if (mode === "worker") {
+function createBridge(mode = "auto", options) {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(`[wp2/bridge] createBridge called with mode: ${resolvedMode}`);
+  if (resolvedMode === "worker") {
     return new Wp2WorkerBridge(options);
   }
   return new Wp2ClientBridge;
@@ -794,17 +814,17 @@ var Csp = {
 var globalClientBridge = null;
 async function encode(imageData, options, signal) {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge("worker");
+    globalClientBridge = createBridge("auto");
   }
   return globalClientBridge.encode(imageData, options, signal);
 }
 async function decode(data, signal) {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge("worker");
+    globalClientBridge = createBridge("auto");
   }
   return globalClientBridge.decode(data, signal);
 }
-function createWp2Encoder(mode = "worker", options) {
+function createWp2Encoder(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((imageData, options2, signal) => {
     return bridge.encode(imageData, options2, signal);
@@ -814,7 +834,7 @@ function createWp2Encoder(mode = "worker", options) {
     }
   });
 }
-function createWp2Decoder(mode = "worker", options) {
+function createWp2Decoder(mode = "auto", options) {
   const bridge = createBridge(mode, options);
   return Object.assign((data, signal) => {
     return bridge.decode(data, signal);
@@ -833,4 +853,4 @@ export {
   Csp
 };
 
-//# debugId=89C4D7F79C4672BD64756E2164756E21
+//# debugId=E45E6705F39DDC0464756E2164756E21
