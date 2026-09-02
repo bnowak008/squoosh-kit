@@ -17,7 +17,7 @@ function scriptUrlToPath(scriptUrl: string | URL): string {
 }
 
 describe('Worker script resolution', () => {
-  it('resolves webp worker to an existing dist file', () => {
+  it('resolves webp worker to an existing script', () => {
     const script = resolveServerWorkerScript(
       {
         package: '@squoosh-kit/webp',
@@ -29,10 +29,36 @@ describe('Worker script resolution', () => {
     const path = scriptUrlToPath(script);
 
     expect(path).toContain('webp.worker');
-    expect(path).not.toContain('/src/webp.worker.ts');
     expect(
       Bun.spawnSync(['test', '-f', path], { stdout: 'ignore' }).exitCode
     ).toBe(0);
+  });
+
+  it('prefers built worker output when dist is available', () => {
+    const distPath = new URL(
+      '../../webp/dist/webp.worker.bun.js',
+      import.meta.url
+    );
+    const distExists =
+      Bun.spawnSync(['test', '-f', scriptUrlToPath(distPath)], {
+        stdout: 'ignore',
+      }).exitCode === 0;
+
+    if (!distExists) {
+      return;
+    }
+
+    const script = resolveServerWorkerScript(
+      {
+        package: '@squoosh-kit/webp',
+        specifier: 'webp.worker.js',
+      },
+      'webp.worker.js'
+    );
+
+    const path = scriptUrlToPath(script);
+    expect(path).not.toContain('/src/webp.worker.ts');
+    expect(path).toContain('/dist/');
   });
 });
 
