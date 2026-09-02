@@ -2,7 +2,7 @@
  * @squoosh-kit/png public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 
 export type { ImageInput };
@@ -12,7 +12,7 @@ let globalWorkerBridge: ReturnType<typeof createBridge> | null = null;
 
 function getGlobalBridge(): ReturnType<typeof createBridge> {
   if (!globalWorkerBridge) {
-    globalWorkerBridge = createBridge('worker');
+    globalWorkerBridge = createBridge('auto');
   }
   return globalWorkerBridge;
 }
@@ -79,7 +79,7 @@ export async function decode(
  * @returns A function that encodes image data to PNG.
  */
 export function createPngEncoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): PngEncoderFactory {
   const bridge = createBridge(mode, options);
@@ -104,7 +104,7 @@ export function createPngEncoder(
  * @returns A function that decodes PNG data to ImageData.
  */
 export function createPngDecoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): PngDecoderFactory {
   const bridge = createBridge(mode, options);

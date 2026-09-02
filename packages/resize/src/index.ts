@@ -2,7 +2,7 @@
  * @squoosh-kit/resize public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { ResizeOptions } from './types';
 
@@ -63,7 +63,7 @@ export async function resize(
 ): Promise<ImageInput> {
   // Use worker mode for UI responsiveness - prevents blocking the main thread
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.resize(imageData, options, signal);
@@ -76,7 +76,7 @@ export async function resize(
  * @returns A function that resizes an image with optional AbortSignal.
  */
 export function createResizer(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): ResizerFactory {
   const bridge = createBridge(mode, options);

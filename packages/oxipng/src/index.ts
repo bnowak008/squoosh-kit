@@ -2,7 +2,7 @@
  * @squoosh-kit/oxipng public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { OxipngOptions } from './types';
 
@@ -51,7 +51,7 @@ export async function optimize(
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   if (!globalWorkerBridge) {
-    globalWorkerBridge = createBridge('worker');
+    globalWorkerBridge = createBridge('auto');
   }
 
   return globalWorkerBridge.optimize(imageData, options, signal);
@@ -66,7 +66,7 @@ export async function optimize(
  * @returns A function that optimizes a PNG image with optional AbortSignal.
  */
 export function createOxipngOptimizer(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): OxipngOptimizerFactory {
   const bridge = createBridge(mode, options);

@@ -5,6 +5,7 @@
  * and worker communication helpers.
  */
 
+export * from './bridge-mode.js';
 export * from './env.js';
 export * from './worker-call.js';
 export * from './types.js';

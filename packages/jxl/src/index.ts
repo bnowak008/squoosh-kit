@@ -2,7 +2,7 @@
  * @squoosh-kit/jxl public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { JxlEncodeOptions } from './types';
 
@@ -68,7 +68,7 @@ export async function encode(
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
   return globalClientBridge.encode(imageData, options, signal);
 }
@@ -88,7 +88,7 @@ export async function decode(
   signal?: AbortSignal
 ): Promise<ImageData> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
   return globalClientBridge.decode(data, signal);
 }
@@ -101,7 +101,7 @@ export async function decode(
  * @returns A function that encodes an image to JXL format with optional AbortSignal.
  */
 export function createJxlEncoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): JxlEncoderFactory {
   const bridge = createBridge(mode, options);
@@ -130,7 +130,7 @@ export function createJxlEncoder(
  * @returns A function that decodes JXL data with optional AbortSignal.
  */
 export function createJxlDecoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): JxlDecoderFactory {
   const bridge = createBridge(mode, options);

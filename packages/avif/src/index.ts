@@ -2,7 +2,7 @@
  * @squoosh-kit/avif public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { AvifEncodeOptions } from './types';
 // AVIFTune is a const enum — export as a regular object for runtime use
@@ -70,7 +70,7 @@ export async function encode(
 ): Promise<Uint8Array> {
   // Use worker mode for UI responsiveness - prevents blocking the main thread
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.encode(imageData, options, signal);
@@ -88,7 +88,7 @@ export async function decode(
   signal?: AbortSignal
 ): Promise<ImageData> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.decode(data, signal);
@@ -102,7 +102,7 @@ export async function decode(
  * @returns A function that encodes an image to AVIF format with optional AbortSignal.
  */
 export function createAvifEncoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): AvifEncoderFactory {
   const bridge = createBridge(mode, options);
@@ -131,7 +131,7 @@ export function createAvifEncoder(
  * @returns A function that decodes AVIF data to ImageData with optional AbortSignal.
  */
 export function createAvifDecoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): AvifDecoderFactory {
   const bridge = createBridge(mode, options);

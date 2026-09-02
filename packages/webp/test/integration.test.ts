@@ -28,6 +28,17 @@ describe('WebP Integration Tests', () => {
     expect(header).toBe('RIFF');
   });
 
+  it('should use client mode by default in Bun when mode is omitted', async () => {
+    const image = createTestImage(16, 16);
+    const encoder = createWebpEncoder();
+    const encodedImage = await encoder(image, { quality: 90 });
+
+    expect(encodedImage).toBeInstanceOf(Uint8Array);
+    expect(encodedImage.length).toBeGreaterThan(0);
+    const header = new TextDecoder().decode(encodedImage.slice(0, 4));
+    expect(header).toBe('RIFF');
+  });
+
   it('should correctly encode an image to WebP in worker mode', async () => {
     const image = createTestImage(16, 16);
     const encoder = createWebpEncoder('worker');
@@ -35,7 +46,6 @@ describe('WebP Integration Tests', () => {
 
     expect(encodedImage).toBeInstanceOf(Uint8Array);
     expect(encodedImage.length).toBeGreaterThan(0);
-    // A simple check for the WebP RIFF header
     const header = new TextDecoder().decode(encodedImage.slice(0, 4));
     expect(header).toBe('RIFF');
   }, 15000);

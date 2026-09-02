@@ -6,6 +6,8 @@ import {
   callWorker,
   createReadyWorker,
   type ImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import { validateImageInput } from '@squoosh-kit/runtime';
 import type { EncodeInputOptions } from './types';
@@ -113,11 +115,12 @@ class WebpWorkerBridge implements WebPBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): WebPBridge {
-  console.log(`[webp/bridge] createBridge called with mode: ${mode}`);
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(`[webp/bridge] createBridge called with mode: ${resolvedMode}`);
+  if (resolvedMode === 'worker') {
     return new WebpWorkerBridge(options);
   }
   return new WebpClientBridge();

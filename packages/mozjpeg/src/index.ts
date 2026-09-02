@@ -2,7 +2,7 @@
  * @squoosh-kit/mozjpeg public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { MozjpegEncodeOptions } from './types';
 
@@ -56,7 +56,7 @@ export async function encode(
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   if (!globalBridge) {
-    globalBridge = createBridge('worker');
+    globalBridge = createBridge('auto');
   }
 
   return globalBridge.encode(imageData, options, signal);
@@ -75,7 +75,7 @@ export async function decode(
   signal?: AbortSignal
 ): Promise<ImageData> {
   if (!globalBridge) {
-    globalBridge = createBridge('worker');
+    globalBridge = createBridge('auto');
   }
 
   return globalBridge.decode(data, signal);
@@ -88,7 +88,7 @@ export async function decode(
  * @returns A function that encodes an image to JPEG format with optional AbortSignal.
  */
 export function createMozjpegEncoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): MozjpegEncoderFactory {
   const bridge = createBridge(mode, options);
@@ -117,7 +117,7 @@ export function createMozjpegEncoder(
  * @returns A function that decodes JPEG data to ImageData with optional AbortSignal.
  */
 export function createMozjpegDecoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): MozjpegDecoderFactory {
   const bridge = createBridge(mode, options);

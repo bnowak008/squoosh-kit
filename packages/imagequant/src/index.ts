@@ -2,7 +2,7 @@
  * @squoosh-kit/imagequant public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { ImagequantOptions } from './types';
 
@@ -52,7 +52,7 @@ export async function quantize(
   signal?: AbortSignal
 ): Promise<{ data: Uint8ClampedArray; width: number; height: number }> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.quantize(image, options, signal);
@@ -66,7 +66,7 @@ export async function quantize(
  * @returns A function that quantizes an image with optional AbortSignal.
  */
 export function createImagequantQuantizer(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): ImagequantQuantizerFactory {
   const bridge = createBridge(mode, options);

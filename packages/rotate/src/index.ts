@@ -2,7 +2,7 @@
  * @squoosh-kit/rotate public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 import type { RotateOptions } from './types';
 
@@ -52,7 +52,7 @@ export async function rotate(
   signal?: AbortSignal
 ): Promise<ImageInput> {
   if (!globalBridge) {
-    globalBridge = createBridge('worker');
+    globalBridge = createBridge('auto');
   }
   return globalBridge.rotate(image, options, signal);
 }
@@ -70,7 +70,7 @@ export async function rotate(
  * await rotator.terminate();
  */
 export function createRotator(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): RotatorFactory {
   const bridge = createBridge(mode, options);

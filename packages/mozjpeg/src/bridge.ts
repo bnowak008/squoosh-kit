@@ -6,6 +6,8 @@ import {
   callWorker,
   createReadyWorker,
   type ImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import { validateImageInput } from '@squoosh-kit/runtime';
 import type { MozjpegEncodeOptions } from './types';
@@ -115,11 +117,14 @@ class MozjpegWorkerBridge implements MozjpegBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): MozjpegBridge {
-  console.log(`[mozjpeg/bridge] createBridge called with mode: ${mode}`);
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(
+    `[mozjpeg/bridge] createBridge called with mode: ${resolvedMode}`
+  );
+  if (resolvedMode === 'worker') {
     return new MozjpegWorkerBridge(options);
   }
   return new MozjpegClientBridge();

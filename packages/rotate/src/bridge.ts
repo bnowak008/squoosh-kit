@@ -7,6 +7,8 @@ import {
   createReadyWorker,
   type ImageInput,
   validateImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import type { RotateOptions } from './types';
 
@@ -88,10 +90,11 @@ class RotateWorkerBridge implements RotateBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): RotateBridge {
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  if (resolvedMode === 'worker') {
     return new RotateWorkerBridge(options);
   }
   return new RotateClientBridge();

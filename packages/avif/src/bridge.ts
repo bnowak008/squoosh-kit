@@ -6,6 +6,8 @@ import {
   callWorker,
   createReadyWorker,
   type ImageInput,
+  resolveBridgeMode,
+  type BridgeMode,
 } from '@squoosh-kit/runtime';
 import { validateImageInput } from '@squoosh-kit/runtime';
 import type { AvifEncodeOptions } from './types';
@@ -114,11 +116,12 @@ class AvifWorkerBridge implements AvifBridge {
 }
 
 export function createBridge(
-  mode: 'worker' | 'client',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): AvifBridge {
-  console.log(`[avif/bridge] createBridge called with mode: ${mode}`);
-  if (mode === 'worker') {
+  const resolvedMode = resolveBridgeMode(mode);
+  console.log(`[avif/bridge] createBridge called with mode: ${resolvedMode}`);
+  if (resolvedMode === 'worker') {
     return new AvifWorkerBridge(options);
   }
   return new AvifClientBridge();

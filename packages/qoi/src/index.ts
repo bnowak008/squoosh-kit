@@ -2,7 +2,7 @@
  * @squoosh-kit/qoi public API
  */
 
-import type { ImageInput } from '@squoosh-kit/runtime';
+import type { BridgeMode, ImageInput } from '@squoosh-kit/runtime';
 import { createBridge, type BridgeOptions } from './bridge';
 
 export type { ImageInput };
@@ -62,7 +62,7 @@ export async function encode(
   signal?: AbortSignal
 ): Promise<Uint8Array> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.encode(image, signal);
@@ -80,7 +80,7 @@ export async function decode(
   signal?: AbortSignal
 ): Promise<ImageData> {
   if (!globalClientBridge) {
-    globalClientBridge = createBridge('worker');
+    globalClientBridge = createBridge('auto');
   }
 
   return globalClientBridge.decode(data, signal);
@@ -94,7 +94,7 @@ export async function decode(
  * @returns A function that encodes an image to QOI format with optional AbortSignal.
  */
 export function createQoiEncoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): QoiEncoderFactory {
   const bridge = createBridge(mode, options);
@@ -119,7 +119,7 @@ export function createQoiEncoder(
  * @returns A function that decodes QOI data to ImageData with optional AbortSignal.
  */
 export function createQoiDecoder(
-  mode: 'worker' | 'client' = 'worker',
+  mode: BridgeMode = 'auto',
   options?: BridgeOptions
 ): QoiDecoderFactory {
   const bridge = createBridge(mode, options);
