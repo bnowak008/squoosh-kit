@@ -61,7 +61,7 @@ const wp2 = await encode(
 );
 
 // For multiple images, create a persistent encoder
-const encoder = createWp2Encoder('worker');
+const encoder = createWp2Encoder();
 const result = await encoder(imageData, { quality: 80 });
 await encoder.terminate();
 ```
@@ -129,7 +129,7 @@ await encoder.terminate();
 
 Encodes raw RGBA pixel data to WP2 format.
 
-**Note**: `encode()` uses a global singleton worker. For long-running applications where worker cleanup is important, use `createWp2Encoder()` instead.
+**Note**: `encode()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node). For long-running applications where worker cleanup is important, use `createWp2Encoder()` instead.
 
 - `imageData` - `ImageInput` object with your pixel data
 - `options` - (optional) `Wp2EncodeOptions` for quality and compression settings
@@ -148,14 +148,14 @@ Decodes a WP2 file back to raw RGBA pixel data.
 
 Creates a reusable encoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `encode()`
 
 ### `createWp2Decoder(mode?)`
 
 Creates a reusable decoder.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `decode()`
 
 ## Cancellation Support
@@ -253,7 +253,7 @@ type Wp2EncodeOptions = {
 ## Performance Tips
 
 - **WP2 is experimental** — For production use, prefer WebP, AVIF, or JXL which have browser support
-- **Use workers for UI apps** — Encoding at high effort levels can be slow
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive — Encoding at high effort levels can be slow
 - **Effort 4–6 is practical** — Good compression without excessive encoding time
 - **Batch with persistent encoders** — Amortizes WASM initialization across multiple encodes
 

@@ -48,7 +48,7 @@ const pngBuffer = await encode(imageData);
 const rawImage = await decode(existingPng);
 
 // For multiple images, create a persistent encoder
-const encoder = createPngEncoder('worker');
+const encoder = createPngEncoder();
 const png = await encoder(imageData);
 await encoder.terminate();
 ```
@@ -89,7 +89,7 @@ const url = URL.createObjectURL(blob);
 **Batch PNG processing with timeout**
 
 ```typescript
-const encoder = createPngEncoder('worker');
+const encoder = createPngEncoder();
 const controller = new AbortController();
 setTimeout(() => controller.abort(), 60000);
 
@@ -125,14 +125,14 @@ Decodes a PNG file back to raw RGBA pixel data.
 
 Creates a reusable encoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `encode()`
 
 ### `createPngDecoder(mode?)`
 
 Creates a reusable decoder. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `decode()`
 
 ## Cancellation Support
@@ -205,8 +205,8 @@ try {
 
 ## Performance Tips
 
-- **Use workers for UI apps** - Keeps your interface responsive during encoding
-- **Use client mode for servers** - Direct encoding without worker overhead
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive - Keeps your interface responsive during encoding
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead - Direct encoding without worker overhead
 - **Batch with persistent encoders** - More efficient than one-off calls
 - **PNG is lossless** - File sizes are larger than AVIF/WebP/MozJPEG; use OxiPNG to optimize afterwards
 

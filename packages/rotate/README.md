@@ -45,7 +45,7 @@ const rotated = await rotate(imageData, { rotate: 90 });
 // rotated.width === 1080, rotated.height === 1920
 
 // For multiple images, use a persistent rotator
-const rotator = createRotator('worker');
+const rotator = createRotator();
 const result = await rotator(imageData, { rotate: 270 });
 await rotator.terminate();
 ```
@@ -103,13 +103,13 @@ Rotates raw RGBA pixel data by the specified angle. The returned image has swapp
 - `signal` - (optional) `AbortSignal` to cancel the operation
 - **Returns** - `Promise<ImageInput>` with rotated pixel data and updated dimensions
 
-**Note**: `rotate()` uses a global singleton worker that is never automatically terminated. For long-running applications where worker cleanup is important, use `createRotator()` instead.
+**Note**: `rotate()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node) and is never automatically terminated. For long-running applications where worker cleanup is important, use `createRotator()` instead.
 
 ### `createRotator(mode?)`
 
 Creates a reusable rotator. More efficient for processing multiple images.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `rotate()`
 
 ## Cancellation Support
@@ -186,8 +186,8 @@ type RotateOptions = {
 
 ## Performance Tips
 
-- **Use workers for UI apps** - Keeps your interface responsive
-- **Use client mode for servers** - Direct processing without worker overhead
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive - Keeps your interface responsive
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead - Direct processing without worker overhead
 - **Batch with persistent rotators** - More efficient than one-off calls
 - **Rotation is lossless** - No quality loss regardless of angle
 

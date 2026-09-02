@@ -51,7 +51,7 @@ console.log(distance);
 // > 3.0 = noticeable quality loss
 
 // For repeated comparisons, use a persistent instance
-const differ = createVisDiff('worker');
+const differ = createVisDiff();
 const score = await differ(original, compressed);
 await differ.terminate();
 ```
@@ -140,13 +140,13 @@ Computes the Butteraugli perceptual distance between two images. Both images mus
 - `signal` - (optional) `AbortSignal` to cancel the operation
 - **Returns** - `Promise<number>` — the Butteraugli distance score (lower = more similar)
 
-**Note**: `compare()` uses a global singleton worker. For long-running applications where worker cleanup is important, use `createVisDiff()` instead.
+**Note**: `compare()` uses a global singleton in **auto** mode (worker in the browser, client in Bun/Node). For long-running applications where worker cleanup is important, use `createVisDiff()` instead.
 
 ### `createVisDiff(mode?)`
 
 Creates a reusable comparison function. More efficient for repeated comparisons.
 
-- `mode` - (optional) `'worker'` or `'client'`, defaults to `'worker'`
+- `mode` - (optional) `'auto'`, `'worker'`, or `'client'`; defaults to `'auto'` (worker in the browser main thread, client in Bun/Node)
 - **Returns** - A function with the same signature as `compare()`
 
 ## Cancellation Support
@@ -207,8 +207,8 @@ try {
 
 ## Performance Tips
 
-- **Use workers for UI apps** - Butteraugli analysis is CPU-intensive; offload it to avoid blocking the UI
-- **Use client mode in build tools** - Simpler setup for Node/Bun scripts
+- **Auto mode in the browser** - Uses workers automatically to keep the UI responsive - Butteraugli analysis is CPU-intensive; offload it to avoid blocking the UI
+- **Auto mode in Bun/Node** - Runs on the main thread without worker overhead - Simpler setup for Node/Bun scripts
 - **Cache results** - Butteraugli is deterministic; cache scores for unchanged image pairs
 - **Pair with encoders** - Use alongside `@squoosh-kit/avif`, `@squoosh-kit/webp`, or `@squoosh-kit/mozjpeg` to tune quality settings programmatically
 
