@@ -1,4 +1,4 @@
-import { existsSync, statSync } from 'fs';
+import { existsSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 const ROOT = join(import.meta.dir, '..');
@@ -264,6 +264,21 @@ const PACKAGES: PackageSpec[] = [
 let errors = 0;
 let checks = 0;
 
+function findMapFiles(dir: string): string[] {
+  const maps: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      maps.push(...findMapFiles(path));
+      continue;
+    }
+    if (entry.endsWith('.map')) {
+      maps.push(path);
+    }
+  }
+  return maps;
+}
+
 function check(label: string, path: string, type: 'file' | 'dir'): void {
   checks++;
   if (!existsSync(path)) {
@@ -302,6 +317,12 @@ for (const pkg of PACKAGES) {
 
   for (const dir of pkg.dirs ?? []) {
     check(`${dir}/`, join(base, dir), 'dir');
+  }
+
+  for (const mapPath of findMapFiles(base)) {
+    const relative = mapPath.slice(base.length + 1);
+    console.error(`  ✗ UNEXPECTED SOURCEMAP IN PUBLISH ARTIFACTS: ${relative}`);
+    errors++;
   }
 }
 

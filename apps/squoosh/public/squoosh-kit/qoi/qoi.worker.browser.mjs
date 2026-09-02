@@ -624,5 +624,3 @@ export {
   qoiEncodeClient,
   qoiDecodeClient
 };
-
-//# debugId=6904C7D73FE9C58464756E2164756E21

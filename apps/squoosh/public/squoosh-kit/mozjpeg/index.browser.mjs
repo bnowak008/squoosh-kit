@@ -836,5 +836,3 @@ export {
   createMozjpegEncoder,
   createMozjpegDecoder
 };
-
-//# debugId=190435E3892ED85764756E2164756E21

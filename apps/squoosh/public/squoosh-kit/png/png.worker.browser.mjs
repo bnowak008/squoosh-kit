@@ -534,5 +534,3 @@ export {
   pngEncodeClient,
   pngDecodeClient
 };
-
-//# debugId=4EEEFFDFB2C19B0D64756E2164756E21

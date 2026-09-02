@@ -1,5 +1,6 @@
 import { build, Transpiler } from 'bun';
 import { spawn } from 'bun';
+import { stripDistSourcemaps } from '../../scripts/strip-dist-sourcemaps.ts';
 
 const OUTPUT_DIR = 'dist';
 const SOURCE_FILE = 'src/index.ts';
@@ -48,7 +49,15 @@ try {
 
   // Generate type definitions
   const typesResult = await spawn(
-    ['bun', 'tsc', '--emitDeclarationOnly', '--outDir', OUTPUT_DIR],
+    [
+      'bun',
+      'tsc',
+      '--emitDeclarationOnly',
+      '--declarationMap',
+      'false',
+      '--outDir',
+      OUTPUT_DIR,
+    ],
     { stdout: 'inherit', stderr: 'inherit' }
   ).exited;
   if (typesResult !== 0) {
@@ -56,6 +65,7 @@ try {
     process.exit(1);
   }
   console.log('TypeScript declaration build completed successfully');
+  stripDistSourcemaps(OUTPUT_DIR);
 } catch (error) {
   console.error(error);
 }

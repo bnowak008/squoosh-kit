@@ -549,5 +549,3 @@ init_imagequant_worker();
 export {
   imagequantQuantizeClient
 };
-
-//# debugId=D1DC5FD914BAD01E64756E2164756E21

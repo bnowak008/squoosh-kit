@@ -629,5 +629,3 @@ export {
   createPngEncoder,
   createPngDecoder
 };
-
-//# debugId=84113037A7100D6964756E2164756E21

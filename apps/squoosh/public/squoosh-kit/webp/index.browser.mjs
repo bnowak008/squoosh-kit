@@ -840,5 +840,3 @@ export {
   createWebpEncoder,
   createWebpDecoder
 };
-
-//# debugId=E3521A20D7B1EC7564756E2164756E21

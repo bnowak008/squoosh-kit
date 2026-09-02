@@ -469,5 +469,3 @@ init_hqx_worker();
 export {
   hqxUpscaleClient
 };
-
-//# debugId=743E7B4130027C5364756E2164756E21

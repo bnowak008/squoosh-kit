@@ -737,5 +737,3 @@ export {
   jxlEncodeClient,
   jxlDecodeClient
 };
-
-//# debugId=CD9B50435ACB0DE364756E2164756E21

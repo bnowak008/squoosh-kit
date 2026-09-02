@@ -1,3 +1,5 @@
+import { stripDistSourcemaps } from '../../scripts/strip-dist-sourcemaps.ts';
+
 const SOURCE_DIR = 'src';
 const OUTPUT_DIR = 'dist';
 
@@ -68,7 +70,7 @@ try {
     entrypoints,
     outdir: OUTPUT_DIR,
     splitting: false,
-    sourcemap: 'external',
+    sourcemap: 'none',
     minify: false,
     target: 'browser',
     format: 'esm',
@@ -86,7 +88,15 @@ try {
 
   // Generate type definitions
   const typesResult = await Bun.spawn(
-    ['bun', 'tsc', '--emitDeclarationOnly', '--outDir', OUTPUT_DIR],
+    [
+      'bun',
+      'tsc',
+      '--emitDeclarationOnly',
+      '--declarationMap',
+      'false',
+      '--outDir',
+      OUTPUT_DIR,
+    ],
     { stdout: 'inherit', stderr: 'inherit' }
   ).exited;
   if (typesResult !== 0) {
@@ -94,6 +104,7 @@ try {
     process.exit(1);
   }
   console.log('TypeScript declaration build completed successfully');
+  stripDistSourcemaps(OUTPUT_DIR);
 } catch (error) {
   console.error(error);
 }

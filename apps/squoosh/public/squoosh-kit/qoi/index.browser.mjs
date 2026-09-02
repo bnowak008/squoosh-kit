@@ -722,5 +722,3 @@ export {
   createQoiEncoder,
   createQoiDecoder
 };
-
-//# debugId=E3CC5B287BFF718E64756E2164756E21

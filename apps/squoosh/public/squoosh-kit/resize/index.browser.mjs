@@ -684,5 +684,3 @@ export {
   resize2 as resize,
   createResizer
 };
-
-//# debugId=E07D666808E7A7C864756E2164756E21

@@ -26,11 +26,12 @@
   },
   "files": [
     "dist/**",
+    "!dist/**/*.map",
     "README.md"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "bunx tsc -p . && bun build ./src/index.ts --outdir dist --format esm --target bun --external vite && bun build ./src/index.ts --outfile dist/index.cjs --format cjs --target bun --external vite && printf 'export default function squooshVitePlugin(squooshKitRoot: string): { name: string };\\n' > dist/index.d.ts",
+    "build": "bunx tsc -p . --declarationMap false && bun build ./src/index.ts --outdir dist --format esm --target bun --external vite && bun build ./src/index.ts --outfile dist/index.cjs --format cjs --target bun --external vite && printf 'export default function squooshVitePlugin(squooshKitRoot: string): { name: string };\\n' > dist/index.d.ts && bun ../../scripts/strip-dist-sourcemaps.ts dist",
     "clean": "rm -rf dist node_modules .bun/install/cache bun.lockb bun.lock *.tsbuildinfo",
     "prepack": "bun run build",
     "typecheck": "tsc --noEmit"
