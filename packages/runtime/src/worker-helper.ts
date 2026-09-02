@@ -10,6 +10,89 @@ import { isBun } from './env';
 
 export const DEFAULT_BROWSER_ASSET_PATH = '/squoosh-kit';
 
+type WorkerPackageConfig = {
+  package: string;
+  specifier: string;
+};
+
+function scriptUrlToPath(scriptUrl: string | URL): string {
+  const href = typeof scriptUrl === 'string' ? scriptUrl : scriptUrl.href;
+  if (href.startsWith('file://')) {
+    return decodeURIComponent(
+      href.startsWith('file:///') ? href.slice(7) : href.slice(5)
+    );
+  }
+  return href;
+}
+
+function workerScriptExists(scriptUrl: string | URL): boolean {
+  if (typeof window !== 'undefined') {
+    return false;
+  }
+
+  const path = scriptUrlToPath(scriptUrl);
+
+  if (typeof Bun !== 'undefined') {
+    return (
+      Bun.spawnSync(['test', '-f', path], {
+        stdout: 'ignore',
+        stderr: 'ignore',
+      }).exitCode === 0
+    );
+  }
+
+  try {
+    const existsSync = Function('return require("node:fs").existsSync')() as (
+      filePath: string
+    ) => boolean;
+    return existsSync(path);
+  } catch {
+    return false;
+  }
+}
+
+export function resolveServerWorkerScript(
+  workerConfig: WorkerPackageConfig,
+  normalizedName: string
+): string | URL {
+  const platformExt = isBun() ? 'bun.js' : 'node.mjs';
+  const baseName = normalizedName.replace('.js', '');
+  const pkgName = workerConfig.package.split('/')[1];
+
+  if (typeof import.meta.resolve === 'function') {
+    try {
+      const resolved = import.meta.resolve(
+        `${workerConfig.package}/${workerConfig.specifier}`
+      );
+      if (workerScriptExists(resolved)) {
+        return resolved;
+      }
+    } catch {
+      // Continue to monorepo fallbacks
+    }
+  }
+
+  const candidates = [
+    new URL(
+      `../../${pkgName}/dist/${baseName}.${platformExt}`,
+      import.meta.url
+    ),
+    new URL(`../../${pkgName}/src/${baseName}.ts`, import.meta.url),
+  ];
+
+  for (const candidate of candidates) {
+    if (workerScriptExists(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(
+    `Failed to resolve worker script for ${normalizedName}. ` +
+      `Tried import.meta.resolve, dist output, and TypeScript source. ` +
+      `Ensure ${workerConfig.package} is installed.`
+  );
+}
+
 export type CreateWorkerOptions = {
   /**
    * Public URL prefix for worker and WASM files.
@@ -203,52 +286,11 @@ export function createCodecWorker(
       );
     }
 
-    // Fallbacks for monorepo/dev without build artifacts
-    const platformExt = isBun() ? '.bun.js' : '.node.mjs';
-    const baseName = normalizedName.replace('.js', '');
-    const pkgName = workerConfig.package.split('/')[1]; // e.g. 'avif', 'webp', 'resize'
-
-    // 1) Try TypeScript source first (Bun can transpile TS, works in dev)
-    const srcRelPath = `../../${pkgName}/src/${baseName}.ts`;
-
-    console.log('srcRelPath:', srcRelPath);
-    console.log('import.meta.url:', import.meta.url);
-    try {
-      return new Worker(new URL(srcRelPath, import.meta.url), {
-        type: 'module',
-      });
-    } catch {
-      // 2) Try dist output (if already built)
-      const distRelPath = `../../${pkgName}/dist/${baseName}.${platformExt.slice(1)}`;
-
-      console.log('distRelPath:', distRelPath);
-      console.log('import.meta.url:', import.meta.url);
-      try {
-        return new Worker(new URL(distRelPath, import.meta.url), {
-          type: 'module',
-        });
-      } catch {
-        // 3) Try import.meta.resolve as last resort
-        if (typeof import.meta.resolve === 'function') {
-          try {
-            const resolved = import.meta.resolve(
-              `${workerConfig.package}/${workerConfig.specifier}`
-            );
-            console.log('resolved:', resolved);
-            return new Worker(resolved, { type: 'module' });
-          } catch {
-            // Continue to error below
-          }
-        }
-      }
-    }
-
-    // If we get here, all fallbacks failed
-    throw new Error(
-      `Failed to create worker from ${normalizedName}. ` +
-        `Tried TypeScript source, dist output, and import.meta.resolve. ` +
-        `Ensure the @squoosh-kit/resize and @squoosh-kit/webp packages are installed.`
+    const workerScript = resolveServerWorkerScript(
+      workerConfig,
+      normalizedName
     );
+    return new Worker(workerScript, { type: 'module' });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
