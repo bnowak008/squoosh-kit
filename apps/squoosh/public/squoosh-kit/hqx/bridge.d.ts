@@ -4,6 +4,10 @@
 import { type ImageInput } from '@squoosh-kit/runtime';
 import type { HqxOptions } from './types';
 export type BridgeOptions = {
+    /**
+     * Public URL prefix for worker and WASM files.
+     * Defaults to `/squoosh-kit` in the browser.
+     */
     assetPath?: string;
 };
 interface HqxBridge {
