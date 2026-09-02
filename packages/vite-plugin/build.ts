@@ -33,12 +33,13 @@ try {
 
   const cjsResult = await Bun.build({
     entrypoints: [SOURCE_FILE],
-    outfile: `${OUTPUT_DIR}/index.cjs`,
+    outdir: OUTPUT_DIR,
     splitting: false,
     sourcemap: 'none',
     minify: false,
     target: 'node',
     format: 'cjs',
+    naming: '[dir]/[name].cjs',
     external: ['vite'],
   });
 
