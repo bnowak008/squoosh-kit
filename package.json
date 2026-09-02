@@ -45,7 +45,7 @@
     "format:check": "prettier --check .",
     "check-types": "tsc --noEmit",
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'dev-dist' -type d -prune -exec rm -rf '{}' + && find . -name 'bundle' -type d -prune -exec rm -rf '{}' + && find . -name 'tsconfig.tsbuildinfo' -type f -delete && find . -name 'bun.lockb' -type f -delete  && find . -name 'bun.lock' -type f -delete",
-    "validate": "bun run check-types && bun run lint && bun run format:check && bun run test",
+    "validate": "bun run check-types && bun run lint && bun run format:check && bun run sync-readme-packages -- --check && bun run test",
     "validate:artifacts": "bun run scripts/validate-artifacts.ts",
     "quick-release": "bun run clean && bun i && bun run format && bun run test && bun run ci:build && bun run validate:artifacts && bun run validate && bun run release",
     "quick-release:publish": "bun run quick-release && bun run version:patch && bun run release:publish",
@@ -69,6 +69,7 @@
     "release:publish": "bun run release:runtime && bun run release:webp && bun run release:resize && bun run release:avif && bun run release:mozjpeg && bun run release:jxl && bun run release:oxipng && bun run release:imagequant && bun run release:png && bun run release:qoi && bun run release:wp2 && bun run release:hqx && bun run release:rotate && bun run release:visdif && bun run release:core && bun run release:vite-plugin",
     "prepare": "lefthook install",
     "sync-codecs": "bun run scripts/sync-squoosh-codecs.ts",
+    "sync-readme-packages": "bun run scripts/sync-readme-packages.ts",
     "sync-version": "bun run scripts/sync-version.ts",
     "version:current": "bun run scripts/sync-version.ts current",
     "version:major": "bun run scripts/sync-version.ts major",
@@ -84,7 +85,8 @@
     "globals": "^17.11.0",
     "prettier": "^3.9.6",
     "lefthook": "^2.1.10",
-    "typescript": "^6.0.3"
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "workspaces": [
     "apps/*",
