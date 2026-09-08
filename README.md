@@ -194,6 +194,6 @@ All package versions must match the root `package.json` version (enforced in the
 
 The squoosh-kit source code (TypeScript wrappers, worker bridge, build tooling) is licensed under the **MIT License** — see [LICENSE](./LICENSE).
 
-The WebAssembly binaries distributed with `@squoosh-kit/webp` and `@squoosh-kit/resize` are compiled from [Google Squoosh](https://github.com/GoogleChromeLabs/squoosh) and are licensed under the **Apache License 2.0** — see [NOTICE](./NOTICE) for the full attribution and license text.
+The WebAssembly binaries distributed with the codec packages (for example `@squoosh-kit/webp`, `@squoosh-kit/resize`, `@squoosh-kit/imagequant`, and the other `@squoosh-kit/*` codecs) are compiled from [Google Squoosh](https://github.com/GoogleChromeLabs/squoosh) and are licensed under the **Apache License 2.0** — see [NOTICE](./NOTICE) for the full attribution and license text.
 
-If you use `@squoosh-kit/webp` or `@squoosh-kit/resize` (or `@squoosh-kit/core` which depends on them), your distribution includes Apache 2.0 content. The two licenses are compatible — both are permissive and allow commercial use.
+If you use a codec package (or `@squoosh-kit/core`, which depends on them), your distribution includes Apache 2.0 content. The two licenses are compatible — both are permissive and allow commercial use.

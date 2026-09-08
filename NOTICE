@@ -5,9 +5,10 @@ Copyright (c) Brent Nowak
 
 This project incorporates WebAssembly binaries compiled from Squoosh
 (https://github.com/GoogleChromeLabs/squoosh), which are included in
-the @squoosh-kit/webp and @squoosh-kit/resize packages under the
-dist/wasm/ directories. These binaries are licensed under the Apache
-License, Version 2.0, reproduced below.
+the @squoosh-kit codec packages (for example webp, resize, avif,
+mozjpeg, jxl, png, qoi, oxipng, imagequant, hqx, rotate, visdif, and
+wp2) under their dist/wasm/ directories. These binaries are licensed under
+the Apache License, Version 2.0, reproduced below.
 
 Squoosh
 Copyright 2019 Google LLC
