@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "bun --filter @squoosh-kit/runtime build && bun --filter @squoosh-kit/core build && bun run --parallel --filter './packages/*' --filter '!./packages/runtime' --filter '!./packages/core' build && bun --filter '@squoosh-kit/squoosh' build",
+    "build": "bun --filter @squoosh-kit/runtime build && bun run --parallel --filter './packages/*' --filter '!./packages/runtime' --filter '!./packages/core' build && bun --filter @squoosh-kit/core build && bun --filter '@squoosh-kit/squoosh' build",
     "ci:build": "bun run sync-codecs && bun run build",
     "test": "bun test",
     "lint": "eslint .",
